@@ -321,7 +321,14 @@ commitment that V1 does not do this and does not claim to.
 
 §1–§5 are product commitments. This section states what evidence supports them, at
 what confidence, and — deliberately — where the evidence does not reach. It is bound
-to the landscape review delivered under [IV-102](https://app.notion.com/p/3b09cb079ddb814d8075cc666a7320aa).
+to [`docs/iv-102-landscape-review.md`](iv-102-landscape-review.md), the landscape review
+delivered under [IV-102](https://app.notion.com/p/3b09cb079ddb814d8075cc666a7320aa).
+
+The ledger below is version 1's, recorded in the issue body. Version 2 of the review
+independently corroborates every verdict it could reach, adds an evidenced verdict for the
+accountable-augmentation principle of §1.1, and marks two — visualization need and
+IRB-aware de-identification — as outside its own source base rather than contradicted. See
+the review's §5 and §8 for the reconciliation, and its §6 before citing any figure.
 
 ### 6.1 Decision ledger
 

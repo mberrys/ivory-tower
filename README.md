@@ -36,7 +36,7 @@ their reference implementations.
 | Milestone | V1 — product and architecture contract |
 | Tracked issues | 125 across 7 phases ([Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)) |
 | Closed | IV-8, IV-102 |
-| Delivered in this repository | IV-8 — product model (specification); IV-17 — identifiers (specification + implementation) |
+| Delivered in this repository | IV-8 — product model; IV-102 — landscape review; IV-17 — identifiers (specification + implementation) |
 | Platform baseline | Eclipse Theia v1.74.0 |
 | Default branch | `dev` |
 
@@ -87,6 +87,7 @@ disagree, the specification is the contract and the implementation is the defect
 | Document | Issue | Covers |
 |---|---|---|
 | [`docs/iv-8-product-model.md`](docs/iv-8-product-model.md) | IV-8 | Product definition, canonical object vocabulary, research lifecycle, supported content, non-goals, traceability matrix |
+| [`docs/iv-102-landscape-review.md`](docs/iv-102-landscape-review.md) | IV-102 | Landscape review protocol, classified source register, findings, and the decision ledger that binds product claims |
 | [`docs/iv-17-identifiers.md`](docs/iv-17-identifiers.md) | IV-17 | Stable source, passage, and derived-artifact identifiers |
 
 ### Packages in this repository
@@ -119,11 +120,12 @@ npx lerna run test --scope @theia/ivory-identity
 | **IV-102** — Conduct a systematic social-science tool, source, and adoption landscape review | A reproducible landscape review with claim-level source classification. Verdicts: visualization need documented at moderate confidence; equity of access supported as a design constraint; literature and OSF opportunities provisional; evidence-clearinghouse and CAQDAS opportunities unresolved; restricted federal microdata integration refuted. No demand evidence was found for multi-agent orchestration or model agnosticism, so both may be justified only as bounded architecture choices — never as user-facing market claims. Declared limitations (peer-reviewed source share below the review's own gate, US-weighted geography) stay visible rather than being treated as completion evidence. |
 
 > [!NOTE]
-> IV-8's deliverable is published at [`docs/iv-8-product-model.md`](docs/iv-8-product-model.md).
-> IV-102's deliverables still live only in the [Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)
-> and are not yet mirrored into `docs/`; the IV-8 evidence section is reconstructed from the
-> decision ledger in that issue rather than from the review itself. IV-17 remains the only issue
-> whose specification *and* implementation have both landed here.
+> IV-8 and IV-102 are both published under [`docs/`](docs). The IV-102 review is a **second
+> version**: version 1 was recorded as delivered in the tracker but never committed here, and its
+> 48-source base is unrecoverable, so version 2 rebuilds the evidence from a smaller, fully
+> disclosed set and reconciles verdicts with version 1 rather than restoring it. Read its §6
+> limitations before citing any figure from it. IV-17 remains the only issue whose specification
+> *and* implementation have both landed here.
 
 ## Roadmap
 
