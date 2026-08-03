@@ -3,13 +3,17 @@
 import { Pool } from 'pg';
 import { ExecutionService } from '@ivory-tower/application';
 import {
+    ContentAwareAllowlistedEgressPolicy,
+    ContentRightsAdmissionPolicy,
+    FailClosedEgressPolicy,
     FilesystemObjectStore,
     PostgresExecutionStore,
     S3CompatibleObjectStore,
-    SafeOpenAdmissionPolicy,
     SystemClockAdapter,
     SystemExecutionIdAdapter,
     isIvoryRuntimeReady,
+    readDeploymentTopologyFromEnvironment,
+    readEgressAllowedHostsFromEnvironment,
     readIvoryTowerEnvironment,
     validateIvoryTowerEnvironment,
 } from '@ivory-tower/infrastructure';
@@ -35,12 +39,17 @@ export async function startApi(): Promise<void> {
             secretAccessKey: process.env.IVORY_S3_SECRET_ACCESS_KEY,
             forcePathStyle: process.env.IVORY_S3_FORCE_PATH_STYLE !== 'false',
         });
+    const allowedHosts = readEgressAllowedHostsFromEnvironment();
+    const egress = allowedHosts.size > 0
+        ? new ContentAwareAllowlistedEgressPolicy(allowedHosts, store)
+        : new FailClosedEgressPolicy();
     const server = createApiServer({
         executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), clock),
         executionStore: store,
         sourceRecords: store,
         objectStore,
-        admission: new SafeOpenAdmissionPolicy(new Set((process.env.IVORY_APPROVED_LICENSES ?? '').split(',').map(value => value.trim()).filter(Boolean))),
+        admission: new ContentRightsAdmissionPolicy(readDeploymentTopologyFromEnvironment()),
+        egress,
         ids: new SystemExecutionIdAdapter(),
         clock,
         readiness: async () => {

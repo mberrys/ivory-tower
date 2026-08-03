@@ -98,7 +98,7 @@ disagree, the specification is the contract and the implementation is the defect
 | Package | Implements |
 |---|---|
 | [`packages/ivory-identity`](packages/ivory-identity) | IV-17 — minted and derived identifiers, canonical preimages, passage anchors, alias resolution |
-| [`packages/ivory-content-policy`](packages/ivory-content-policy) | IV-128 — content classes and the V1 safe subset, recorded rights bases, and the two-gate fail-closed admission decision |
+| [`packages/ivory-tower-content-policy`](packages/ivory-tower-content-policy) | IV-128 — content classes and the V1 safe subset, recorded rights bases, and the two-gate fail-closed admission decision |
 
 **IV-17 in one paragraph.** Every identifier is either *minted* (`prj_`, `cor_`, `src_`, `exec_` —
 allocated once, never re-derivable) or *derived* (`sv_`, `psg_`, `art_`, `fp_` — the hash of a

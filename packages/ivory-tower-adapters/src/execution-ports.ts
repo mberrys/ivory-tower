@@ -6,7 +6,13 @@ import {
     ExecutionKind,
     ExecutionRecord,
 } from '@ivory-tower/domain';
-import { SourceMetadata } from '@ivory-tower/contracts';
+import {
+    AcquisitionRoute,
+    ContentClass,
+    DeploymentTopology,
+    RightsBasisKind,
+    SourceMetadata,
+} from '@ivory-tower/contracts';
 
 export interface ExecutionJob {
     readonly executionId: string;
@@ -57,6 +63,14 @@ export interface SourceRecord {
     readonly authorizationEvidence: string;
     readonly admissionPolicyVersion: string;
     readonly admittedAt: string;
+    readonly contentClass: ContentClass;
+    readonly rightsBasisKind: RightsBasisKind;
+    readonly acquisitionRoute: AcquisitionRoute;
+    readonly deploymentTopology: DeploymentTopology;
+    readonly ingestPermitted: boolean;
+    readonly transferPermitted: boolean;
+    readonly ingestReason: string;
+    readonly transferReason: string;
 }
 
 export interface SourceRecordPort {
@@ -65,10 +79,24 @@ export interface SourceRecordPort {
      * return the existing record when the content hash was already admitted.
      */
     persistSource(record: SourceRecord): Promise<SourceRecord>;
+    getByContentHash(contentHash: string): Promise<SourceRecord | undefined>;
+}
+
+export interface SourceAdmissionResult {
+    readonly allowed: boolean;
+    readonly reason: string;
+    readonly contentClass: ContentClass;
+    readonly rightsBasisKind: RightsBasisKind;
+    readonly acquisitionRoute: AcquisitionRoute;
+    readonly deploymentTopology: DeploymentTopology;
+    readonly ingestPermitted: boolean;
+    readonly transferPermitted: boolean;
+    readonly ingestReason: string;
+    readonly transferReason: string;
 }
 
 export interface SourceAdmissionPort {
-    admit(metadata: SourceMetadata, contentHash: string): Promise<{ readonly allowed: boolean; readonly reason: string }>;
+    admit(metadata: SourceMetadata, contentHash: string): Promise<SourceAdmissionResult>;
 }
 
 export interface ConversionPort {

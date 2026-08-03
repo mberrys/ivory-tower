@@ -5,6 +5,7 @@ import { IncomingMessage, Server, ServerResponse, createServer } from 'node:http
 import { URL } from 'node:url';
 import {
     ClockPort,
+    EgressPolicyPort,
     ExecutionIdPort,
     ExecutionStorePort,
     ObjectStorePort,
@@ -14,6 +15,7 @@ import {
 import { ExecutionService } from '@ivory-tower/application';
 import {
     CreateExecutionRequest,
+    ContentClass,
     executionEventSchema,
     createExecutionRequestSchema,
     sourceMetadataSchema,
@@ -28,6 +30,7 @@ export interface ApiServerDependencies {
     readonly objectStore?: ObjectStorePort;
     readonly sourceRecords?: SourceRecordPort;
     readonly admission?: SourceAdmissionPort;
+    readonly egress?: EgressPolicyPort;
     readonly ids?: ExecutionIdPort;
     readonly clock?: ClockPort;
     readonly readiness?: () => Promise<boolean>;
@@ -46,6 +49,26 @@ interface SourceUploadMetadata {
     readonly contentType: string;
     readonly license: string;
     readonly authorizationEvidence: string;
+    readonly contentClass: ContentClass;
+    readonly acquisitionRoute: 'publisherApi' | 'upload' | 'openRepository';
+    readonly itemLicenceConfirmed?: boolean;
+}
+
+function parseOptionalBooleanHeader(value: string | string[] | undefined): boolean | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
+    const normalized = Array.isArray(value) ? value[0] : value;
+    if (normalized === undefined || normalized.length === 0) {
+        return undefined;
+    }
+    if (normalized === 'true') {
+        return true;
+    }
+    if (normalized === 'false') {
+        return false;
+    }
+    return undefined;
 }
 
 function sendJson(response: ServerResponse, statusCode: number, body: unknown, headers: Record<string, string> = {}): void {
@@ -104,7 +127,12 @@ function writeEvent(response: ServerResponse, event: { id: string; type: string;
 }
 
 async function uploadSource(request: IncomingMessage, dependencies: ApiServerDependencies, metadata: SourceUploadMetadata, maximumBytes: number): Promise<SourceUploadResponse> {
-    if (dependencies.objectStore === undefined || dependencies.sourceRecords === undefined || dependencies.admission === undefined || dependencies.ids === undefined || dependencies.clock === undefined) {
+    const ingestionUnavailable = dependencies.objectStore === undefined
+        || dependencies.sourceRecords === undefined
+        || dependencies.admission === undefined
+        || dependencies.ids === undefined
+        || dependencies.clock === undefined;
+    if (ingestionUnavailable) {
         throw new ApiError(503, 'source_ingestion_unavailable', 'Source ingestion is not configured for this runtime.');
     }
     const content = await readBody(request, maximumBytes);
@@ -124,8 +152,16 @@ async function uploadSource(request: IncomingMessage, dependencies: ApiServerDep
         contentType: metadata.contentType,
         license: metadata.license,
         authorizationEvidence: metadata.authorizationEvidence,
-        admissionPolicyVersion: 'v1-safe-open',
+        admissionPolicyVersion: 'iv-128-v1',
         admittedAt,
+        contentClass: decision.contentClass,
+        rightsBasisKind: decision.rightsBasisKind,
+        acquisitionRoute: decision.acquisitionRoute,
+        deploymentTopology: decision.deploymentTopology,
+        ingestPermitted: decision.ingestPermitted,
+        transferPermitted: decision.transferPermitted,
+        ingestReason: decision.ingestReason,
+        transferReason: decision.transferReason,
     });
     return {
         sourceId: source.id,
@@ -172,6 +208,9 @@ export function createApiServer(dependencies: ApiServerDependencies): Server {
                     contentType: request.headers['x-source-content-type'],
                     license: request.headers['x-source-license'],
                     authorizationEvidence: request.headers['x-source-authorization-evidence'],
+                    contentClass: request.headers['x-source-content-class'],
+                    acquisitionRoute: request.headers['x-source-acquisition-route'],
+                    itemLicenceConfirmed: parseOptionalBooleanHeader(request.headers['x-source-item-licence-confirmed']),
                 });
                 if (!metadataResult.success) {
                     throw new ApiError(400, 'invalid_source_metadata', 'Source metadata is required before admission.');

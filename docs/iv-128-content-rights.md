@@ -314,7 +314,7 @@ Five rules, each traceable to a finding above.
 ## 10.2 Implementation status
 
 §9's five rules are implemented in
-[`packages/ivory-content-policy`](../packages/ivory-content-policy) — content classes and
+[`packages/ivory-tower-content-policy`](../packages/ivory-tower-content-policy) — content classes and
 the safe subset, recorded rights bases, the two gates, topology awareness, and fail-closed
 defaults, with 26 tests. Each test pins a finding from this register, so a future change
 that quietly merges the two gates or treats silence as consent fails the suite.

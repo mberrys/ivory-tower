@@ -290,7 +290,7 @@ Two consequences bind the rest of this document:
   position is auditable later. This is a schema obligation on IV-16, not a policy
   aspiration.
 
-Implemented in [`packages/ivory-content-policy`](../packages/ivory-content-policy).
+Implemented in [`packages/ivory-tower-content-policy`](../packages/ivory-tower-content-policy).
 
 ### 4.1 Product-level matrix
 

@@ -13,6 +13,9 @@
       "path": "../ivory-tower-adapters"
     },
     {
+      "path": "../ivory-tower-content-policy"
+    },
+    {
       "path": "../ivory-tower-contracts"
     },
     {

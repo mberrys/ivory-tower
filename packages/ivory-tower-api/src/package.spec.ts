@@ -3,7 +3,13 @@
 import { expect } from 'chai';
 import { ExecutionService } from '@ivory-tower/application';
 import { CONTRACT_VERSION } from '@ivory-tower/contracts';
-import { InMemoryExecutionStore, SystemClockAdapter, SystemExecutionIdAdapter } from '@ivory-tower/infrastructure';
+import {
+    ContentRightsAdmissionPolicy,
+    InMemoryExecutionStore,
+    InMemorySourceRecordStore,
+    SystemClockAdapter,
+    SystemExecutionIdAdapter,
+} from '@ivory-tower/infrastructure';
 import { createApiServer } from './api-server';
 
 describe('@ivory-tower/api package', () => {
@@ -49,6 +55,7 @@ describe('@ivory-tower/api package', () => {
 
     it('returns the canonical source record when persistence deduplicates content', async () => {
         const store = new InMemoryExecutionStore();
+        const sourceRecords = new InMemorySourceRecordStore();
         const admittedAt = '2026-08-02T12:00:00.000Z';
         const server = createApiServer({
             executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), new SystemClockAdapter()),
@@ -57,15 +64,8 @@ describe('@ivory-tower/api package', () => {
                 putImmutable: async key => ({ key, etag: 'etag' }),
                 get: async () => new Uint8Array(),
             },
-            sourceRecords: {
-                persistSource: async record => ({
-                    ...record,
-                    id: 'canonical-source',
-                    objectKey: 'sources/canonical',
-                    admittedAt,
-                }),
-            },
-            admission: { admit: async () => ({ allowed: true, reason: 'approved' }) },
+            sourceRecords,
+            admission: new ContentRightsAdmissionPolicy('vendorHosted'),
             ids: { next: () => 'requested-source' },
             clock: { now: () => new Date(admittedAt) },
         });
@@ -84,16 +84,68 @@ describe('@ivory-tower/api package', () => {
                     'x-source-content-type': 'application/pdf',
                     'x-source-license': 'CC-BY-4.0',
                     'x-source-authorization-evidence': 'open license',
+                    'x-source-content-class': 'openLicensed',
+                    'x-source-acquisition-route': 'openRepository',
                 },
                 body: 'source bytes',
             });
             expect(response.status).to.equal(201);
             expect(await response.json()).to.deep.equal({
-                sourceId: 'canonical-source',
+                sourceId: 'requested-source',
                 contentHash: '4d4823794cbed3c4ee0bbc684c8f66e1dfd5afa6f078d494ce254ec5a4671753',
-                objectKey: 'sources/canonical',
+                objectKey: 'sources/4d4823794cbed3c4ee0bbc684c8f66e1dfd5afa6f078d494ce254ec5a4671753',
                 admittedAt,
             });
+            const persisted = await sourceRecords.getByContentHash('4d4823794cbed3c4ee0bbc684c8f66e1dfd5afa6f078d494ce254ec5a4671753');
+            expect(persisted?.ingestPermitted).to.equal(true);
+            expect(persisted?.transferPermitted).to.equal(true);
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
+    });
+
+    it('rejects upload when ingest is refused and does not persist the source', async () => {
+        const store = new InMemoryExecutionStore();
+        const sourceRecords = new InMemorySourceRecordStore();
+        let stored = false;
+        const server = createApiServer({
+            executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), new SystemClockAdapter()),
+            executionStore: store,
+            objectStore: {
+                putImmutable: async key => {
+                    stored = true;
+                    return { key, etag: 'etag' };
+                },
+                get: async () => new Uint8Array(),
+            },
+            sourceRecords,
+            admission: new ContentRightsAdmissionPolicy('vendorHosted'),
+            ids: { next: () => 'requested-source' },
+            clock: { now: () => new Date('2026-08-02T12:00:00.000Z') },
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+        const address = server.address();
+        if (!(address instanceof Object) || typeof address === 'string') {
+            throw new Error('Test server did not expose a TCP address.');
+        }
+
+        try {
+            const response = await fetch(`http://127.0.0.1:${address.port}/v1/sources`, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/octet-stream',
+                    'x-source-filename': 'shadow.pdf',
+                    'x-source-content-type': 'application/pdf',
+                    'x-source-license': 'unknown',
+                    'x-source-authorization-evidence': 'none',
+                    'x-source-content-class': 'shadowLibrary',
+                },
+                body: 'source bytes',
+            });
+            expect(response.status).to.equal(422);
+            expect(stored).to.equal(false);
+            const persisted = await sourceRecords.getByContentHash('4d4823794cbed3c4ee0bbc684c8f66e1dfd5afa6f078d494ce254ec5a4671753');
+            expect(persisted).to.equal(undefined);
         } finally {
             await new Promise<void>(resolve => server.close(() => resolve()));
         }

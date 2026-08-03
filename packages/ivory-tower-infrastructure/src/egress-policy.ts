@@ -3,7 +3,7 @@
 import { EgressPolicyPort } from '@ivory-tower/adapters';
 
 export class FailClosedEgressPolicy implements EgressPolicyPort {
-    async authorize(): Promise<{ allowed: boolean; reason: string }> {
+    async authorize(_request: { readonly purpose: string; readonly target: string; readonly contentHash?: string }): Promise<{ allowed: boolean; reason: string }> {
         return { allowed: false, reason: 'External egress is not configured for this runtime.' };
     }
 }

@@ -44,6 +44,14 @@ interface SourceRow {
     authorization_evidence: string;
     admission_policy_version: string;
     admitted_at: Date;
+    content_class: SourceRecord['contentClass'];
+    rights_basis_kind: SourceRecord['rightsBasisKind'];
+    acquisition_route: SourceRecord['acquisitionRoute'];
+    deployment_topology: SourceRecord['deploymentTopology'];
+    ingest_permitted: boolean;
+    transfer_permitted: boolean;
+    ingest_reason: string;
+    transfer_reason: string;
 }
 
 function toRecord(row: ExecutionRow): ExecutionRecord {
@@ -85,8 +93,20 @@ function toSourceRecord(row: SourceRow): SourceRecord {
         authorizationEvidence: row.authorization_evidence,
         admissionPolicyVersion: row.admission_policy_version,
         admittedAt: row.admitted_at.toISOString(),
+        contentClass: row.content_class,
+        rightsBasisKind: row.rights_basis_kind,
+        acquisitionRoute: row.acquisition_route,
+        deploymentTopology: row.deployment_topology,
+        ingestPermitted: row.ingest_permitted,
+        transferPermitted: row.transfer_permitted,
+        ingestReason: row.ingest_reason,
+        transferReason: row.transfer_reason,
     };
 }
+
+const SOURCE_SELECT = `id, content_hash, object_key, content_type, license, authorization_evidence,
+    admission_policy_version, admitted_at, content_class, rights_basis_kind, acquisition_route,
+    deployment_topology, ingest_permitted, transfer_permitted, ingest_reason, transfer_reason`;
 
 export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTransactionPort, SourceRecordPort {
     constructor(private readonly pool: Pool) {}
@@ -114,16 +134,34 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
 
     async persistSource(record: SourceRecord): Promise<SourceRecord> {
         const result = await this.pool.query<SourceRow>(
-            `INSERT INTO ivory_sources (id, content_hash, object_key, content_type, license, authorization_evidence, admission_policy_version, admitted_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `INSERT INTO ivory_sources (
+                id, content_hash, object_key, content_type, license, authorization_evidence,
+                admission_policy_version, admitted_at, content_class, rights_basis_kind,
+                acquisition_route, deployment_topology, ingest_permitted, transfer_permitted,
+                ingest_reason, transfer_reason
+             )
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
              ON CONFLICT (content_hash) DO UPDATE SET content_hash = ivory_sources.content_hash
-             RETURNING id, content_hash, object_key, content_type, license, authorization_evidence, admission_policy_version, admitted_at`,
-            [record.id, record.contentHash, record.objectKey, record.contentType, record.license, record.authorizationEvidence, record.admissionPolicyVersion, record.admittedAt],
+             RETURNING ${SOURCE_SELECT}`,
+            [
+                record.id, record.contentHash, record.objectKey, record.contentType, record.license,
+                record.authorizationEvidence, record.admissionPolicyVersion, record.admittedAt,
+                record.contentClass, record.rightsBasisKind, record.acquisitionRoute, record.deploymentTopology,
+                record.ingestPermitted, record.transferPermitted, record.ingestReason, record.transferReason,
+            ],
         );
         if (result.rows[0] === undefined) {
             throw new Error(`Source was not persisted: ${record.contentHash}`);
         }
         return toSourceRecord(result.rows[0]);
+    }
+
+    async getByContentHash(contentHash: string): Promise<SourceRecord | undefined> {
+        const result = await this.pool.query<SourceRow>(
+            `SELECT ${SOURCE_SELECT} FROM ivory_sources WHERE content_hash = $1`,
+            [contentHash],
+        );
+        return result.rows[0] === undefined ? undefined : toSourceRecord(result.rows[0]);
     }
 
     async get(executionId: string): Promise<ExecutionRecord | undefined> {
