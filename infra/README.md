@@ -6,6 +6,16 @@ Docling HTTP service. The one-shot MinIO initializer creates the project bucket
 automatically. All volumes are beneath `.ivory-tower/`, which is ignored by Git
 and is owned by this checkout.
 
+## Remote development (Cursor Cloud)
+
+Cursor Cloud agents use [`.cursor/environment.json`](../.cursor/environment.json).
+On boot they run `scripts/ivory-cloud-setup.sh` (writes a Compose-aligned `.env`)
+and `scripts/ivory-cloud-boot.sh` (starts this Compose profile and runs
+`npm run migrate:ivory`). See [`AGENTS.md`](../AGENTS.md) for agent-specific
+instructions and the Secrets dashboard for provider credentials.
+
+## Local workstation
+
 ```powershell
 docker compose -f infra/docker-compose.yml up -d
 copy .env.example .env

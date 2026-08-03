@@ -229,6 +229,8 @@ a platform, not rewritten.
 | [`doc/`](doc) | Upstream Theia developer documentation |
 | [`configs/`](configs) | Shared TypeScript, ESLint, Mocha, and NYC configuration |
 | [`CLAUDE.md`](CLAUDE.md) | Repository guidance for AI coding agents |
+| [`.cursor/environment.json`](.cursor/environment.json) | Cursor Cloud remote development environment |
+| [`AGENTS.md`](AGENTS.md) | Cloud-agent setup, verification, and constraints |
 
 Each Ivory Tower package follows Theia's platform layout: `src/common` for code safe to import
 anywhere, `src/browser` for frontend, `src/node` for backend. `@theia/ivory-identity` splits along
