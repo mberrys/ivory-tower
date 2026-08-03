@@ -19,6 +19,7 @@ platform and holds one promise above all others: **a citation stays true**.
 - [Roadmap](#roadmap)
 - [Repository layout](#repository-layout)
 - [Building and running](#building-and-running)
+- [Observability (Sentry)](#observability-sentry)
 - [Contributing](#contributing)
 - [Upstream Theia documentation](#upstream-theia-documentation)
 - [License](#license)
@@ -258,6 +259,38 @@ npx lerna run test --scope @theia/ivory-identity
 ```
 
 Full build and setup details are in [`doc/Developing.md`](doc/Developing.md).
+
+## Observability (Sentry)
+
+`ivory-api` and `ivory-worker` support optional error reporting through
+[Sentry](https://sentry.io/). Sentry is **disabled by default**; set a DSN to
+enable it. This is observability only — it does not replace container hosting
+for the runtime stack.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SENTRY_DSN` | unset | Enables Sentry when set |
+| `SENTRY_ENABLED` | auto | Optional `true`/`false` override |
+| `SENTRY_ENVIRONMENT` | `IVORY_TOWER_ENV` | Sentry environment tag |
+| `SENTRY_RELEASE` | unset | Optional release identifier |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0` | Tracing sample rate (`0`–`1`) |
+
+Example:
+
+```bash
+SENTRY_DSN=https://<key>@o<org>.ingest.sentry.io/<project>
+IVORY_TOWER_ENV=staging
+SENTRY_RELEASE=ivory-tower@0.1.0
+```
+
+Events are scrubbed before they leave the process. Authorization headers and
+evidence, source upload bodies, database URLs, tokens, and passage/content
+fields are redacted. Unexpected API failures and terminal worker execution
+failures are reported; retryable worker errors are skipped to avoid noise.
+
+The adapter lives in
+[`packages/ivory-tower-infrastructure/src/sentry.ts`](packages/ivory-tower-infrastructure/src/sentry.ts).
+Theia browser frontend instrumentation is not wired yet.
 
 ## Contributing
 
