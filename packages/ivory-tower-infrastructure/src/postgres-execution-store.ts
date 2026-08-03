@@ -35,6 +35,17 @@ interface EventRow {
     occurred_at: Date;
 }
 
+interface SourceRow {
+    id: string;
+    content_hash: string;
+    object_key: string;
+    content_type: string;
+    license: string;
+    authorization_evidence: string;
+    admission_policy_version: string;
+    admitted_at: Date;
+}
+
 function toRecord(row: ExecutionRow): ExecutionRecord {
     return {
         id: row.id,
@@ -64,13 +75,24 @@ function toEvent(row: EventRow): ExecutionEvent {
     };
 }
 
+function toSourceRecord(row: SourceRow): SourceRecord {
+    return {
+        id: row.id,
+        contentHash: row.content_hash,
+        objectKey: row.object_key,
+        contentType: row.content_type,
+        license: row.license,
+        authorizationEvidence: row.authorization_evidence,
+        admissionPolicyVersion: row.admission_policy_version,
+        admittedAt: row.admitted_at.toISOString(),
+    };
+}
+
 export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTransactionPort, SourceRecordPort {
     constructor(private readonly pool: Pool) {}
 
     async createAndEnqueue(record: ExecutionRecord, job: ExecutionJob): Promise<ExecutionRecord> {
-        const client = await this.pool.connect();
-        try {
-            await client.query('BEGIN');
+        return this.withTransaction(async client => {
             await client.query(
                 `INSERT INTO ivory_executions (id, kind, status, contract_version, idempotency_key, attempt, progress, created_at, updated_at, result, failure)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)`,
@@ -81,14 +103,8 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
                 'SELECT graphile_worker.add_job($1, $2::json, job_key := $3, max_attempts := $4)',
                 ['ivory-execution', JSON.stringify(job), job.jobKey, 25],
             );
-            await client.query('COMMIT');
             return record;
-        } catch (error) {
-            await client.query('ROLLBACK');
-            throw error;
-        } finally {
-            client.release();
-        }
+        });
     }
 
     async findByIdempotencyKey(idempotencyKey: string): Promise<ExecutionRecord | undefined> {
@@ -96,13 +112,18 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
         return result.rows[0] === undefined ? undefined : toRecord(result.rows[0]);
     }
 
-    async persistSource(record: SourceRecord): Promise<void> {
-        await this.pool.query(
+    async persistSource(record: SourceRecord): Promise<SourceRecord> {
+        const result = await this.pool.query<SourceRow>(
             `INSERT INTO ivory_sources (id, content_hash, object_key, content_type, license, authorization_evidence, admission_policy_version, admitted_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             ON CONFLICT (content_hash) DO NOTHING`,
+             ON CONFLICT (content_hash) DO UPDATE SET content_hash = ivory_sources.content_hash
+             RETURNING id, content_hash, object_key, content_type, license, authorization_evidence, admission_policy_version, admitted_at`,
             [record.id, record.contentHash, record.objectKey, record.contentType, record.license, record.authorizationEvidence, record.admissionPolicyVersion, record.admittedAt],
         );
+        if (result.rows[0] === undefined) {
+            throw new Error(`Source was not persisted: ${record.contentHash}`);
+        }
+        return toSourceRecord(result.rows[0]);
     }
 
     async get(executionId: string): Promise<ExecutionRecord | undefined> {
@@ -119,46 +140,42 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
     }
 
     async appendEvent(executionId: string, type: ExecutionEvent['type'], payload: unknown): Promise<ExecutionEvent> {
-        const client = await this.pool.connect();
-        try {
-            await client.query('BEGIN');
+        return this.withTransaction(async client => {
             const event = await this.appendEventWithClient(client, executionId, type, payload);
-            await client.query('COMMIT');
             return event;
-        } catch (error) {
-            await client.query('ROLLBACK');
-            throw error;
-        } finally {
-            client.release();
-        }
+        });
     }
 
     async markRunning(executionId: string, leaseToken: string, leaseUntil: string): Promise<boolean> {
-        const result = await this.pool.query(
-            `UPDATE ivory_executions
-             SET status = 'running', lease_token = $2, lease_until = $3, attempt = attempt + 1, updated_at = NOW()
-             WHERE id = $1 AND status = 'queued'
-             RETURNING id`,
-            [executionId, leaseToken, leaseUntil],
-        );
-        if (result.rowCount !== 1) {
-            return false;
-        }
-        await this.appendEvent(executionId, 'status', { status: 'running' });
-        return true;
+        return this.withTransaction(async client => {
+            const result = await client.query(
+                `UPDATE ivory_executions
+                 SET status = 'running', lease_token = $2, lease_until = $3, attempt = attempt + 1, updated_at = NOW()
+                 WHERE id = $1 AND status = 'queued'
+                 RETURNING id`,
+                [executionId, leaseToken, leaseUntil],
+            );
+            if (result.rowCount !== 1) {
+                return false;
+            }
+            await this.appendEventWithClient(client, executionId, 'status', { status: 'running' });
+            return true;
+        });
     }
 
     async updateProgress(executionId: string, leaseToken: string, progress: number, payload?: unknown): Promise<boolean> {
-        const result = await this.pool.query(
-            `UPDATE ivory_executions SET progress = $3, updated_at = NOW()
-             WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
-            [executionId, leaseToken, Math.min(1, Math.max(0, progress))],
-        );
-        if (result.rowCount !== 1) {
-            return false;
-        }
-        await this.appendEvent(executionId, 'progress', payload ?? { progress });
-        return true;
+        return this.withTransaction(async client => {
+            const result = await client.query(
+                `UPDATE ivory_executions SET progress = $3, updated_at = NOW()
+                 WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
+                [executionId, leaseToken, Math.min(1, Math.max(0, progress))],
+            );
+            if (result.rowCount !== 1) {
+                return false;
+            }
+            await this.appendEventWithClient(client, executionId, 'progress', payload ?? { progress });
+            return true;
+        });
     }
 
     complete(executionId: string, leaseToken: string, result: unknown): Promise<boolean> {
@@ -170,56 +187,72 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
     }
 
     async retry(executionId: string, leaseToken: string, failure: ExecutionFailure): Promise<boolean> {
-        const result = await this.pool.query(
-            `UPDATE ivory_executions SET status = 'queued', failure = $3, lease_token = NULL, lease_until = NULL, updated_at = NOW()
-             WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
-            [executionId, leaseToken, JSON.stringify(failure)],
-        );
-        if (result.rowCount !== 1) {
-            return false;
-        }
-        await this.appendEvent(executionId, 'error', failure);
-        await this.appendEvent(executionId, 'status', { status: 'queued' });
-        return true;
+        return this.withTransaction(async client => {
+            const result = await client.query(
+                `UPDATE ivory_executions SET status = 'queued', failure = $3, lease_token = NULL, lease_until = NULL, updated_at = NOW()
+                 WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
+                [executionId, leaseToken, JSON.stringify(failure)],
+            );
+            if (result.rowCount !== 1) {
+                return false;
+            }
+            await this.appendEventWithClient(client, executionId, 'error', failure);
+            await this.appendEventWithClient(client, executionId, 'status', { status: 'queued' });
+            return true;
+        });
     }
 
     async cancelRunning(executionId: string, leaseToken: string): Promise<boolean> {
-        const result = await this.pool.query(
-            `UPDATE ivory_executions SET status = 'cancelled', lease_token = NULL, lease_until = NULL, updated_at = NOW()
-             WHERE id = $1 AND lease_token = $2 AND status IN ('running', 'cancelling')`,
-            [executionId, leaseToken],
-        );
-        if (result.rowCount !== 1) {
-            return false;
-        }
-        await this.appendEvent(executionId, 'status', { status: 'cancelled' });
-        return true;
+        return this.withTransaction(async client => {
+            const result = await client.query(
+                `UPDATE ivory_executions SET status = 'cancelled', lease_token = NULL, lease_until = NULL, updated_at = NOW()
+                 WHERE id = $1 AND lease_token = $2 AND status IN ('running', 'cancelling')`,
+                [executionId, leaseToken],
+            );
+            if (result.rowCount !== 1) {
+                return false;
+            }
+            await this.appendEventWithClient(client, executionId, 'status', { status: 'cancelled' });
+            return true;
+        });
     }
 
     async cancel(executionId: string): Promise<ExecutionRecord | undefined> {
-        const current = await this.get(executionId);
-        if (current === undefined || ['succeeded', 'failed', 'cancelled'].includes(current.status)) {
-            return current;
-        }
-        const next: ExecutionStatus = current.status === 'queued' ? 'cancelled' : 'cancelling';
-        assertExecutionTransition(current.status, next);
-        await this.pool.query('UPDATE ivory_executions SET status = $2, updated_at = NOW() WHERE id = $1', [executionId, next]);
-        await this.appendEvent(executionId, 'status', { status: next });
-        return this.get(executionId);
+        const updated = await this.withTransaction(async client => {
+            const result = await client.query<ExecutionRow>(
+                `UPDATE ivory_executions
+                 SET status = CASE WHEN status = 'queued' THEN 'cancelled' ELSE 'cancelling' END, updated_at = NOW()
+                 WHERE id = $1 AND status IN ('queued', 'running')
+                 RETURNING *`,
+                [executionId],
+            );
+            const row = result.rows[0];
+            if (row === undefined) {
+                return undefined;
+            }
+            const currentStatus: ExecutionStatus = row.status === 'cancelled' ? 'queued' : 'running';
+            assertExecutionTransition(currentStatus, row.status);
+            const record = toRecord(row);
+            await this.appendEventWithClient(client, executionId, 'status', { status: record.status });
+            return record;
+        });
+        return updated ?? this.get(executionId);
     }
 
     private async finish(executionId: string, leaseToken: string, status: 'succeeded' | 'failed', result: unknown, failure?: ExecutionFailure): Promise<boolean> {
-        const updated = await this.pool.query(
-            `UPDATE ivory_executions SET status = $3, result = $4, failure = $5, progress = CASE WHEN $3 = 'succeeded' THEN 1 ELSE progress END,
-             lease_token = NULL, lease_until = NULL, updated_at = NOW()
-             WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
-            [executionId, leaseToken, status, result === undefined ? undefined : JSON.stringify(result), failure === undefined ? undefined : JSON.stringify(failure)],
-        );
-        if (updated.rowCount !== 1) {
-            return false;
-        }
-        await this.appendEvent(executionId, status === 'succeeded' ? 'complete' : 'error', status === 'succeeded' ? { result } : failure);
-        return true;
+        return this.withTransaction(async client => {
+            const updated = await client.query(
+                `UPDATE ivory_executions SET status = $3, result = $4, failure = $5, progress = CASE WHEN $3 = 'succeeded' THEN 1 ELSE progress END,
+                 lease_token = NULL, lease_until = NULL, updated_at = NOW()
+                 WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
+                [executionId, leaseToken, status, result === undefined ? undefined : JSON.stringify(result), failure === undefined ? undefined : JSON.stringify(failure)],
+            );
+            if (updated.rowCount !== 1) {
+                return false;
+            }
+            await this.appendEventWithClient(client, executionId, status === 'succeeded' ? 'complete' : 'error', status === 'succeeded' ? { result } : failure);
+            return true;
+        });
     }
 
     private async appendEventWithClient(client: PoolClient, executionId: string, type: ExecutionEvent['type'], payload: unknown): Promise<ExecutionEvent> {
@@ -238,5 +271,20 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
             [eventId, executionId, sequenceNumber, type, JSON.stringify(payload)],
         );
         return toEvent(result.rows[0]);
+    }
+
+    private async withTransaction<T>(operation: (client: PoolClient) => Promise<T>): Promise<T> {
+        const client = await this.pool.connect();
+        try {
+            await client.query('BEGIN');
+            const result = await operation(client);
+            await client.query('COMMIT');
+            return result;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }

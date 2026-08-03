@@ -14,19 +14,25 @@ function clone<T>(value: T): T {
 
 export class InMemoryExecutionStore implements ExecutionStorePort, ExecutionTransactionPort {
     private readonly records = new Map<string, ExecutionRecord>();
+    private readonly executionIdsByIdempotencyKey = new Map<string, string>();
     private readonly eventsByExecution = new Map<string, ExecutionEvent[]>();
 
-    async createAndEnqueue(record: ExecutionRecord, job: ExecutionJob): Promise<ExecutionRecord> {
-        if (this.records.has(record.idempotencyKey)) {
+    async createAndEnqueue(record: ExecutionRecord, _job: ExecutionJob): Promise<ExecutionRecord> {
+        if (this.executionIdsByIdempotencyKey.has(record.idempotencyKey)) {
             throw new Error(`Duplicate idempotency key: ${record.idempotencyKey}`);
         }
+        if (this.records.has(record.id)) {
+            throw new Error(`Duplicate execution id: ${record.id}`);
+        }
         this.records.set(record.id, clone(record));
+        this.executionIdsByIdempotencyKey.set(record.idempotencyKey, record.id);
         await this.appendEvent(record.id, 'status', { status: record.status });
         return clone(record);
     }
 
     async findByIdempotencyKey(idempotencyKey: string): Promise<ExecutionRecord | undefined> {
-        const record = [...this.records.values()].find(candidate => candidate.idempotencyKey === idempotencyKey);
+        const executionId = this.executionIdsByIdempotencyKey.get(idempotencyKey);
+        const record = executionId === undefined ? undefined : this.records.get(executionId);
         return record === undefined ? undefined : clone(record);
     }
 
@@ -99,7 +105,7 @@ export class InMemoryExecutionStore implements ExecutionStorePort, ExecutionTran
 
     async cancelRunning(executionId: string, leaseToken: string): Promise<boolean> {
         const current = this.records.get(executionId);
-        if (current === undefined || current.leaseToken !== leaseToken || current.status !== 'running') {
+        if (current === undefined || current.leaseToken !== leaseToken || !['running', 'cancelling'].includes(current.status)) {
             return false;
         }
         const updated = { ...current, status: 'cancelled' as const, leaseToken: undefined, leaseUntil: undefined, updatedAt: new Date().toISOString() };

@@ -46,4 +46,56 @@ describe('@ivory-tower/api package', () => {
         expect(events).to.contain('event: status');
         await new Promise<void>(resolve => server.close(() => resolve()));
     });
+
+    it('returns the canonical source record when persistence deduplicates content', async () => {
+        const store = new InMemoryExecutionStore();
+        const admittedAt = '2026-08-02T12:00:00.000Z';
+        const server = createApiServer({
+            executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), new SystemClockAdapter()),
+            executionStore: store,
+            objectStore: {
+                putImmutable: async key => ({ key, etag: 'etag' }),
+                get: async () => new Uint8Array(),
+            },
+            sourceRecords: {
+                persistSource: async record => ({
+                    ...record,
+                    id: 'canonical-source',
+                    objectKey: 'sources/canonical',
+                    admittedAt,
+                }),
+            },
+            admission: { admit: async () => ({ allowed: true, reason: 'approved' }) },
+            ids: { next: () => 'requested-source' },
+            clock: { now: () => new Date(admittedAt) },
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+        const address = server.address();
+        if (!(address instanceof Object) || typeof address === 'string') {
+            throw new Error('Test server did not expose a TCP address.');
+        }
+
+        try {
+            const response = await fetch(`http://127.0.0.1:${address.port}/v1/sources`, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/octet-stream',
+                    'x-source-filename': 'paper.pdf',
+                    'x-source-content-type': 'application/pdf',
+                    'x-source-license': 'CC-BY-4.0',
+                    'x-source-authorization-evidence': 'open license',
+                },
+                body: 'source bytes',
+            });
+            expect(response.status).to.equal(201);
+            expect(await response.json()).to.deep.equal({
+                sourceId: 'canonical-source',
+                contentHash: '4d4823794cbed3c4ee0bbc684c8f66e1dfd5afa6f078d494ce254ec5a4671753',
+                objectKey: 'sources/canonical',
+                admittedAt,
+            });
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
+    });
 });

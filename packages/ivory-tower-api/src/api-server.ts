@@ -104,7 +104,7 @@ function writeEvent(response: ServerResponse, event: { id: string; type: string;
 }
 
 async function uploadSource(request: IncomingMessage, dependencies: ApiServerDependencies, metadata: SourceUploadMetadata, maximumBytes: number): Promise<SourceUploadResponse> {
-    if (dependencies.objectStore === undefined || dependencies.admission === undefined || dependencies.ids === undefined || dependencies.clock === undefined) {
+    if (dependencies.objectStore === undefined || dependencies.sourceRecords === undefined || dependencies.admission === undefined || dependencies.ids === undefined || dependencies.clock === undefined) {
         throw new ApiError(503, 'source_ingestion_unavailable', 'Source ingestion is not configured for this runtime.');
     }
     const content = await readBody(request, maximumBytes);
@@ -117,19 +117,22 @@ async function uploadSource(request: IncomingMessage, dependencies: ApiServerDep
     const objectKey = `sources/${contentHash}`;
     const stored = await dependencies.objectStore.putImmutable(objectKey, content, metadata.contentType);
     const admittedAt = dependencies.clock.now().toISOString();
-    if (dependencies.sourceRecords !== undefined) {
-        await dependencies.sourceRecords.persistSource({
-            id: sourceId,
-            contentHash,
-            objectKey: stored.key,
-            contentType: metadata.contentType,
-            license: metadata.license,
-            authorizationEvidence: metadata.authorizationEvidence,
-            admissionPolicyVersion: 'v1-safe-open',
-            admittedAt,
-        });
-    }
-    return { sourceId, contentHash, objectKey: stored.key, admittedAt };
+    const source = await dependencies.sourceRecords.persistSource({
+        id: sourceId,
+        contentHash,
+        objectKey: stored.key,
+        contentType: metadata.contentType,
+        license: metadata.license,
+        authorizationEvidence: metadata.authorizationEvidence,
+        admissionPolicyVersion: 'v1-safe-open',
+        admittedAt,
+    });
+    return {
+        sourceId: source.id,
+        contentHash: source.contentHash,
+        objectKey: source.objectKey,
+        admittedAt: source.admittedAt,
+    };
 }
 
 export function createApiServer(dependencies: ApiServerDependencies): Server {

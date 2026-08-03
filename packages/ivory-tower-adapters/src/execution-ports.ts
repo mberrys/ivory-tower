@@ -60,7 +60,11 @@ export interface SourceRecord {
 }
 
 export interface SourceRecordPort {
-    persistSource(record: SourceRecord): Promise<void>;
+    /**
+     * Persists a source and returns the canonical record. Implementations must
+     * return the existing record when the content hash was already admitted.
+     */
+    persistSource(record: SourceRecord): Promise<SourceRecord>;
 }
 
 export interface SourceAdmissionPort {
