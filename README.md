@@ -59,9 +59,11 @@ schema.
 
 V1 is deliberately finite. It delivers exactly two provenance-first workflows:
 
-1. **Authorized scholarly corpus → research dossier.** Sources are ingested immutably, extracted,
-   chunked, retrieved, and turned into claims backed by exact passage anchors, with contradictions
-   and limitations kept visible.
+1. **Allowlisted open scholarly corpus → research dossier.** PMC OA, arXiv, DOAJ-indexed open-access
+   journals, approved preprint repositories, and CC/public-domain full text are ingested immutably,
+   extracted, chunked, retrieved, and turned into claims backed by exact passage anchors, with
+   contradictions and limitations kept visible. Closed or license-ambiguous material is outside the
+   V1 acceptance path.
 2. **Authorized, non-restricted survey file → validated descriptive analysis.** A bounded set of
    approved descriptive operators over uploaded survey data, with weighting, missingness, and
    small-cell checks, and enforced boundaries on causal language.
@@ -72,10 +74,10 @@ optional researcher-approved synthesis. Guided and expert paths share one staged
 ### What V1 is not
 
 Not a paper writer, not a generic dashboard, not an autonomous analyst, not an unrestricted
-statistician, and not an unrestricted document-chat system. Broad connectors, arbitrary code
-execution, causal automation, team collaboration, outbound MCP, restricted microdata, and
-first-party model adoption are explicit non-goals for V1 — several are scheduled as post-V1 work
-in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
+statistician, and not an unrestricted document-chat system. Closed or license-ambiguous scholarly
+material, broad connectors, arbitrary code execution, causal automation, team collaboration,
+outbound MCP, restricted microdata, and first-party model adoption are explicit non-goals for V1 —
+several are scheduled as post-V1 work in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
 
 ## Delivered work
 
@@ -122,12 +124,11 @@ npx lerna run test --scope @theia/ivory-identity
 | **IV-102** — Conduct a systematic social-science tool, source, and adoption landscape review | A reproducible landscape review with claim-level source classification. Verdicts: visualization need documented at moderate confidence; equity of access supported as a design constraint; literature and OSF opportunities provisional; evidence-clearinghouse and CAQDAS opportunities unresolved; restricted federal microdata integration refuted. No demand evidence was found for multi-agent orchestration or model agnosticism, so both may be justified only as bounded architecture choices — never as user-facing market claims. Declared limitations (peer-reviewed source share below the review's own gate, US-weighted geography) stay visible rather than being treated as completion evidence. |
 
 > [!NOTE]
-> IV-8 and IV-102 are both published under [`docs/`](docs). The IV-102 review is a **second
-> version**: version 1 was recorded as delivered in the tracker but never committed here, and its
-> 48-source base is unrecoverable, so version 2 rebuilds the evidence from a smaller, fully
-> disclosed set and reconciles verdicts with version 1 rather than restoring it. Read its §6
-> limitations before citing any figure from it. IV-17 remains the only issue whose specification
-> *and* implementation have both landed here.
+> IV-8 and IV-102 are both published under [`docs/`](docs), IV-102 across three files — the
+> review, its [protocol](docs/iv-102-chapter-plan.md), and its
+> [claim/source record](docs/iv-102-phase1-literature-search-report.md). Read the review's
+> limitations section before citing any figure from it: its declared peer-reviewed share sits
+> below its own stated gate, and its geographic coverage is US-weighted.
 
 ## Roadmap
 

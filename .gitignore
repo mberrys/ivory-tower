@@ -40,3 +40,12 @@ license-check-summary.txt*
 .playwright-mcp/*
 /.theia/chatSessions
 .tmp.cfg
+
+# Ivory Tower local development (IV-15)
+.env
+.env.*
+!.env.example
+*.db
+data/
+.ivory-tower/
+examples/ivory-tower-browser/ivory-tower-browser.log

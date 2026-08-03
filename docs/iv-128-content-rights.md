@@ -39,11 +39,15 @@ Scanning all 126 tracker issues, the nearest containers each cover something els
 
 ## 2. Method and sources
 
-Same protocol as [`iv-102-landscape-review.md`](iv-102-landscape-review.md) §2: sources
-carry a class (**V** vendor, **E** independent, **I** institutional, **P** practitioner,
-**C** commentary) bounding what they may support, and a retrieval tier (**T1** retrieved,
-**T2** search-index confirmed, **T3** referenced). **All sources here are T2.** No
-statutory text, licence, or contract was read in the original.
+Sources carry the five-class taxonomy of
+[`iv-102-landscape-review.md`](iv-102-landscape-review.md) §2 — **V** vendor,
+**E** independent empirical, **I** institutional, **P** practitioner, **C** commentary —
+bounding what each may support.
+
+This register adds one axis that document does not use: a **retrieval tier**, recording
+whether a source was read (**T1**), confirmed in a search index but known only through its
+extraction (**T2**), or merely referenced elsewhere (**T3**). **Every source here is T2.**
+No statutory text, licence, or contract was read in the original.
 
 That limitation bites harder here than in a landscape review. A legal position that rests
 on search-engine summaries of statutes is a *starting point for research*, never a
