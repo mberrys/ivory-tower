@@ -48,6 +48,9 @@ On agent startup, Cursor runs:
 
 Infrastructure details: [`infra/README.md`](infra/README.md).
 
+Native build deps (`libx11-dev`, `libxkbfile-dev`, `libsecret-1-dev`, listed in
+`scripts/deps/debian.sh`) are pre-installed in the base image.
+
 ### Secrets
 
 Store provider keys, `SENTRY_DSN`, and other credentials in the
@@ -63,6 +66,19 @@ repository. The generated `.env` contains only local development defaults.
 | API health | `curl -fsS http://127.0.0.1:4100/health/live` |
 | Readiness (DB + schema) | `curl -fsS http://127.0.0.1:4100/health/ready` |
 | Observability | optional `SENTRY_DSN`; see README **Observability (Sentry)** |
+
+### Gotchas
+
+- **Compile does not bundle.** `npm run compile` only compiles TypeScript. Before manual UI
+  testing, run `npm run build:ivory-tower` (or `npm run build:browser` for the upstream example) —
+  otherwise the running app will not reflect your changes (also noted in `CLAUDE.md`).
+- **Long-running processes:** `npm run start:ivory-tower` and `npm run start:browser` run in the
+  foreground; start them in a persistent (tmux) session. The Electron example
+  (`npm run start:electron`) needs a display and is not useful headless in cloud.
+- **Benign startup warnings:** `The local plugin referenced by local-dir:../../plugins does not
+  exist` is expected — VS Code built-in plugins are not downloaded by default. Run
+  `npm run download:plugins` only if you need bundled language features (large external download,
+  optional; not part of the startup install script).
 
 ### Constraints
 
