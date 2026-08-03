@@ -260,6 +260,37 @@ researcher's language and reveals the model progressively (IV-81).
 
 ## 4. Supported content and exclusions
 
+### 4.0 The V1 default corpus is the safe subset
+
+**Normative.** V1 defaults to content whose rights position is established by the class of
+the content itself, needing no institutional agreement and no statutory exception:
+
+> open-licensed works (CC-BY, CC0 and equivalents), the PubMed Central Open Access
+> subset, arXiv, DOAJ-listed open-access journals, preprint servers, public-domain and
+> openly licensed archival material, and researcher-authored notes.
+
+Publisher-licensed subscription content is **admitted only on a stated rights basis**, and
+is refused where none exists. See [`iv-128-content-rights.md`](iv-128-content-rights.md)
+§7 and §9.
+
+This is a scope decision, not a limitation to apologize for. The safe subset is large
+enough to prove that provenance-bearing evidence synthesis works, and choosing it removes
+the largest unresolved legal question from the V1 critical path.
+
+Two consequences bind the rest of this document:
+
+- **Ingestion and third-party transfer are distinct rights.** A licence permitting an
+  institution to mine content does not imply permission to forward that content to an
+  unrelated commercial processor. IV-83 and IV-87 therefore enforce **two separate gates**,
+  not one authorization flag — a source may be lawfully ingestable and un-transmittable,
+  and the model must be able to say so.
+- **A rights basis is recorded, not asserted.** "The researcher confirmed authorization" is
+  not a basis. `Source` carries *which* basis — licence, agreement, or exception — so the
+  position is auditable later. This is a schema obligation on IV-16, not a policy
+  aspiration.
+
+Implemented in [`packages/ivory-content-policy`](../packages/ivory-content-policy).
+
 ### 4.1 Product-level matrix
 
 This is the **product** boundary. Enforcement is owned elsewhere (§4.3).

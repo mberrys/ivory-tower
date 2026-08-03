@@ -307,6 +307,21 @@ Five rules, each traceable to a finding above.
 
 ---
 
+## 10.2 Implementation status
+
+§9's five rules are implemented in
+[`packages/ivory-content-policy`](../packages/ivory-content-policy) — content classes and
+the safe subset, recorded rights bases, the two gates, topology awareness, and fail-closed
+defaults, with 26 tests. Each test pins a finding from this register, so a future change
+that quietly merges the two gates or treats silence as consent fails the suite.
+
+§7's safe subset is normative in
+[`iv-8-product-model.md`](iv-8-product-model.md) §4.0 as the V1 default corpus.
+
+**The implementation encodes this register's conclusions, and inherits their limitations.**
+It is a safe *starting posture* whose defaults refuse rather than permit — not a
+determination of what is lawful. When counsel answers §10.1, the policy changes with it.
+
 ## 11. Downstream obligations
 
 | Issue | Obligation |
