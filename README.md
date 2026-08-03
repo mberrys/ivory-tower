@@ -59,9 +59,11 @@ schema.
 
 V1 is deliberately finite. It delivers exactly two provenance-first workflows:
 
-1. **Authorized scholarly corpus → research dossier.** Sources are ingested immutably, extracted,
-   chunked, retrieved, and turned into claims backed by exact passage anchors, with contradictions
-   and limitations kept visible.
+1. **Allowlisted open scholarly corpus → research dossier.** PMC OA, arXiv, DOAJ-indexed open-access
+   journals, approved preprint repositories, and CC/public-domain full text are ingested immutably,
+   extracted, chunked, retrieved, and turned into claims backed by exact passage anchors, with
+   contradictions and limitations kept visible. Closed or license-ambiguous material is outside the
+   V1 acceptance path.
 2. **Authorized, non-restricted survey file → validated descriptive analysis.** A bounded set of
    approved descriptive operators over uploaded survey data, with weighting, missingness, and
    small-cell checks, and enforced boundaries on causal language.
@@ -72,10 +74,10 @@ optional researcher-approved synthesis. Guided and expert paths share one staged
 ### What V1 is not
 
 Not a paper writer, not a generic dashboard, not an autonomous analyst, not an unrestricted
-statistician, and not an unrestricted document-chat system. Broad connectors, arbitrary code
-execution, causal automation, team collaboration, outbound MCP, restricted microdata, and
-first-party model adoption are explicit non-goals for V1 — several are scheduled as post-V1 work
-in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
+statistician, and not an unrestricted document-chat system. Closed or license-ambiguous scholarly
+material, broad connectors, arbitrary code execution, causal automation, team collaboration,
+outbound MCP, restricted microdata, and first-party model adoption are explicit non-goals for V1 —
+several are scheduled as post-V1 work in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
 
 ## Delivered work
 

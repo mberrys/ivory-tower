@@ -11,6 +11,12 @@
   "references": [
     {
       "path": "../ivory-tower-adapters"
+    },
+    {
+      "path": "../ivory-tower-contracts"
+    },
+    {
+      "path": "../ivory-tower-domain"
     }
   ]
 }

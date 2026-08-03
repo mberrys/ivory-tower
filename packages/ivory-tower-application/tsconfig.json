@@ -14,6 +14,9 @@
     },
     {
       "path": "../ivory-tower-domain"
+    },
+    {
+      "path": "../ivory-tower-contracts"
     }
   ]
 }

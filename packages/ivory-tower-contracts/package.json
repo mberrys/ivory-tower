@@ -1,17 +1,14 @@
 {
-  "name": "@ivory-tower/adapters",
+  "name": "@ivory-tower/contracts",
   "version": "0.1.0",
-  "description": "Ivory Tower — typed adapter ports",
+  "description": "Ivory Tower — versioned HTTP and job contracts",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "license": "EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0",
-  "files": [
-    "lib",
-    "src"
-  ],
+  "files": ["lib", "src"],
   "dependencies": {
-    "@ivory-tower/contracts": "0.1.0",
-    "@ivory-tower/domain": "0.1.0"
+    "@ivory-tower/domain": "0.1.0",
+    "zod": "^4.4.3"
   },
   "scripts": {
     "build": "theiaext build",

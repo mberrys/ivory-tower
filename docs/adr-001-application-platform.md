@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-08-02
 **Issue:** [IV-14](https://app.notion.com/p/3b09cb079ddb81089f9cee6413df7b33) — Decide V1 runtime topology and repository architecture
-**Scope:** Resolves the application-platform and surface-ordering questions within IV-14. The remaining IV-14 questions — queue technology, object storage, migration ownership, and per-boundary failure models — stay open and are listed in §6.
+**Scope:** Resolves the application-platform and surface-ordering questions within IV-14. The runtime topology and remaining boundary decisions are completed by [ADR-002](adr-002-runtime-topology.md).
 **Affects:** IV-3, IV-15, IV-18, IV-19, IV-22, IV-23, IV-24, IV-25, IV-26, IV-27, IV-30, IV-83, IV-87
 
 ---
@@ -97,13 +97,13 @@ Two files diverge from upstream as of this decision: `CLAUDE.md`, which now carr
 
 Per IV-14's acceptance criteria, this decision is verified when a request sequence covering upload, conversion, indexing, retrieval, generation, validation, persistence, and streaming can be demonstrated end to end on the selected platform, with every service boundary carrying an owner, protocol, failure model, and local-development strategy.
 
-## 6. Open questions
+## 6. Open questions and follow-on work
 
 | Question | Owner |
 |---|---|
 | ~~Fork or compose?~~ **Resolved 2026-08-02: fork.** The repository is a source fork of Theia v1.74.0 at `mberrys/ivory-tower`. Accepted cost and mitigation discipline in §3.7. | Closed |
 | Upstream sync cadence and who owns resolving version-bump conflicts | IV-14, IV-19 |
-| Extension host: fully disabled, or first-party allow-list via a self-hosted registry? | IV-14, IV-83 |
-| Desktop wrapper: Theia's Electron target, or a lighter shell over the browser build? Electron's footprint counts against G23. | IV-14, IV-22 |
-| Local Docling bundling strategy and the degraded remote-conversion path | IV-30 |
-| Remaining IV-14 topology: queue technology, object storage, migration ownership, per-boundary failure models | IV-14 |
+| **Resolved in ADR-002:** the V1 Ivory Tower applications omit the plugin host; the upstream fork retains its source capability for later first-party allow-list work. | IV-14, IV-83 |
+| **Resolved in ADR-002:** reserve Theia's Electron target for the immediately post-V1 local profile. | IV-14, IV-22 |
+| Local Docling bundling compatibility proof and packaging | IV-30, immediately post-V1 |
+| **Resolved in ADR-002:** queue technology, object storage, migration ownership, and per-boundary failure models. | IV-14 |

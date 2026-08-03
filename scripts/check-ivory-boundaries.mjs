@@ -14,6 +14,17 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const LAYERS = [
     {
+        name: '@ivory-tower/contracts',
+        dir: 'packages/ivory-tower-contracts/src',
+        forbidden: [
+            '@theia/',
+            '@ivory-tower/application',
+            '@ivory-tower/infrastructure',
+            '@ivory-tower/health',
+            'liquidify-react',
+        ],
+    },
+    {
         name: '@ivory-tower/domain',
         dir: 'packages/ivory-tower-domain/src',
         forbidden: [
@@ -62,6 +73,22 @@ const LAYERS = [
             'liquidify-react',
         ],
     },
+    {
+        name: '@ivory-tower/api',
+        dir: 'packages/ivory-tower-api/src',
+        forbidden: [
+            '@theia/',
+            'liquidify-react',
+        ],
+    },
+    {
+        name: '@ivory-tower/worker',
+        dir: 'packages/ivory-tower-worker/src',
+        forbidden: [
+            '@theia/',
+            'liquidify-react',
+        ],
+    },
 ];
 
 const IMPORT_PATTERN = /(?:import|export)\s+(?:type\s+)?(?:[\w*{}\s,]+\s+from\s+)?['"]([^'"]+)['"]/g;
@@ -103,6 +130,14 @@ function findViolations(layer) {
 }
 
 const allViolations = LAYERS.flatMap(findViolations);
+
+const ivoryBrowserPackage = path.join(ROOT, 'examples', 'ivory-tower-browser', 'package.json');
+if (fs.existsSync(ivoryBrowserPackage)) {
+    const browserSource = fs.readFileSync(ivoryBrowserPackage, 'utf8');
+    if (browserSource.includes('@theia/plugin-ext') || browserSource.includes('--plugins=')) {
+        allViolations.push('Ivory Tower browser application must not load a runtime plugin host.');
+    }
+}
 
 if (allViolations.length > 0) {
     console.error('Ivory Tower module boundary violations:');

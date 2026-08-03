@@ -15,8 +15,8 @@ Status: planning baseline hardened for scholarship trust, field reports, and ini
 V1 is a private, academic-first research-dossier workflow with two bounded paths over one provenance model:
 
 1. Create/select a project; establish purpose, provisional question/aim, research posture, and authorized scope.
-2. Choose a scholarly-corpus/critical-history path or an authorized non-restricted survey-file path.
-3. Admit immutable documents or survey files through the same fail-closed content, authorization, job, and audit boundary.
+2. Choose the allowlisted open scholarly-corpus/critical-history path or an authorized non-restricted survey-file path.
+3. Admit immutable documents or survey files through the same fail-closed content, authorization, job, and audit boundary. For the scholarly path, the default corpus is limited to PMC OA, arXiv, DOAJ-indexed open-access journals, approved preprint repositories, and full text with an approved CC/public-domain license.
 4. Inspect corpus/archive coverage or survey instrument/sample coverage, extraction/data quality, missingness, and processing destination.
 5. Read, annotate, code, and memo in a protected human-only workspace; model suggestions remain separate proposals.
 6. Retrieve evidence and surface typed connection proposals with method, exact anchors, counterevidence, alternatives, limitations, and review state.
@@ -30,7 +30,24 @@ V1 is a private, academic-first research-dossier workflow with two bounded paths
 14. Reconcile every dataset, result, table, and plot; reject incomplete, unsafe, unsupported, or inscrutable outputs.
 15. Export evidence and structure without model prose, or explicitly approved synthesis, plus authorship, reproducibility, analysis, visualization, and audit manifests.
 
-V1 excludes restricted microdata, direct-identifier survey files, sensitive interviews, unapproved human-subject data, sensitive-identity inference, outbound MCP, multi-user collaboration, arbitrary statistical execution beyond approved survey operators, automated causal inference, full CAQDAS/NVivo-class analysis, maps, broad research-system connectors, and Berry LLM adoption.
+V1 excludes closed, paywalled, or license-ambiguous scholarly material outside the safe-open allowlist, restricted microdata, direct-identifier survey files, sensitive interviews, unapproved human-subject data, sensitive-identity inference, outbound MCP, multi-user collaboration, arbitrary statistical execution beyond approved survey operators, automated causal inference, full CAQDAS/NVivo-class analysis, maps, broad research-system connectors, and Berry LLM adoption.
+
+### Safe-open scholarly corpus default
+
+The scholarly path is intentionally large enough to test evidence extraction, provenance,
+retrieval, adjudication, and dossier export without making unresolved rights clearance a
+critical-path dependency. V1 acceptance uses only:
+
+- PMC Open Access full text, with the article-level license or reuse terms recorded.
+- arXiv full text, with the canonical record, version, and repository terms recorded.
+- DOAJ-indexed open-access journal full text, with article-level terms verified.
+- Full text from an approved preprint repository with explicit reuse terms.
+- Other full text carrying an approved CC or public-domain license.
+
+“Publicly reachable,” “indexed,” or “the researcher says they are authorized” is not enough
+for the default path. Missing or ambiguous source terms fail closed before conversion.
+Broader licensed, paywalled, or researcher-authorized material may be revisited through a
+separate policy decision, but does not count toward V1 acceptance or release evidence.
 
 ## Review synthesis
 
@@ -58,7 +75,7 @@ Persistent primary-path disclosures: current question/aim, source or sample scop
 - IV-104 defines equity-of-access scenarios, dependency disclosures, privacy-preserving measurements, and a minimum useful path.
 - IV-105 defines evidence-backed applied personas and deliverable contracts while retaining the researcher-owned dossier as V1 default.
 
-The completed [IV-102 landscape review](iv-102-landscape-review.md) changes the evidence status of those consequences. Federated literature connectors (IV-106) and OSF workflows (IV-108) are provisional; evidence-clearinghouse/public-dataset connectors (IV-107) and CAQDAS interchange (IV-109) are unresolved. Those four tracker items are therefore research gates rather than approved implementation work. Quantitative artifact interchange (IV-110) has moderate demand support through documented cross-statistical-software friction. Authorized survey connectors (IV-111) retain an evidence-backed institutional substrate but still require workflow-demand and policy validation. Domain-specific deliverable profiles (IV-112) remain dependent on IV-105.
+The completed [IV-102 landscape review](iv-102-landscape-review.md) changes the evidence status of those consequences. The safe-open scholarly corpus is the bounded V1 baseline; federated literature connectors (IV-106) and OSF workflows (IV-108) are provisional; evidence-clearinghouse/public-dataset connectors (IV-107) and CAQDAS interchange (IV-109) are unresolved. Those four tracker items are therefore research gates rather than approved implementation work. Quantitative artifact interchange (IV-110) has moderate demand support through documented cross-statistical-software friction. Authorized survey connectors (IV-111) retain an evidence-backed institutional substrate but still require workflow-demand and policy validation. Domain-specific deliverable profiles (IV-112) remain dependent on IV-105.
 
 The same review treats visualization need and equity-of-access as supported constraints, provider/model portability as an architecture and governance concern rather than demonstrated user demand, and restricted-data handling as a fail-closed obligation rather than a differentiator. Census FSRDC data is architecturally out of scope because the enclave permits neither internet access nor downloads. No broad connector or arbitrary-code promise enters V1; every future adapter must reuse the reviewed admission, authorization, durable-job, provenance, egress, and release-evidence contracts.
 
@@ -122,7 +139,7 @@ candidate papers
 | Efficiency | Provider usage metadata, cache/storage primitives | Preflight plans, quotas, checkpoints, semantic cache keys, reuse/invalidation policy |
 | Verification | Vitest, Playwright, axe-core, Promptfoo, OpenTelemetry | Ground truth, rubrics, release thresholds, privacy/security gates |
 | Interoperability | Official MCP SDK | Project authorization, scoped resources, audit, stable references |
-| Post-v1 source connectors | Official APIs, public releases, maintained clients | Capability matrices, access policy, identity, provenance, coverage and revision semantics |
+| Post-v1 source connectors | Official APIs, public releases, maintained clients | Capability matrices, access policy, identity, provenance, coverage and revision semantics; broad connectors remain outside the safe-open V1 baseline |
 | Post-v1 research-tool interchange | REFI-QDA, notebook/environment and open tabular formats | Canonical mappings, loss reports, safe execution boundary, compatibility and lineage |
 
 External packages remain behind owned adapters. Generic RAG or agent frameworks must not own the domain model, canonical persistence, provenance chain, or authorization policy.
@@ -349,6 +366,7 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 - Exact passage links survive reload and unchanged-source reprocessing.
 - Protocol, source, passage, job, pipeline, model, prompt, tool, retrieval, validation, human decision, and export versions are reconstructable.
 - Restricted content is rejected before conversion or external transmission.
+- The default scholarly corpus contains only PMC OA, arXiv, DOAJ-indexed open-access journal full text, approved preprint-repository full text, or full text with an approved CC/public-domain license; source/version/terms are persisted and ambiguous terms fail closed.
 - External provider dispatch is project-authorized, disclosed, policy-approved, and fail-closed.
 - Keyboard-only users can complete the vertical slice; graphs have structured alternatives.
 - Dependency policy, SBOM, secret scans, migrations, threat mitigations, and deterministic end-to-end tests pass.

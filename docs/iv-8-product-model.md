@@ -46,11 +46,12 @@ is technically infeasible, but because it destroys the product's reason to exist
 V1 is deliberately narrow. It supports exactly two workflows, both provenance-first,
 both ending in a researcher-owned deliverable.
 
-**Path A — authorized scholarly corpus → research dossier.**
-A researcher assembles a corpus of scholarly sources they are authorized to use, and
-Ivory Tower produces a dossier: claims with cited evidence, surfaced contradictions,
-explicit gaps, stated limitations, and — only where the researcher approves it —
-synthesis. Every claim in the dossier resolves to a passage in a source version.
+**Path A — allowlisted open scholarly corpus → research dossier.**
+A researcher assembles a corpus from V1's allowlisted open sources, and Ivory Tower
+produces a dossier: claims with cited evidence, surfaced contradictions, explicit gaps,
+stated limitations, and — only where the researcher approves it — synthesis. Every
+claim in the dossier resolves to a passage in a source version. Researcher authorization
+alone does not admit a source outside the V1 allowlist.
 
 **Path B — authorized, non-restricted survey file → validated descriptive analysis.**
 A researcher uploads a survey dataset with its instrument and codebook, and Ivory
@@ -266,10 +267,13 @@ This is the **product** boundary. Enforcement is owned elsewhere (§4.3).
 
 | Content class | V1 | Conditions |
 |---|---|---|
-| Published scholarly articles, preprints, book chapters | Admitted | Researcher asserts authorization; text-extractable or OCR-able |
-| Books and monographs the researcher is authorized to use | Admitted | Same |
-| Public reports, working papers, institutional documentation | Admitted | Same |
-| Public archival documents | Admitted | Archive context recorded (IV-119) |
+| PMC Open Access full text | **V1 default admitted** | Article is in the PMC OA subset; source version and article-level license or reuse terms are recorded; text-extractable or OCR-able |
+| arXiv full text | **V1 default admitted** | Canonical arXiv record and version are recorded; repository terms are retained |
+| DOAJ-indexed open-access journal full text | **V1 default admitted** | DOAJ journal record plus article-level license or reuse terms are recorded |
+| Approved preprint-repository full text | **V1 default admitted** | Repository is on the V1 allowlist and its explicit reuse terms are retained |
+| Other full text with an approved CC or public-domain license | **V1 default admitted** | Exact license, source version, and retrieval record are retained |
+| Closed, paywalled, or license-ambiguous scholarly material | **Excluded from default V1** | Researcher authorization or public reachability alone is insufficient; requires a later policy decision |
+| Books, monographs, reports, working papers, or archival documents outside the open allowlist | **Excluded from default V1** | Admitted only if they meet the approved license rule or a later policy explicitly permits them |
 | Public, non-restricted survey microdata | Admitted | Instrument and codebook required; preflight required (IV-124) |
 | Researcher-authored notes and memos | Admitted | Protected human record (IV-113) |
 | Restricted federal or enclave-held microdata | **Excluded** | Refuted by enclave architecture (§6.1); deferred to IV-75 |
@@ -277,6 +281,13 @@ This is the **product** boundary. Enforcement is owned elsewhere (§4.3).
 | Unapproved human-subject data | **Excluded** | No IRB workflow in V1 |
 | Personally identifying material not already public | **Excluded** | Anti-outing protections apply (IV-121) |
 | Material the researcher is not authorized to use | **Excluded** | Authorization is asserted at admission and is a precondition, not a warning |
+
+The V1 scholarly corpus is safe by default, not merely public by default. A source must
+match an allowlisted endpoint or carry a machine-recorded CC/public-domain reuse basis;
+repository membership, public reachability, or a researcher assertion cannot substitute
+for source-level terms. Missing or ambiguous terms fail closed before conversion. This is
+the release baseline for proving the research-dossier thesis; broader licensed or
+researcher-authorized material is not part of V1 acceptance.
 
 ### 4.2 Exclusions are refusals, not warnings
 
@@ -307,7 +318,7 @@ commitment that V1 does not do this and does not claim to.
 
 | Non-goal | Reason |
 |---|---|
-| **Broad connectors** | Every connector is an admission surface and an egress surface. V1 admits authorized uploads and resolves scholarly metadata; connector demand is unvalidated (§6.1) and is gated behind IV-103 and IV-106–IV-111. |
+| **Broad connectors and unrestricted scholarly intake** | Every connector is an admission surface and an egress surface. V1 resolves metadata for the allowlisted open corpus and accepts only sources that pass the safe-open rule; broad literature, OSF, and other research-system connectors remain gated behind IV-103 and IV-106–IV-111. |
 | **Arbitrary statistical execution** | V1 executes only approved descriptive operators over admitted survey data. Arbitrary execution cannot be bounded by a warrant, so its results cannot be defended. Sandbox deferred to IV-72. |
 | **Causal automation** | Causal claims require design assumptions a tool cannot verify. Posture (IV-77) permits a causal posture only where the researcher asserts the design; the system never infers causality. |
 | **Team collaboration** | V1 is single-researcher. Multi-user authorization is deferred to IV-74. Shared editing without a resolved authorship model would defeat IV-113. |
@@ -327,6 +338,7 @@ to the landscape review delivered under [IV-102](https://app.notion.com/p/3b09cb
 
 | Finding | Verdict | Consequence for this model |
 |---|---|---|
+| Safe-open scholarly corpus (PMC OA, arXiv, DOAJ, approved preprints, and approved CC/public-domain full text) | **Supported, bounded** | Becomes the V1 default corpus and acceptance baseline; source-level terms are persisted and ambiguous material is refused |
 | Visualization need | **Moderate confidence** | Visualization is included, subordinate to the workflow (§1.3), never as the product thesis |
 | Equity of access as a design constraint | **Supported** | Retained as a constraint; measured under IV-104 |
 | Literature and OSF connector opportunities | **Provisional** | Deferred to post-v1 validation (IV-106, IV-108); not a V1 commitment |
@@ -514,7 +526,7 @@ G6 19, deferred post-v1 16. **109 issues are committed to V1; 16 are deferred.**
 V1 is complete when this sentence is executable, end to end, without a human patching
 an intermediate step:
 
-> A researcher creates a project, admits an authorized corpus, inspects what the
+> A researcher creates a project, admits an allowlisted open corpus, inspects what the
 > sources say at exact passages, obtains claims that carry cited evidence and stated
 > uncertainty, adjudicates the machine's proposals, records their own interpretation,
 > and exports a dossier in which every claim resolves to a source version and every
@@ -534,6 +546,7 @@ rather than a direction, and it is what IV-66's acceptance suite exercises.
 
 | Criterion | Satisfied by | How it is checked |
 |---|---|---|
+| The default scholarly path has a bounded, auditable legal surface | §4.1 | Acceptance corpus uses only the V1 source allowlist or an approved CC/public-domain license; source, version, terms, and rejection reason are persisted, and ambiguous terms fail closed |
 | A canonical product-model document names the objects, lifecycle, and non-goals | §2, §3, §5 | Vocabulary is closed: §9 verifies §7 references no object absent from §2 |
 | A project can be represented without forcing research material into a spreadsheet or dashboard schema | §2.4 | Four structural properties, each contrasted with the tabular model that lacks it |
 | The MVP roadmap maps each planned capability to a research-lifecycle stage | §7 | §9 verifies 125/125 coverage against the tracker, mechanically |
