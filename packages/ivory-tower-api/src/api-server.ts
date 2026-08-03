@@ -23,6 +23,7 @@ import {
     toExecutionResponse,
 } from '@ivory-tower/contracts';
 import { isTerminalExecutionStatus } from '@ivory-tower/domain';
+import { captureIvoryException } from '@ivory-tower/infrastructure';
 
 export interface ApiServerDependencies {
     readonly executionService: ExecutionService;
@@ -243,6 +244,13 @@ export function createApiServer(dependencies: ApiServerDependencies): Server {
             }
             throw new ApiError(404, 'route_not_found', 'Route was not found.');
         } catch (error) {
+            if (!(error instanceof ApiError)) {
+                captureIvoryException(error, {
+                    stage: 'api_request',
+                    method: request.method ?? 'GET',
+                    path: new URL(request.url ?? '/', 'http://ivory-tower.local').pathname,
+                });
+            }
             if (!response.headersSent) {
                 sendError(response, error);
             } else {

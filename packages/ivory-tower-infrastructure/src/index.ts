@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
 export * from './environment';
+export * from './sentry';
 export * from './system-clock-adapter';
 export * from './execution-id-adapter';
 export * from './in-memory-execution-store';

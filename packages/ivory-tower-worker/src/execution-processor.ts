@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { ExecutionJob, ExecutionStorePort } from '@ivory-tower/adapters';
 import { ExecutionFailure } from '@ivory-tower/domain';
+import { captureIvoryException } from '@ivory-tower/infrastructure';
 
 export interface ExecutionHandlerContext {
     readonly signal: AbortSignal;
@@ -64,6 +65,15 @@ export class ExecutionProcessor {
                 return;
             }
             const failure = classifyFailure(error);
+            if (!failure.retryable) {
+                captureIvoryException(error, {
+                    stage: 'worker_execution',
+                    executionId: job.executionId,
+                    kind: job.kind,
+                    attempt: job.attempt,
+                    retryable: failure.retryable,
+                });
+            }
             if (failure.retryable) {
                 await this.store.retry(job.executionId, leaseToken, failure);
                 throw error;
