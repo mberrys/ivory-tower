@@ -80,6 +80,40 @@ cancellation, replay, duplicate delivery, lease expiry, stale commits, policy
 denial, provider denial, Docling failure, queue outage, migration mismatch, and
 secret redaction.
 
+### 2026-08-03 implementation and runtime evidence
+
+- Baseline checkout: `5a0bd9af4` on `dev`. No final commit was created for this
+  working-tree implementation, so this record does not claim a published
+  commit.
+- Ivory quality evidence: `npm.cmd run check:ivory-toolchain`,
+  `npm.cmd run format:check:ivory-tower`, `node
+  scripts/check-ivory-boundaries.mjs`, `npm.cmd run typecheck:ivory-tower`,
+  `npm.cmd run lint:ivory-tower`, `npm.cmd run test:ivory-tower`,
+  `npm.cmd run -s build:ivory-tower`, the isolated Playwright health test, and
+  `npm.cmd run dependency:policy` passed. The Playwright run used
+  `IVORY_BROWSER_PORT=3106` and passed in 6.6 seconds; its global teardown
+  terminates the test-owned Theia process tree.
+- Docling image pin: `quay.io/docling-project/docling-serve:v1.21.0@sha256:32b3de41f325f93c1dd35907cd9147fa35df9f7c5abc86eb2788b6bda7ce6d10`.
+  The supported registry is Quay; a mirror must preserve the same immutable
+  digest and be configured explicitly.
+- The real multi-service proof command was
+  `npm.cmd run -s verify:ivory-runtime -- --clean`. It stopped before startup
+  with `Docker Desktop daemon is unavailable; IV-14 real runtime proof cannot
+  run in this environment.` A direct Docker check also reported permission
+  denied on `npipe:////./pipe/docker_engine`. Therefore the real
+  upload-to-SSE path, Docling interruption/retry, lease fencing, stale-commit
+  rejection, restart recovery, terminal failure, and cancellation evidence
+  remain unexecuted here.
+- The inherited Windows Electron compatibility gate
+  (`npm.cmd run -s build:electron`) reached native dependency rebuild and
+  failed because `node-gyp` could not find an installed Python runtime for
+  `drivelist`. This is a pre-package environment failure, not evidence of an
+  Ivory Windows product.
+
+IV-14 remains **In Progress** until the Docker-backed path and recovery matrix
+are run from a clean environment and the resulting commands, logs, image
+digests, configuration, and final commit are attached here.
+
 ## Consequences
 
 Hosted V1 is portable across OCI runtimes and standard PostgreSQL/S3-compatible

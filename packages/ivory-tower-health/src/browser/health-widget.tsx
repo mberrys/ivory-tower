@@ -5,7 +5,6 @@ import { FrontendApplicationConfigProvider } from '@theia/core/lib/browser/front
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
 import * as React from '@theia/core/shared/react';
 import { HealthService } from '@ivory-tower/application';
-import { HealthStatus } from '@ivory-tower/domain';
 
 @injectable()
 export class HealthWidget extends ReactWidget {
@@ -15,6 +14,16 @@ export class HealthWidget extends ReactWidget {
     @inject(HealthService)
     protected readonly healthService: HealthService;
 
+    private status: {
+        level: 'ok' | 'degraded' | 'unavailable';
+        message: string;
+        checkedAt: string;
+    } = {
+        level: 'unavailable',
+        message: 'Checking Ivory Tower readiness…',
+        checkedAt: '',
+    };
+
     @postConstruct()
     protected init(): void {
         this.id = HealthWidget.ID;
@@ -22,15 +31,23 @@ export class HealthWidget extends ReactWidget {
         this.title.caption = HealthWidget.LABEL;
         this.title.closable = false;
         this.update();
+        this.refresh().catch(() => undefined);
+    }
+
+    private async refresh(): Promise<void> {
+        this.status = await this.healthService.checkStatus();
+        this.update();
     }
 
     protected render(): React.ReactNode {
-        const status: HealthStatus = this.healthService.getStatus();
+        const status = this.status;
         const applicationName = FrontendApplicationConfigProvider.get().applicationName;
         return (
-            <div className='ivory-tower-health' style={{ padding: '24px', fontFamily: 'var(--theia-ui-font-family)' }}>
+            <div className="ivory-tower-health" style={{ padding: '24px', fontFamily: 'var(--theia-ui-font-family)' }}>
                 <h1>{applicationName}</h1>
-                <p>Status: <strong>{status.level}</strong></p>
+                <p>
+                    Status: <strong>{status.level}</strong>
+                </p>
                 <p>{status.message}</p>
                 <p>Checked at: {status.checkedAt}</p>
             </div>

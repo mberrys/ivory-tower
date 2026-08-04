@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import {
-    ClockPort,
-    ExecutionJob,
-    ExecutionIdPort,
-    ExecutionStorePort,
-    ExecutionTransactionPort,
-} from '@ivory-tower/adapters';
+import { ClockPort, ExecutionJob, ExecutionIdPort, ExecutionStorePort, ExecutionTransactionPort } from '@ivory-tower/adapters';
 import { CreateExecutionRequest, CONTRACT_VERSION } from '@ivory-tower/contracts';
 import { ExecutionEvent, ExecutionRecord } from '@ivory-tower/domain';
 

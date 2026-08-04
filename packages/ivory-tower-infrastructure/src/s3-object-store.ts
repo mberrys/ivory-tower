@@ -1,13 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import {
-    GetObjectCommand,
-    HeadObjectCommand,
-    NotFound,
-    PutObjectCommand,
-    S3Client,
-    S3ServiceException,
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, HeadObjectCommand, NotFound, PutObjectCommand, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
 import { createHash } from 'node:crypto';
 import { ObjectStorePort } from '@ivory-tower/adapters';
 
@@ -30,12 +23,13 @@ export class S3CompatibleObjectStore implements ObjectStorePort {
             endpoint: options.endpoint,
             region: options.region ?? 'us-east-1',
             forcePathStyle: options.forcePathStyle ?? false,
-            credentials: options.accessKeyId === undefined || options.secretAccessKey === undefined
-                ? undefined
-                : {
-                    accessKeyId: options.accessKeyId,
-                    secretAccessKey: options.secretAccessKey,
-                },
+            credentials:
+                options.accessKeyId === undefined || options.secretAccessKey === undefined
+                    ? undefined
+                    : {
+                          accessKeyId: options.accessKeyId,
+                          secretAccessKey: options.secretAccessKey,
+                      },
         });
     }
 
@@ -55,14 +49,16 @@ export class S3CompatibleObjectStore implements ObjectStorePort {
         }
 
         try {
-            const uploaded = await this.client.send(new PutObjectCommand({
-                Bucket: this.bucket,
-                Key: key,
-                Body: content,
-                ContentType: contentType,
-                Metadata: { 'content-sha256': contentHash },
-                IfNoneMatch: '*',
-            }));
+            const uploaded = await this.client.send(
+                new PutObjectCommand({
+                    Bucket: this.bucket,
+                    Key: key,
+                    Body: content,
+                    ContentType: contentType,
+                    Metadata: { 'content-sha256': contentHash },
+                    IfNoneMatch: '*',
+                }),
+            );
             return { key, etag: stripQuotes(uploaded.ETag) ?? contentHash };
         } catch (error) {
             if (!isPreconditionFailure(error)) {
@@ -105,10 +101,13 @@ function stripQuotes(value: string | undefined): string | undefined {
 }
 
 function isMissingObject(error: unknown): boolean {
-    return error instanceof NotFound
-        || (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
-        || (error instanceof Object && '$metadata' in error
-            && (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404);
+    return (
+        error instanceof NotFound ||
+        (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404) ||
+        (error instanceof Object &&
+            '$metadata' in error &&
+            (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404)
+    );
 }
 
 function isPreconditionFailure(error: unknown): boolean {

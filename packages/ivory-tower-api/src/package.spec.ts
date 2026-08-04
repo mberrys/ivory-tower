@@ -33,7 +33,7 @@ describe('@ivory-tower/api package', () => {
             body: JSON.stringify({ kind: 'convert', input: { sourceId: 'source-1' } }),
         });
         expect(create.status).to.equal(202);
-        const execution = await create.json() as { id: string };
+        const execution = (await create.json()) as { id: string };
         const replay = await fetch(`${baseUrl}/v1/executions`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', 'idempotency-key': 'api-test-1' },

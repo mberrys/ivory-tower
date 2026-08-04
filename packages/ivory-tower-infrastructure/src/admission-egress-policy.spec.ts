@@ -9,14 +9,17 @@ import { InMemorySourceRecordStore } from './in-memory-source-record-store';
 describe('ContentRightsAdmissionPolicy', () => {
     it('permits ingest and transfer for safe-subset open content', async () => {
         const policy = new ContentRightsAdmissionPolicy('vendorHosted');
-        const decision = await policy.admit({
-            filename: 'paper.pdf',
-            contentType: 'application/pdf',
-            license: 'CC-BY-4.0',
-            authorizationEvidence: 'open license',
-            contentClass: 'openLicensed',
-            acquisitionRoute: 'openRepository',
-        }, 'abc123');
+        const decision = await policy.admit(
+            {
+                filename: 'paper.pdf',
+                contentType: 'application/pdf',
+                license: 'CC-BY-4.0',
+                authorizationEvidence: 'open license',
+                contentClass: 'openLicensed',
+                acquisitionRoute: 'openRepository',
+            },
+            'abc123',
+        );
         expect(decision.allowed).to.equal(true);
         expect(decision.ingestPermitted).to.equal(true);
         expect(decision.transferPermitted).to.equal(true);
@@ -24,14 +27,17 @@ describe('ContentRightsAdmissionPolicy', () => {
 
     it('permits ingest but refuses transfer for arXiv without item licence confirmation', async () => {
         const policy = new ContentRightsAdmissionPolicy('vendorHosted');
-        const decision = await policy.admit({
-            filename: 'preprint.pdf',
-            contentType: 'application/pdf',
-            license: 'arXiv',
-            authorizationEvidence: 'arXiv deposit',
-            contentClass: 'arxivPreprint',
-            acquisitionRoute: 'openRepository',
-        }, 'abc123');
+        const decision = await policy.admit(
+            {
+                filename: 'preprint.pdf',
+                contentType: 'application/pdf',
+                license: 'arXiv',
+                authorizationEvidence: 'arXiv deposit',
+                contentClass: 'arxivPreprint',
+                acquisitionRoute: 'openRepository',
+            },
+            'abc123',
+        );
         expect(decision.allowed).to.equal(true);
         expect(decision.ingestPermitted).to.equal(true);
         expect(decision.transferPermitted).to.equal(false);
@@ -40,14 +46,17 @@ describe('ContentRightsAdmissionPolicy', () => {
 
     it('refuses shadow-library content at ingest', async () => {
         const policy = new ContentRightsAdmissionPolicy('vendorHosted');
-        const decision = await policy.admit({
-            filename: 'shadow.pdf',
-            contentType: 'application/pdf',
-            license: 'unknown',
-            authorizationEvidence: 'none',
-            contentClass: 'shadowLibrary',
-            acquisitionRoute: 'upload',
-        }, 'abc123');
+        const decision = await policy.admit(
+            {
+                filename: 'shadow.pdf',
+                contentType: 'application/pdf',
+                license: 'unknown',
+                authorizationEvidence: 'none',
+                contentClass: 'shadowLibrary',
+                acquisitionRoute: 'upload',
+            },
+            'abc123',
+        );
         expect(decision.allowed).to.equal(false);
         expect(decision.ingestPermitted).to.equal(false);
         expect(decision.transferPermitted).to.equal(false);

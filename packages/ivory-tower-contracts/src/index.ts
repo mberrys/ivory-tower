@@ -2,3 +2,4 @@
 
 export * from './execution-contract';
 export * from './source-contract';
+export * from './research-protocol-contract';

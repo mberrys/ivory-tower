@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import {
-    ExecutionEvent,
-    ExecutionFailure,
-    ExecutionRecord,
-    assertExecutionTransition,
-} from '@ivory-tower/domain';
+import { ExecutionEvent, ExecutionFailure, ExecutionRecord, assertExecutionTransition } from '@ivory-tower/domain';
 import { ExecutionJob, ExecutionStorePort, ExecutionTransactionPort } from '@ivory-tower/adapters';
 
 function clone<T>(value: T): T {
@@ -96,7 +91,14 @@ export class InMemoryExecutionStore implements ExecutionStorePort, ExecutionTran
         if (current === undefined || current.leaseToken !== leaseToken || current.status !== 'running') {
             return false;
         }
-        const updated = { ...current, status: 'queued' as const, failure, leaseToken: undefined, leaseUntil: undefined, updatedAt: new Date().toISOString() };
+        const updated = {
+            ...current,
+            status: 'queued' as const,
+            failure,
+            leaseToken: undefined,
+            leaseUntil: undefined,
+            updatedAt: new Date().toISOString(),
+        };
         this.records.set(executionId, updated);
         await this.appendEvent(executionId, 'error', failure);
         await this.appendEvent(executionId, 'status', { status: updated.status });
@@ -108,7 +110,13 @@ export class InMemoryExecutionStore implements ExecutionStorePort, ExecutionTran
         if (current === undefined || current.leaseToken !== leaseToken || !['running', 'cancelling'].includes(current.status)) {
             return false;
         }
-        const updated = { ...current, status: 'cancelled' as const, leaseToken: undefined, leaseUntil: undefined, updatedAt: new Date().toISOString() };
+        const updated = {
+            ...current,
+            status: 'cancelled' as const,
+            leaseToken: undefined,
+            leaseUntil: undefined,
+            updatedAt: new Date().toISOString(),
+        };
         this.records.set(executionId, updated);
         await this.appendEvent(executionId, 'status', { status: updated.status });
         return true;
@@ -127,7 +135,13 @@ export class InMemoryExecutionStore implements ExecutionStorePort, ExecutionTran
         return clone(updated);
     }
 
-    private async finish(executionId: string, leaseToken: string, status: 'succeeded' | 'failed', result: unknown, failure?: ExecutionFailure): Promise<boolean> {
+    private async finish(
+        executionId: string,
+        leaseToken: string,
+        status: 'succeeded' | 'failed',
+        result: unknown,
+        failure?: ExecutionFailure,
+    ): Promise<boolean> {
         const current = this.records.get(executionId);
         if (current === undefined || current.leaseToken !== leaseToken || current.status !== 'running') {
             return false;

@@ -14,9 +14,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import {
-    ContentClass, isAlwaysRefused, isSafeSubset, requiresItemLicenceCheck
-} from './content-class';
+import { ContentClass, isAlwaysRefused, isSafeSubset, requiresItemLicenceCheck } from './content-class';
 import { DeploymentTopology, NO_BASIS, researchExceptionAvailable, RightsBasis, RightsBasisKind } from './rights-basis';
 
 /**
@@ -89,9 +87,10 @@ export function decideAdmission(request: AdmissionRequest): AdmissionDecision {
 
     // Refused outright, on any basis and under any topology.
     if (isAlwaysRefused(contentClass)) {
-        const refusalReason = contentClass === 'shadowLibrary'
-            ? 'content originating from a shadow library is refused; retaining such copies was held not to be fair use in Bartz v. Anthropic'
-            : 'provenance cannot be evidenced, so the source inherits the weakest available rights position';
+        const refusalReason =
+            contentClass === 'shadowLibrary'
+                ? 'content originating from a shadow library is refused; retaining such copies was held not to be fair use in Bartz v. Anthropic'
+                : 'provenance cannot be evidenced, so the source inherits the weakest available rights position';
         return { ingest: refuse(refusalReason), transfer: refuse(refusalReason) };
     }
 
@@ -101,7 +100,9 @@ export function decideAdmission(request: AdmissionRequest): AdmissionDecision {
         if (requiresItemLicenceCheck(contentClass) && request.itemLicenceConfirmed !== true) {
             return {
                 ingest,
-                transfer: refuse(`'${contentClass}' carries per-item licences; the item's licence must be confirmed before its text may be transmitted to a third party`)
+                transfer: refuse(
+                    `'${contentClass}' carries per-item licences; the item's licence must be confirmed before its text may be transmitted to a third party`,
+                ),
             };
         }
         return { ingest, transfer: permit(safeSubsetBasis(contentClass), `'${contentClass}' permits redistribution`) };
@@ -125,13 +126,18 @@ function decideLicensed(basis: RightsBasis, topology: DeploymentTopology, route:
             const outsideGrant = `the agreement with ${basis.publisher ?? 'the publisher'} grants mining through its API, which does not cover content obtained by '${route}'`;
             return { ingest: refuse(outsideGrant), transfer: refuse(outsideGrant) };
         }
-        const ingest = permit('publisherTdmAgreement', `covered by the text-and-data-mining agreement with ${basis.publisher ?? 'the publisher'}`);
+        const ingest = permit(
+            'publisherTdmAgreement',
+            `covered by the text-and-data-mining agreement with ${basis.publisher ?? 'the publisher'}`,
+        );
         // Transfer needs its own express permission. Silence is not consent: subscription terms
         // commonly restrict third-party disclosure, and TDM grants rarely address it at all.
         if (basis.permitsThirdPartyDisclosure !== true) {
             return {
                 ingest,
-                transfer: refuse('the agreement does not expressly permit disclosing licensed text to a third party, and third-party transfer is not implied by a mining grant')
+                transfer: refuse(
+                    'the agreement does not expressly permit disclosing licensed text to a third party, and third-party transfer is not implied by a mining grant',
+                ),
             };
         }
         return { ingest, transfer: permit('publisherTdmAgreement', 'the agreement expressly permits third-party disclosure') };
@@ -139,18 +145,24 @@ function decideLicensed(basis: RightsBasis, topology: DeploymentTopology, route:
 
     if (basis.kind === 'researchOrganizationException') {
         if (!researchExceptionAvailable(topology)) {
-            const wrongActor = 'the research-organization exception requires the act to be performed by a research organization; under vendor hosting the operator is commercial';
+            const wrongActor =
+                'the research-organization exception requires the act to be performed by a research organization; under vendor hosting the operator is commercial';
             return { ingest: refuse(wrongActor), transfer: refuse(wrongActor) };
         }
         return {
-            ingest: permit('researchOrganizationException', 'the research organization performs the reproduction for scientific research with lawful access'),
+            ingest: permit(
+                'researchOrganizationException',
+                'the research organization performs the reproduction for scientific research with lawful access',
+            ),
             // The exception covers reproduction for research by the organization. It does not
             // extend to disclosing the work to an unrelated commercial processor.
-            transfer: refuse('the research exception covers reproduction for scientific research, not disclosure of the work to a commercial third party')
+            transfer: refuse(
+                'the research exception covers reproduction for scientific research, not disclosure of the work to a commercial third party',
+            ),
         };
     }
 
-    const reason = 'licensed content requires a stated rights basis; a researcher\'s assertion of authorization is not itself a basis';
+    const reason = "licensed content requires a stated rights basis; a researcher's assertion of authorization is not itself a basis";
     return { ingest: refuse(reason), transfer: refuse(reason) };
 }
 

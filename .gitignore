@@ -49,3 +49,4 @@ license-check-summary.txt*
 data/
 .ivory-tower/
 examples/ivory-tower-browser/ivory-tower-browser.log
+examples/ivory-tower-browser/test-results/

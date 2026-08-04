@@ -23,10 +23,35 @@ describe('@ivory-tower/worker package', () => {
             result: undefined,
             failure: undefined,
         };
-        await store.createAndEnqueue(record, { executionId: record.id, kind: record.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:1', input: {} });
-        const job: ExecutionJob = { executionId: record.id, kind: record.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:1', input: {} };
+        await store.createAndEnqueue(record, {
+            executionId: record.id,
+            kind: record.kind,
+            contractVersion: 1,
+            attempt: 0,
+            jobKey: 'execution:1',
+            input: {},
+        });
+        const job: ExecutionJob = {
+            executionId: record.id,
+            kind: record.kind,
+            contractVersion: 1,
+            attempt: 0,
+            jobKey: 'execution:1',
+            input: {},
+        };
         let calls = 0;
-        const processor = new ExecutionProcessor(store, new Map([['convert', async () => { calls += 1; return { ok: true }; }]]));
+        const processor = new ExecutionProcessor(
+            store,
+            new Map([
+                [
+                    'convert',
+                    async () => {
+                        calls += 1;
+                        return { ok: true };
+                    },
+                ],
+            ]),
+        );
         await Promise.all([processor.process(job, new AbortController().signal), processor.process(job, new AbortController().signal)]);
         expect(calls).to.equal(1);
         expect((await store.get(record.id))?.status).to.equal('succeeded');
@@ -49,16 +74,42 @@ describe('@ivory-tower/worker package', () => {
             result: undefined,
             failure: undefined,
         };
-        await store.createAndEnqueue(record, { executionId: record.id, kind: record.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:2', input: {} });
-        const job: ExecutionJob = { executionId: record.id, kind: record.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:2', input: {} };
+        await store.createAndEnqueue(record, {
+            executionId: record.id,
+            kind: record.kind,
+            contractVersion: 1,
+            attempt: 0,
+            jobKey: 'execution:2',
+            input: {},
+        });
+        const job: ExecutionJob = {
+            executionId: record.id,
+            kind: record.kind,
+            contractVersion: 1,
+            attempt: 0,
+            jobKey: 'execution:2',
+            input: {},
+        };
         let startedResolve!: () => void;
-        const started = new Promise<void>(resolve => { startedResolve = resolve; });
-        const processor = new ExecutionProcessor(store, new Map([['convert', async (_job, context) => {
-            startedResolve();
-            await new Promise(resolve => setTimeout(resolve, 100));
-            expect(context.signal.aborted).to.equal(true);
-            return { shouldNotBeCommitted: true };
-        }]]), 100, 10);
+        const started = new Promise<void>(resolve => {
+            startedResolve = resolve;
+        });
+        const processor = new ExecutionProcessor(
+            store,
+            new Map([
+                [
+                    'convert',
+                    async (_job, context) => {
+                        startedResolve();
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        expect(context.signal.aborted).to.equal(true);
+                        return { shouldNotBeCommitted: true };
+                    },
+                ],
+            ]),
+            100,
+            10,
+        );
 
         const processing = processor.process(job, new AbortController().signal);
         await started;

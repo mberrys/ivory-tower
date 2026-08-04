@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import {
-    AcquisitionRoute,
-    ContentClass,
-    DeploymentTopology,
-    RightsBasis,
-    SourceMetadata,
-} from '@ivory-tower/contracts';
+import { AcquisitionRoute, ContentClass, DeploymentTopology, RightsBasis, SourceMetadata } from '@ivory-tower/contracts';
 import { SourceAdmissionPort, SourceAdmissionResult } from '@ivory-tower/adapters';
 import {
     AdmissionRequest,

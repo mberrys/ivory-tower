@@ -22,6 +22,10 @@ const LAYERS = [
             '@ivory-tower/infrastructure',
             '@ivory-tower/health',
             'liquidify-react',
+            'pg',
+            '@aws-sdk/',
+            'graphile-worker',
+            'docling',
         ],
     },
     {
@@ -33,6 +37,10 @@ const LAYERS = [
             '@ivory-tower/infrastructure',
             '@ivory-tower/health',
             'liquidify-react',
+            'pg',
+            '@aws-sdk/',
+            'graphile-worker',
+            'docling',
         ],
     },
     {
@@ -45,6 +53,10 @@ const LAYERS = [
             '@ivory-tower/health',
             '@ivory-tower/content-policy',
             'liquidify-react',
+            'pg',
+            '@aws-sdk/',
+            'graphile-worker',
+            'docling',
         ],
     },
     {
@@ -68,6 +80,10 @@ const LAYERS = [
             '@ivory-tower/infrastructure',
             '@ivory-tower/health',
             'liquidify-react',
+            'pg',
+            '@aws-sdk/',
+            'graphile-worker',
+            'docling',
         ],
     },
     {
@@ -82,9 +98,12 @@ const LAYERS = [
     },
     {
         name: '@ivory-tower/health',
-        dir: 'packages/ivory-tower-health/src',
+        dir: 'packages/ivory-tower-health/src/browser',
         forbidden: [
             'liquidify-react',
+            '@ivory-tower/adapters',
+            '@ivory-tower/domain',
+            '@ivory-tower/infrastructure',
         ],
     },
     {
@@ -144,6 +163,15 @@ function findViolations(layer) {
 }
 
 const allViolations = LAYERS.flatMap(findViolations);
+
+const fixturePath = path.join(ROOT, 'scripts', 'ivory-boundary-fixtures.json');
+const fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+for (const fixture of fixtures) {
+    const layer = LAYERS.find(candidate => candidate.name === fixture.layer);
+    if (!layer || !layer.forbidden.some(forbidden => fixture.import.includes(forbidden))) {
+        allViolations.push(`negative fixture is not covered by a prohibited import rule: ${fixture.layer} -> ${fixture.import}`);
+    }
+}
 
 const ivoryBrowserPackage = path.join(ROOT, 'examples', 'ivory-tower-browser', 'package.json');
 if (fs.existsSync(ivoryBrowserPackage)) {

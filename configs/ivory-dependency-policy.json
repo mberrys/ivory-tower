@@ -1,0 +1,18 @@
+{
+  "allowedLicenseExpressions": [
+    "EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0",
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MPL-2.0",
+    "0BSD",
+    "CC0-1.0",
+    "UNLICENSED"
+  ],
+  "allowedDependencyPrefixes": ["@ivory-tower/", "@theia/", "@types/"],
+  "approvedNetworkDependencies": ["@aws-sdk/client-s3", "@playwright/test", "graphile-worker", "pg"],
+  "highRiskExactDependencies": ["@aws-sdk/client-s3", "graphile-worker", "pg"],
+  "advisoryExceptions": []
+}

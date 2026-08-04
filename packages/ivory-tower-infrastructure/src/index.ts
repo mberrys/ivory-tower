@@ -13,6 +13,7 @@ export * from './schema-readiness';
 export * from './admission-policy';
 export * from './content-rights-admission-policy';
 export * from './in-memory-source-record-store';
+export * from './in-memory-research-protocol-store';
 export * from './postgres-execution-store';
 export * from './graphile-worker-adapter';
 export * from './node/migrate';

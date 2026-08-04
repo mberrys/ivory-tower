@@ -1,0 +1,52 @@
+name: Ivory Tower quality gate
+
+on:
+  push:
+    branches: [stable, dev]
+  pull_request:
+    branches: [stable, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-22.04]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pinned Node toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npm.cmd ci
+      - name: Install dependencies (Unix)
+        if: runner.os != 'Windows'
+        run: npm ci
+      - name: Install Playwright browser (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npx.cmd playwright install chromium
+      - name: Install Playwright browser (Ubuntu)
+        if: runner.os != 'Windows'
+        run: npx playwright install --with-deps chromium
+      - name: Run the required Ivory Tower gate (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npm.cmd run verify:ivory-tower
+      - name: Run the required Ivory Tower gate (Unix)
+        if: runner.os != 'Windows'
+        run: npm run verify:ivory-tower
+      - name: Build inherited Theia Electron target (Windows compatibility gate)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: npm.cmd run build:electron
