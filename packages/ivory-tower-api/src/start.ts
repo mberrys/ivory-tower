@@ -11,8 +11,11 @@ import {
     S3CompatibleObjectStore,
     SystemClockAdapter,
     SystemExecutionIdAdapter,
+    flushIvorySentry,
+    initIvorySentry,
     isIvoryRuntimeReady,
     readIvoryTowerEnvironment,
+    readSentryConfigFromEnvironment,
     validateIvoryTowerEnvironment,
 } from '@ivory-tower/infrastructure';
 import { createApiServer } from './api-server';
@@ -20,6 +23,7 @@ import { createApiServer } from './api-server';
 export async function startApi(): Promise<void> {
     const environment = readIvoryTowerEnvironment('api');
     validateIvoryTowerEnvironment(environment);
+    initIvorySentry(readSentryConfigFromEnvironment('ivory-api'));
     const connectionString = environment.databaseUrl;
     if (connectionString === undefined || connectionString.length === 0) {
         throw new Error('DATABASE_URL is required for ivory-api.');
@@ -65,6 +69,7 @@ export async function startApi(): Promise<void> {
     const shutdown = async () => {
         await new Promise<void>(resolve => server.close(() => resolve()));
         await pool.end();
+        await flushIvorySentry();
     };
     process.once('SIGTERM', () => {
         shutdown().catch(error => console.error(error));

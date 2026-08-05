@@ -8,7 +8,10 @@ import {
     PostgresExecutionStore,
     S3CompatibleObjectStore,
     assertIvoryRuntimeReady,
+    flushIvorySentry,
+    initIvorySentry,
     readIvoryTowerEnvironment,
+    readSentryConfigFromEnvironment,
     startGraphileWorker,
     validateIvoryTowerEnvironment,
 } from '@ivory-tower/infrastructure';
@@ -17,6 +20,7 @@ import { createRuntimeExecutionHandlers } from './runtime-handlers';
 export async function startWorker(handlers: ExecutionHandlerRegistry = new Map()): Promise<void> {
     const environment = readIvoryTowerEnvironment('worker');
     validateIvoryTowerEnvironment(environment);
+    initIvorySentry(readSentryConfigFromEnvironment('ivory-worker'));
     const connectionString = environment.databaseUrl;
     if (connectionString === undefined || connectionString.length === 0) {
         throw new Error('DATABASE_URL is required for ivory-worker.');
@@ -43,6 +47,7 @@ export async function startWorker(handlers: ExecutionHandlerRegistry = new Map()
     const shutdown = async () => {
         await runner.stop();
         await pool.end();
+        await flushIvorySentry();
     };
     process.once('SIGTERM', () => {
         shutdown().catch(error => console.error(error));
