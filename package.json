@@ -41,7 +41,7 @@
     "glob": "^7.2.3",
     "if-env": "^1.0.4",
     "ignore-styles": "^5.0.1",
-    "jsdom": "^22.1.0",
+    "jsdom": "^30.0.1",
     "lerna": "^9.0.7",
     "minimatch": "^10.0.3",
     "mkdirp": "^0.5.6",
