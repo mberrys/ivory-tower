@@ -12,7 +12,7 @@
     "UNLICENSED"
   ],
   "allowedDependencyPrefixes": ["@ivory-tower/", "@theia/", "@types/"],
-  "approvedNetworkDependencies": ["@aws-sdk/client-s3", "@playwright/test", "graphile-worker", "pg"],
-  "highRiskExactDependencies": ["@aws-sdk/client-s3", "graphile-worker", "pg"],
+  "approvedNetworkDependencies": ["@aws-sdk/client-s3", "@playwright/test", "@sentry/node", "graphile-worker", "pg"],
+  "highRiskExactDependencies": ["@aws-sdk/client-s3", "@sentry/node", "graphile-worker", "pg"],
   "advisoryExceptions": []
 }
