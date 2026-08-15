@@ -2,11 +2,7 @@
 
 import { expect } from 'chai';
 import type { Event } from '@sentry/node';
-import {
-    readSentryConfigFromEnvironment,
-    scrubSentryBreadcrumb,
-    scrubSentryEvent,
-} from './sentry';
+import { readSentryConfigFromEnvironment, scrubSentryBreadcrumb, scrubSentryEvent } from './sentry';
 
 describe('ivory sentry adapter', () => {
     const originalEnv = { ...process.env };
@@ -46,14 +42,16 @@ describe('ivory sentry adapter', () => {
                 DATABASE_URL: 'postgresql://user:pass@db.example/ivory',
                 executionId: 'exec-1',
             },
-            breadcrumbs: [{
-                category: 'http',
-                message: 'postgresql://user:pass@db.example/ivory',
-                data: {
-                    authorizationEvidence: 'licensed copy',
-                    stage: 'conversion',
+            breadcrumbs: [
+                {
+                    category: 'http',
+                    message: 'postgresql://user:pass@db.example/ivory',
+                    data: {
+                        authorizationEvidence: 'licensed copy',
+                        stage: 'conversion',
+                    },
                 },
-            }],
+            ],
         };
 
         const scrubbed = scrubSentryEvent(event);

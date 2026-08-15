@@ -17,7 +17,8 @@ export interface IvorySentryConfig {
 
 const REDACTED = '[Filtered]';
 
-const SENSITIVE_KEY_PATTERN = /(?:pass(?:word)?|secret|token|api[_-]?key|authorization(?:evidence)?|credential|dsn|connection(?:string)?|access[_-]?key(?:id)?|secret[_-]?access[_-]?key|session|cookie|bearer|passage|content(?:hash)?|source(?:bytes|content)?|body|payload|prompt|license|evidence)$/i;
+const SENSITIVE_KEY_PATTERN =
+    /(?:pass(?:word)?|secret|token|api[_-]?key|authorization(?:evidence)?|credential|dsn|connection(?:string)?|access[_-]?key(?:id)?|secret[_-]?access[_-]?key|session|cookie|bearer|passage|content(?:hash)?|source(?:bytes|content)?|body|payload|prompt|license|evidence)$/i;
 
 let initialized = false;
 
@@ -230,7 +231,7 @@ function containsSensitiveValue(value: string): boolean {
     if (/postgres(?:ql)?:\/\//i.test(value)) {
         return true;
     }
-    if (/https?:\/\/[^:]+:[^@]+@/i.test(value)) {
+    if (/https?:\/\/[^:@\s]{1,256}:[^@\s]{1,256}@/i.test(value)) {
         return true;
     }
     if (/^Bearer\s+/i.test(value)) {
