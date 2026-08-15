@@ -6,7 +6,7 @@
     "@theia/ai-core": "1.74.0",
     "@theia/core": "1.74.0",
     "@theia/filesystem": "1.74.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^5.2.3",
     "tslib": "^2.6.2"
   },
   "main": "lib/common",
