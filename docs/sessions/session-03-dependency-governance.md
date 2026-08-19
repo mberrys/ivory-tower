@@ -173,16 +173,22 @@ which is exact. The notices artifact grew from 524 to 527 components as a result
 This is the argument for validating your own evidence rather than trusting that it looks right: the
 duplicate-ref check was written to satisfy a schema rule and found a hole in the gate instead.
 
-## Not verified, and why
+## Not verifiable in the container — and how CI closed it
 
-`npm run verify:ivory-tower` was **not** run. It fails at its first step: `check:ivory-toolchain`
+`npm run verify:ivory-tower` cannot run here. It fails at its first step: `check:ivory-toolchain`
 requires Node 24.16.0 / npm 11.13.0 (`configs/ivory-toolchain.json`), and this environment provides
 22.22.2 / 10.9.7 with no install. The component-level runs above are not a substitute for the
-aggregate gate, and per operating rule 3 this session does not claim one. **CI is the first
-authoritative run of the modified gate.**
+aggregate gate, and per operating rule 3 this session did not claim one.
 
-Specifically unverified here: `typecheck:ivory-tower`, `lint:ivory-tower`, and `test:ivory-tower`
-under their widened `@theia/ivory-*` scope, and `test:ivory-browser`.
+**CI supplied it.** At `1f4fa2b` ([run 32282211584](https://github.com/mberrys/ivory-tower/actions/runs/32282211584)):
+the aggregate gate passes on **both** `ubuntu-22.04` and `windows-2022` — including
+`typecheck:ivory-tower`, `lint:ivory-tower`, and `test:ivory-tower` under their widened
+`@theia/ivory-*` scope, and `test:ivory-browser` — and the `governance` job passes and uploads its
+evidence bundle.
+
+The Windows job is still red overall, but only at the separate Electron compatibility step, on
+upstream `packages/scm` type errors that are equally red on `stable` @ `40d48b0`. That is the base
+branch's failure, not this PR's; the full table is in `session-03-handoff.md` under **CI evidence**.
 
 ## Scope held
 
