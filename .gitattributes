@@ -1,5 +1,7 @@
 dev-packages/*/bin/*.js text eol=lf
 
+docs/**/*.md text eol=lf
+
 packages/ivory-tower-*/src/**/*.ts text eol=lf
 packages/ivory-tower-*/src/**/*.tsx text eol=lf
 examples/ivory-tower-browser/**/*.ts text eol=lf

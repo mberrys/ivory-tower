@@ -231,6 +231,10 @@ function escapeCell(value) {
     return String(value).replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
+function normalizeNewlines(text) {
+    return text.replace(/\r\n/g, '\n');
+}
+
 export function renderGeneratedCutlineBlock(manifest) {
     const { computed } = validateManifest(manifest);
     const layers = dependencyLayers(manifest);
@@ -297,7 +301,7 @@ export function verifyGeneratedMap(documentPath, manifest) {
         return { ok: false, expected, actual: null };
     }
     const actual = document.slice(begin, end + endMarker.length);
-    return { ok: actual === expected, expected, actual };
+    return { ok: normalizeNewlines(actual) === normalizeNewlines(expected), expected, actual };
 }
 
 export function writeGeneratedMap(documentPath, manifest) {
