@@ -129,6 +129,32 @@ directly.
   fixture's own config. Repaired: fixtures now declare their own distinct sentinel, and the planted
   file is `deploy.env`.
 
+## What the first CI run added
+
+Three failures on `5baad3e`, two of them this session's to own:
+
+1. **`Verify (windows-2022)` — `format:check:ivory-tower` failed on all 13 `ivory-identity` files**
+   that pass on Linux. `.gitattributes` forces `eol=lf` for `packages/ivory-tower-*/src/**` and the
+   browser example but never covered `packages/ivory-identity/src/**`, so Windows checked them out
+   as CRLF and the pinned `endOfLine: "lf"` rejected them. Adding the two matching rules is the
+   same repair commit `cc6db16` made for the other packages. This is the cost of widening a format
+   scope: the gate is only as portable as the checkout rules underneath it.
+2. **`Dependency governance evidence (IV-19)` — `npm sbom` refused to run**:
+   `invalid: yauzl@3.3.2, ^2.4.2 required by decompress-unzip@4.0.1`. The root `overrides` block
+   pins `yauzl` to `~3.3.2`, violating the range that consumer declares. **Pre-existing on
+   `stable`** — the new tooling only surfaced it. `sbom:generate` now falls back to the lockfile,
+   records the diagnostic under `dependencyTreeProblems`, marks the mode
+   `package-lock-only-degraded`, and warns; resolving the override is a dependency-resolution
+   decision for its owner, not a change to make inside this PR.
+3. **`github-advanced-security`** failed in a Copilot SWE-agent cleanup step that this diff does not
+   touch. Not acted on. CodeQL and all three `Analyze` jobs passed.
+
+Fixing (2) also exposed a flaw in the generator's own install detection: it treated any
+`node_modules` directory as an installed tree, so a bare or cache-only directory made npm report
+every package as missing. It now requires `node_modules/.package-lock.json`, and distinguishes
+npm's `missing:` (not installed) from `invalid:` (a real defect in the tree) — only the latter
+counts as degradation.
+
 ## Not verified, and why
 
 `npm run verify:ivory-tower` was **not** run. It fails at its first step: `check:ivory-toolchain`

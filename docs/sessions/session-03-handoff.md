@@ -84,6 +84,12 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
   exceptions expire 2026-11-19.
 - **Vulnerability disposition is not implemented.** `advisoryExceptions` is validated but no
   advisory feed is wired to it.
+- **The installed tree has an invalid dependency edge:** `invalid: yauzl@3.3.2, ^2.4.2 required by
+  decompress-unzip@4.0.1`. The root `overrides` pin violates the range that consumer declares.
+  Pre-existing on `stable`; the first CI run of `sbom:generate` surfaced it. SBOM generation now
+  degrades and records it rather than crashing. Resolving it is a dependency-resolution decision
+  for the override's owner — see `docs/iv-19-dependency-governance.md` §12 for the proposed nested
+  override and its trade-off.
 - **IV-15's clean-checkout evidence is still missing** (see the Session 02 reconstruction). Not
   Session 03's objective; recorded, not closed.
 
