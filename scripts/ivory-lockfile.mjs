@@ -107,11 +107,13 @@ export function dependencyClosure(packages, roots, options = {}) {
         if (!entry || entry.link === true) {
             continue;
         }
-        // Workspace entries carry a `name`; published packages under node_modules do not.
-        if (entry.name !== undefined) {
-            workspaces.push(key);
-        } else {
+        // Classify by lockfile path, not by the presence of a `name` field: npm *aliases*
+        // (`node_modules/strip-ansi-cjs` -> name `strip-ansi`) also carry `name`, and treating
+        // those as first-party silently excluded them from the licence closure.
+        if (key.includes('node_modules/')) {
             thirdParty.push(key);
+        } else {
+            workspaces.push(key);
         }
     }
 
@@ -120,6 +122,46 @@ export function dependencyClosure(packages, roots, options = {}) {
         workspaces: workspaces.sort(),
         unresolved: [...unresolved].sort(),
     };
+}
+
+/**
+ * Like {@link dependencyClosure}, but also returns the resolved edges so a caller can emit a
+ * dependency graph rather than a flat component list.
+ *
+ * @param {Record<string, LockEntry>} packages
+ * @param {string[]} roots
+ * @returns {{ thirdParty: string[], workspaces: string[], unresolved: string[], edges: Map<string, string[]> }}
+ */
+export function dependencyGraph(packages, roots) {
+    const result = dependencyClosure(packages, roots);
+    /** @type {Map<string, string[]>} */
+    const edges = new Map();
+    for (const key of [...result.thirdParty, ...result.workspaces, ...roots]) {
+        const entry = packages[key];
+        if (!entry || entry.link === true) {
+            continue;
+        }
+        const isRoot = roots.includes(key);
+        const dependencies = {
+            ...entry.dependencies,
+            ...entry.optionalDependencies,
+            ...(isRoot ? {} : {}),
+        };
+        /** @type {string[]} */
+        const resolved = [];
+        for (const name of Object.keys(dependencies)) {
+            let target = resolveDependency(packages, key, name);
+            // Follow workspace links to the workspace they point at.
+            while (target && packages[target]?.link === true && packages[target]?.resolved) {
+                target = /** @type {string} */ (packages[target].resolved);
+            }
+            if (target) {
+                resolved.push(target);
+            }
+        }
+        edges.set(key, [...new Set(resolved)].sort());
+    }
+    return { ...result, edges };
 }
 
 /**

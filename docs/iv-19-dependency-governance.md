@@ -24,7 +24,7 @@ by anyone.
 | --- | --- | --- |
 | `npm run dependency:policy` | Licences, dependency inventory, quality scope, image pins, exception register, **and the adversarial fixtures** | yes |
 | `npm run secret:scan` | Sentinel and credential scan | yes |
-| `npm run sbom:generate` | CycloneDX SBOMs into `artifacts/sbom/` | CI / release |
+| `npm run sbom:generate` | CycloneDX 1.5 SBOMs into `artifacts/sbom/` — source tree plus one per deployable, built from `package-lock.json` | CI / release |
 | `npm run notices:generate` | Third-party notices into `artifacts/notices/` | CI / release |
 | `npm run notices:check` | Fails if the notices artifact is stale | available, not gate-wired |
 | `npm run license:check` | Upstream Eclipse dash-licenses (Theia's own gate; needs Java and network) | no — upstream-owned |
@@ -198,23 +198,21 @@ Per the IV-19 V1 governance addendum (2026-08-03):
 
 ## 12. Known limits
 
-- SBOMs generated without an install run in `package-lock-only` mode. The mode is recorded in
-  `artifacts/sbom/sbom-manifest.json`; **release evidence must be regenerated from an installed
-  tree**, and the manifest makes a package-lock-only SBOM impossible to mistake for one.
-- **The installed tree currently contains an invalid dependency edge**, so `npm sbom` refuses to
-  generate from it at all:
+- **The dependency tree contains an invalid edge**, recorded in every SBOM manifest under
+  `dependencyTreeProblems`:
 
   ```text
-  invalid: yauzl@3.3.2, ^2.4.2 required by decompress-unzip@4.0.1
+  invalid: root override "yauzl": "~3.3.2" conflicts with "^2.4.2" required by decompress-unzip@4.0.1
   ```
 
-  The root `overrides` block pins `yauzl` to `~3.3.2`, which violates the range
-  `decompress-unzip@4.0.1` declares. This predates IV-19 — the SBOM tooling only surfaced it.
-  `sbom:generate` therefore falls back to the lockfile, records the exact diagnostic under
-  `dependencyTreeProblems`, marks the mode `package-lock-only-degraded`, and warns loudly, so a
-  degraded SBOM is never indistinguishable from a clean one.
+  Upstream Theia's root `overrides` block pins `yauzl` to `~3.3.2` while `decompress-unzip@4.0.1`
+  declares `^2.4.2`. This predates IV-19; the SBOM work only surfaced it. It is also why
+  `sbom:generate` does **not** use `npm sbom`: npm refuses to emit any document at all while such
+  an edge exists — on npm 11 that killed the source tree and the browser deployable outright, and
+  neither `--force` nor `--omit` bypasses it. The generator reads `package-lock.json` directly
+  instead, like every other gate here.
 
-  Resolving it is a **dependency-resolution decision, not a tooling fix**, and it belongs to
+  Resolving the edge is a **dependency-resolution decision, not a tooling fix**, and it belongs to
   whoever owns the override. The narrow remedy is a nested override letting that one consumer keep
   the 2.x line:
 
