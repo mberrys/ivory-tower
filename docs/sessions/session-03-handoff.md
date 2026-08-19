@@ -43,8 +43,9 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
 - `node scripts/check-ivory-dependency-policy.mjs` — pass
 - `node scripts/check-ivory-dependency-policy.mjs --fixtures` — pass, 7/7 rejected
 - `node scripts/check-ivory-secrets.mjs` — pass
-- `node scripts/generate-ivory-sbom.mjs` — 4 documents (source 1215, api 78, worker 77, browser 765)
-- `node scripts/generate-ivory-notices.mjs` and `--check` — 524 components, byte-identical rerun
+- `node scripts/generate-ivory-sbom.mjs` — 4 CycloneDX 1.5 documents (source 551, api 131, worker 130,
+  browser 549 components), validated for duplicate and dangling `bom-ref` values
+- `node scripts/generate-ivory-notices.mjs` and `--check` — 527 components, byte-identical rerun
 - `node scripts/check-ivory-boundaries.mjs` — pass, no regression
 - `npx prettier@3.6.2 --check` over the full Ivory format scope — pass
 - Adversarial: floating Docling tag injected into `infra/docker-compose.yml` → rejected, reverted,
@@ -77,19 +78,27 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
   `check:ivory-toolchain` requires Node 24.16.0 / npm 11.13.0 and there is no install. CI is the
   first authoritative run. Unverified in particular: `typecheck`, `lint`, and `test` under the
   widened `@theia/ivory-*` scope, and `test:ivory-browser`.
-- **Release SBOMs must be regenerated from an installed tree.** The committed evidence is
-  `package-lock-only` mode, recorded as such in the manifest.
+- **SBOMs describe the lockfile, not a resolved install.** That is deliberate — see the invalid
+  dependency edge below — but it means a component present in an installed tree yet absent from
+  `package-lock.json` would not appear. The lockfile is the contract, so this is a bounded gap.
 - **Four licences remain unresolved** — `busboy`, `streamsearch`, `fuzzy`, `xmlhttprequest-ssl`
   publish no licence field. Resolve from an installed tree before the first tagged release; the
   exceptions expire 2026-11-19.
 - **Vulnerability disposition is not implemented.** `advisoryExceptions` is validated but no
   advisory feed is wired to it.
-- **The installed tree has an invalid dependency edge:** `invalid: yauzl@3.3.2, ^2.4.2 required by
-  decompress-unzip@4.0.1`. The root `overrides` pin violates the range that consumer declares.
-  Pre-existing on `stable`; the first CI run of `sbom:generate` surfaced it. SBOM generation now
-  degrades and records it rather than crashing. Resolving it is a dependency-resolution decision
-  for the override's owner — see `docs/iv-19-dependency-governance.md` §12 for the proposed nested
+- **The dependency tree has an invalid edge:** upstream Theia's root `overrides` pins
+  `yauzl` to `~3.3.2` against the `^2.4.2` that `decompress-unzip@4.0.1` declares. Pre-existing on
+  `stable`; the first CI run surfaced it. It is why `sbom:generate` reads the lockfile instead of
+  calling `npm sbom`, which refuses to emit anything while such an edge exists. Recorded in every
+  SBOM manifest under `dependencyTreeProblems`. Resolving it is a dependency-resolution decision
+  for the override's owner — `docs/iv-19-dependency-governance.md` §12 has the proposed nested
   override and its trade-off.
+- **`Verify (windows-2022)` is red on the base branch, not because of this PR.** `verify:ivory-tower`
+  itself passes on Windows; the failure is in the separate Electron compatibility step, on upstream
+  `packages/scm/src/browser/dirty-diff/diff-computer.ts` type errors (`TS2707`/`TS4112`/`TS2351`
+  against the `diff` package). The identical failure is present on `stable` @ `40d48b0`. Not fixed
+  here: it is upstream code, out of IV-19's scope, and editing upstream packages adds merge-conflict
+  surface.
 - **IV-15's clean-checkout evidence is still missing** (see the Session 02 reconstruction). Not
   Session 03's objective; recorded, not closed.
 
@@ -120,7 +129,7 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
 
 - Do **not** treat this session as a Gate 0 pass. Gate 0 exit needs Sessions 01–06 reviewed
   together, and IV-21/IV-22/IV-128 are untouched.
-- Do **not** treat the committed SBOMs as release evidence — they are `package-lock-only`.
+- Do **not** assume the SBOMs reflect an installed tree; they are generated from `package-lock.json`.
 - Do **not** read the four `license-unknown` exceptions as licence clearance. Nothing has cleared
   them; they are timed placeholders.
 - Do **not** assume the secret scan covers bundles, logs, telemetry, or audit events. It covers the

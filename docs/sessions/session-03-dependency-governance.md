@@ -39,7 +39,9 @@ from the working tree alone — no install, no registry, no Java, no external sc
 beyond convenience: a gate that needs the network is a gate that gets skipped. It also makes the
 result reproducible from a commit by anyone, which is what "release evidence" has to mean.
 
-`npm sbom --sbom-format cyclonedx` is built into npm, so SBOM generation added no dependency either.
+SBOM generation started out shelling to `npm sbom` and ended up reading the lockfile too, for the
+reason recorded below: npm refuses to emit any document while the tree holds an invalid dependency
+edge, and this tree holds one. Every gate here now depends only on files in the working tree.
 
 **Fixtures execute the gate.** The existing boundary fixtures
 (`scripts/ivory-boundary-fixtures.json`) only assert that *some rule covers* each prohibited import.
@@ -112,8 +114,8 @@ directly.
 | `node scripts/check-ivory-dependency-policy.mjs` | pass — licences, inventory, quality scope, image pins, exceptions |
 | `node scripts/check-ivory-dependency-policy.mjs --fixtures` | pass — 7/7 fixtures still rejected, each for its own reason |
 | `node scripts/check-ivory-secrets.mjs` | pass — no sentinel or credential pattern |
-| `node scripts/generate-ivory-sbom.mjs` | 4 CycloneDX documents: source 1215, ivory-api 78, ivory-worker 77, ivory-browser 765 components |
-| `node scripts/generate-ivory-notices.mjs` | 524 components, 4 licence-unresolved |
+| `node scripts/generate-ivory-sbom.mjs` | 4 CycloneDX 1.5 documents: source 551, ivory-api 131, ivory-worker 130, ivory-browser 549 components; validated for duplicate and dangling `bom-ref` |
+| `node scripts/generate-ivory-notices.mjs` | 527 components, 4 licence-unresolved |
 | `node scripts/generate-ivory-notices.mjs --check` | pass — byte-identical on regeneration |
 | `node scripts/check-ivory-boundaries.mjs` | pass — no regression |
 | `npx prettier@3.6.2 --check` over the full Ivory format scope | pass, including `ivory-identity` |
@@ -140,20 +142,36 @@ Three failures on `5baad3e`, two of them this session's to own:
    same repair commit `cc6db16` made for the other packages. This is the cost of widening a format
    scope: the gate is only as portable as the checkout rules underneath it.
 2. **`Dependency governance evidence (IV-19)` — `npm sbom` refused to run**:
-   `invalid: yauzl@3.3.2, ^2.4.2 required by decompress-unzip@4.0.1`. The root `overrides` block
-   pins `yauzl` to `~3.3.2`, violating the range that consumer declares. **Pre-existing on
-   `stable`** — the new tooling only surfaced it. `sbom:generate` now falls back to the lockfile,
-   records the diagnostic under `dependencyTreeProblems`, marks the mode
-   `package-lock-only-degraded`, and warns; resolving the override is a dependency-resolution
-   decision for its owner, not a change to make inside this PR.
+   `invalid: yauzl@3.3.2, ^2.4.2 required by decompress-unzip@4.0.1`. Upstream Theia's root
+   `overrides` block pins `yauzl` to `~3.3.2`, violating the range that consumer declares.
+   **Pre-existing on `stable`** — the new tooling only surfaced it.
+
+   The first attempt was to catch the error and fall back to `--package-lock-only`. That failed
+   too: reproducing locally with `npx npm@11.13.0` showed npm 11 rejects the lockfile path as
+   well, and neither `--force` nor extra `--omit` flags bypass the check. Workspace-scoped runs
+   worked for `ivory-api` and `ivory-worker` but not for `ivory-browser` — a required deployable.
+
+   Since `decompress` reaches four upstream packages and the override arrived in an upstream
+   commit, changing it is upstream's dependency-resolution decision, not this PR's. So
+   `sbom:generate` now builds CycloneDX 1.5 directly from `package-lock.json`, which is what every
+   other gate in this session already does. The invalid edge is still detected and recorded under
+   `dependencyTreeProblems` — the generator rediscovers it independently, from the overrides block,
+   and reports the same edge npm did.
 3. **`github-advanced-security`** failed in a Copilot SWE-agent cleanup step that this diff does not
    touch. Not acted on. CodeQL and all three `Analyze` jobs passed.
 
-Fixing (2) also exposed a flaw in the generator's own install detection: it treated any
-`node_modules` directory as an installed tree, so a bare or cache-only directory made npm report
-every package as missing. It now requires `node_modules/.package-lock.json`, and distinguishes
-npm's `missing:` (not installed) from `invalid:` (a real defect in the tree) — only the latter
-counts as degradation.
+Writing the generator then surfaced a **real defect in the licence gate itself**. Validating the
+output for duplicate `bom-ref` values (which CycloneDX forbids) turned up three, and the cause was
+that `dependencyClosure` classified a package as first-party if its lockfile entry carried a `name`
+field. npm *aliases* carry one too — `node_modules/strip-ansi-cjs` has `name: "strip-ansi"` — so
+five aliased packages (`react-is-18`, `react-is-19`, `string-width-cjs`, `strip-ansi-cjs`,
+`wrap-ansi-cjs`) were being treated as workspaces and **skipped by the licence closure entirely**.
+All five are MIT, so nothing was wrongly allowed, but an aliased dependency with a prohibited
+licence would have passed. Classification is now by lockfile path (`node_modules/` in the key),
+which is exact. The notices artifact grew from 524 to 527 components as a result.
+
+This is the argument for validating your own evidence rather than trusting that it looks right: the
+duplicate-ref check was written to satisfy a schema rule and found a hole in the gate instead.
 
 ## Not verified, and why
 
