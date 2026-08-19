@@ -8,7 +8,6 @@
     "@theia/filesystem": "1.74.0",
     "@theia/monaco": "1.74.0",
     "@theia/monaco-editor-core": "1.108.201",
-    "@types/diff": "^8.0.0",
     "diff": "^8.0.3",
     "p-debounce": "^2.1.0",
     "react-textarea-autosize": "^8.5.9",
