@@ -16,9 +16,7 @@
 
 import { TextSpan } from '../../common/passage-anchor';
 import { digestHex } from '../digest';
-import {
-    deriveArtifactId, deriveExecutionFingerprint, derivePassageId, deriveSourceVersionId, sourceContentDigest
-} from '../identity';
+import { deriveArtifactId, deriveExecutionFingerprint, derivePassageId, deriveSourceVersionId, sourceContentDigest } from '../identity';
 
 /**
  * A deterministic corpus for the IV-17 verification suite.
@@ -91,20 +89,23 @@ export const IDENTITY_KEYS: readonly IdentityKey[] = [
     'chunkFingerprint',
     'chunkArtifactId',
     'embeddingFingerprint',
-    'embeddingArtifactId'
+    'embeddingArtifactId',
 ];
 
 /** The text of the fixture document, as the bytes that would be ingested. */
 export const FIXTURE_DOCUMENT =
-    'Institutional trust in survey research declined between 1998 and 2016. '
-    + 'The decline was sharpest among respondents with no prior contact with the institution. '
-    + 'We report response rates by wave in Table 2.';
+    'Institutional trust in survey research declined between 1998 and 2016. ' +
+    'The decline was sharpest among respondents with no prior contact with the institution. ' +
+    'We report response rates by wave in Table 2.';
 
 /** A single contiguous quotation. */
 export const SINGLE_SPAN: readonly TextSpan[] = [{ start: 0, end: 70 }];
 
 /** A quotation interrupted by an intervening sentence, carried as two ascending ranges. */
-export const MULTI_SPAN: readonly TextSpan[] = [{ start: 71, end: 120 }, { start: 164, end: 196 }];
+export const MULTI_SPAN: readonly TextSpan[] = [
+    { start: 71, end: 120 },
+    { start: 164, end: 196 },
+];
 
 /** The unmutated inputs every boundary case is compared against. */
 export const BASELINE_INPUTS: PipelineInputs = {
@@ -117,8 +118,8 @@ export const BASELINE_INPUTS: PipelineInputs = {
     metadata: {
         title: 'Institutional Trust and Survey Nonresponse',
         author: 'Okonkwo, A.',
-        year: 2019
-    }
+        year: 2019,
+    },
 };
 
 /**
@@ -130,7 +131,7 @@ export const BASELINE_INPUTS: PipelineInputs = {
 export function runPipeline(inputs: PipelineInputs): PipelineIdentities {
     const sourceVersionId = deriveSourceVersionId({
         sourceId: inputs.sourceId,
-        contentDigest: sourceContentDigest(inputs.bytes)
+        contentDigest: sourceContentDigest(inputs.bytes),
     }).id;
 
     const extractionFingerprint = deriveExecutionFingerprint({
@@ -138,33 +139,34 @@ export function runPipeline(inputs: PipelineInputs): PipelineIdentities {
         transformationVersion: inputs.parserVersion,
         inputIds: [sourceVersionId],
         parameters: { ocr: true, layout: 'preserve' },
-        policyVersion: inputs.policyVersion
+        policyVersion: inputs.policyVersion,
     }).id;
 
     const extractionArtifactId = deriveArtifactId({
         fingerprint: extractionFingerprint,
         outputRole: 'text',
-        determinism: 'deterministic'
+        determinism: 'deterministic',
     }).id;
 
-    const passageId = (spans: readonly TextSpan[]): string => derivePassageId({
-        sourceVersionId,
-        extractionArtifactId,
-        spans
-    }).id;
+    const passageId = (spans: readonly TextSpan[]): string =>
+        derivePassageId({
+            sourceVersionId,
+            extractionArtifactId,
+            spans,
+        }).id;
 
     const chunkFingerprint = deriveExecutionFingerprint({
         transformation: 'chunker.fixed-window',
         transformationVersion: '1.2.0',
         inputIds: [extractionArtifactId],
         parameters: { chunkSize: inputs.chunkSize, overlap: 64 },
-        policyVersion: inputs.policyVersion
+        policyVersion: inputs.policyVersion,
     }).id;
 
     const chunkArtifactId = deriveArtifactId({
         fingerprint: chunkFingerprint,
         outputRole: 'chunks',
-        determinism: 'deterministic'
+        determinism: 'deterministic',
     }).id;
 
     const embeddingFingerprint = deriveExecutionFingerprint({
@@ -172,7 +174,7 @@ export function runPipeline(inputs: PipelineInputs): PipelineIdentities {
         transformationVersion: '1.0.0',
         inputIds: [chunkArtifactId],
         parameters: { model: inputs.embeddingModel },
-        policyVersion: inputs.policyVersion
+        policyVersion: inputs.policyVersion,
     }).id;
 
     // An embedding provider is an `observed` transformation: identical inputs need not return
@@ -183,7 +185,7 @@ export function runPipeline(inputs: PipelineInputs): PipelineIdentities {
         fingerprint: embeddingFingerprint,
         outputRole: 'vectors',
         determinism: 'observed',
-        outputDigest: digestHex(`vectors of ${inputs.embeddingModel} over ${chunkArtifactId}`)
+        outputDigest: digestHex(`vectors of ${inputs.embeddingModel} over ${chunkArtifactId}`),
     }).id;
 
     return {
@@ -196,7 +198,7 @@ export function runPipeline(inputs: PipelineInputs): PipelineIdentities {
         chunkFingerprint,
         chunkArtifactId,
         embeddingFingerprint,
-        embeddingArtifactId
+        embeddingArtifactId,
     };
 }
 

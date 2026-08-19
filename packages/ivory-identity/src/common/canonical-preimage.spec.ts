@@ -19,9 +19,10 @@ import { canonicalPreimage, CanonicalPreimageError, preimageBytes } from './cano
 import { PREIMAGE_VERSION } from './identity-scheme';
 
 describe('canonicalPreimage', () => {
-
     it('is stable for the same domain and fields', () => {
-        expect(canonicalPreimage('passage', [{ name: 'a', value: 'x' }])).to.equal(canonicalPreimage('passage', [{ name: 'a', value: 'x' }]));
+        expect(canonicalPreimage('passage', [{ name: 'a', value: 'x' }])).to.equal(
+            canonicalPreimage('passage', [{ name: 'a', value: 'x' }]),
+        );
     });
 
     it('pins the framing version and the domain', () => {
@@ -36,20 +37,35 @@ describe('canonicalPreimage', () => {
     });
 
     it('separates values that plain concatenation would merge', () => {
-        const left = canonicalPreimage('passage', [{ name: 'a', value: 'ab' }, { name: 'b', value: 'c' }]);
-        const right = canonicalPreimage('passage', [{ name: 'a', value: 'a' }, { name: 'b', value: 'bc' }]);
+        const left = canonicalPreimage('passage', [
+            { name: 'a', value: 'ab' },
+            { name: 'b', value: 'c' },
+        ]);
+        const right = canonicalPreimage('passage', [
+            { name: 'a', value: 'a' },
+            { name: 'b', value: 'bc' },
+        ]);
         expect(right).to.not.equal(left);
     });
 
     it('is not fooled by a value containing the field separators', () => {
         const injected = canonicalPreimage('passage', [{ name: 'a', value: 'x\x1eb\x1f1\x1fy' }]);
-        const genuine = canonicalPreimage('passage', [{ name: 'a', value: 'x' }, { name: 'b', value: 'y' }]);
+        const genuine = canonicalPreimage('passage', [
+            { name: 'a', value: 'x' },
+            { name: 'b', value: 'y' },
+        ]);
         expect(injected).to.not.equal(genuine);
     });
 
     it('depends on field order', () => {
-        const forward = canonicalPreimage('passage', [{ name: 'a', value: 'x' }, { name: 'b', value: 'y' }]);
-        const reversed = canonicalPreimage('passage', [{ name: 'b', value: 'y' }, { name: 'a', value: 'x' }]);
+        const forward = canonicalPreimage('passage', [
+            { name: 'a', value: 'x' },
+            { name: 'b', value: 'y' },
+        ]);
+        const reversed = canonicalPreimage('passage', [
+            { name: 'b', value: 'y' },
+            { name: 'a', value: 'x' },
+        ]);
         expect(reversed).to.not.equal(forward);
     });
 
@@ -61,8 +77,12 @@ describe('canonicalPreimage', () => {
     });
 
     it('distinguishes an empty value from an absent field', () => {
-        expect(canonicalPreimage('passage', [{ name: 'a', value: '' }, { name: 'b', value: 'y' }]))
-            .to.not.equal(canonicalPreimage('passage', [{ name: 'b', value: 'y' }]));
+        expect(
+            canonicalPreimage('passage', [
+                { name: 'a', value: '' },
+                { name: 'b', value: 'y' },
+            ]),
+        ).to.not.equal(canonicalPreimage('passage', [{ name: 'b', value: 'y' }]));
     });
 
     it('nests without ambiguity', () => {
@@ -77,8 +97,12 @@ describe('canonicalPreimage', () => {
     });
 
     it('refuses a duplicated field name', () => {
-        expect(() => canonicalPreimage('passage', [{ name: 'a', value: 'x' }, { name: 'a', value: 'y' }]))
-            .to.throw(CanonicalPreimageError, 'declared twice');
+        expect(() =>
+            canonicalPreimage('passage', [
+                { name: 'a', value: 'x' },
+                { name: 'a', value: 'y' },
+            ]),
+        ).to.throw(CanonicalPreimageError, 'declared twice');
     });
 
     it('refuses field names and domains that could disturb the framing', () => {
