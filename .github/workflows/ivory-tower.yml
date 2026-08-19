@@ -50,3 +50,31 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: npm.cmd run build:electron
+
+  governance:
+    name: Dependency governance evidence (IV-19)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pinned Node toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Dependency, licence, pinning, and fixture gate
+        run: npm run dependency:policy
+      - name: Secret sentinel scan
+        run: npm run secret:scan
+      - name: Generate SBOMs
+        run: npm run sbom:generate
+      - name: Generate third-party notices
+        run: npm run notices:generate
+      - name: Upload governance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ivory-governance-evidence-${{ github.sha }}
+          path: artifacts/**
+          if-no-files-found: error
