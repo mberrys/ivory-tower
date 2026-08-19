@@ -19,6 +19,7 @@ platform and holds one promise above all others: **a citation stays true**.
 - [Roadmap](#roadmap)
 - [Repository layout](#repository-layout)
 - [Building and running](#building-and-running)
+- [Observability (Sentry)](#observability-sentry)
 - [Contributing](#contributing)
 - [Upstream Theia documentation](#upstream-theia-documentation)
 - [License](#license)
@@ -36,7 +37,7 @@ their reference implementations.
 | Milestone | V1 — product and architecture contract |
 | Tracked issues | 125 across 7 phases ([Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)) |
 | Closed | IV-8, IV-102 |
-| Delivered in this repository | IV-17 — identifiers (specification + implementation) |
+| Delivered in this repository | IV-8 — product model; IV-102 — landscape review; IV-17 — identifiers (specification + implementation) |
 | Platform baseline | Eclipse Theia v1.74.0 |
 | Default branch | `dev` |
 
@@ -59,9 +60,11 @@ schema.
 
 V1 is deliberately finite. It delivers exactly two provenance-first workflows:
 
-1. **Authorized scholarly corpus → research dossier.** Sources are ingested immutably, extracted,
-   chunked, retrieved, and turned into claims backed by exact passage anchors, with contradictions
-   and limitations kept visible.
+1. **Allowlisted open scholarly corpus → research dossier.** PMC OA, arXiv, DOAJ-indexed open-access
+   journals, approved preprint repositories, and CC/public-domain full text are ingested immutably,
+   extracted, chunked, retrieved, and turned into claims backed by exact passage anchors, with
+   contradictions and limitations kept visible. Closed or license-ambiguous material is outside the
+   V1 acceptance path.
 2. **Authorized, non-restricted survey file → validated descriptive analysis.** A bounded set of
    approved descriptive operators over uploaded survey data, with weighting, missingness, and
    small-cell checks, and enforced boundaries on causal language.
@@ -72,10 +75,10 @@ optional researcher-approved synthesis. Guided and expert paths share one staged
 ### What V1 is not
 
 Not a paper writer, not a generic dashboard, not an autonomous analyst, not an unrestricted
-statistician, and not an unrestricted document-chat system. Broad connectors, arbitrary code
-execution, causal automation, team collaboration, outbound MCP, restricted microdata, and
-first-party model adoption are explicit non-goals for V1 — several are scheduled as post-V1 work
-in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
+statistician, and not an unrestricted document-chat system. Closed or license-ambiguous scholarly
+material, broad connectors, arbitrary code execution, causal automation, team collaboration,
+outbound MCP, restricted microdata, and first-party model adoption are explicit non-goals for V1 —
+several are scheduled as post-V1 work in [Phase 7](#phase-7--post-v1--interoperability-and-advanced-capabilities).
 
 ## Delivered work
 
@@ -86,6 +89,9 @@ disagree, the specification is the contract and the implementation is the defect
 
 | Document | Issue | Covers |
 |---|---|---|
+| [`docs/iv-8-product-model.md`](docs/iv-8-product-model.md) | IV-8 | Product definition, canonical object vocabulary, research lifecycle, supported content, non-goals, traceability matrix |
+| [`docs/iv-102-landscape-review.md`](docs/iv-102-landscape-review.md) | IV-102 | Landscape review protocol, classified source register, findings, and the decision ledger that binds product claims |
+| [`docs/iv-128-content-rights.md`](docs/iv-128-content-rights.md) | IV-128 *(issue pending)* | Content licensing, TDM rights, provider transfer, the content-rights matrix, and the recommended V1 admission policy. **Not legal advice** |
 | [`docs/iv-17-identifiers.md`](docs/iv-17-identifiers.md) | IV-17 | Stable source, passage, and derived-artifact identifiers |
 
 ### Packages in this repository
@@ -93,6 +99,7 @@ disagree, the specification is the contract and the implementation is the defect
 | Package | Implements |
 |---|---|
 | [`packages/ivory-identity`](packages/ivory-identity) | IV-17 — minted and derived identifiers, canonical preimages, passage anchors, alias resolution |
+| [`packages/ivory-tower-content-policy`](packages/ivory-tower-content-policy) | IV-128 — content classes and the V1 safe subset, recorded rights bases, and the two-gate fail-closed admission decision |
 
 **IV-17 in one paragraph.** Every identifier is either *minted* (`prj_`, `cor_`, `src_`, `exec_` —
 allocated once, never re-derivable) or *derived* (`sv_`, `psg_`, `art_`, `fp_` — the hash of a
@@ -118,9 +125,11 @@ npx lerna run test --scope @theia/ivory-identity
 | **IV-102** — Conduct a systematic social-science tool, source, and adoption landscape review | A reproducible landscape review with claim-level source classification. Verdicts: visualization need documented at moderate confidence; equity of access supported as a design constraint; literature and OSF opportunities provisional; evidence-clearinghouse and CAQDAS opportunities unresolved; restricted federal microdata integration refuted. No demand evidence was found for multi-agent orchestration or model agnosticism, so both may be justified only as bounded architecture choices — never as user-facing market claims. Declared limitations (peer-reviewed source share below the review's own gate, US-weighted geography) stay visible rather than being treated as completion evidence. |
 
 > [!NOTE]
-> IV-8's and IV-102's deliverables currently live in the [Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)
-> and are not yet mirrored into `docs/` in this repository. IV-17 is the first issue whose
-> specification and implementation landed here.
+> IV-8 and IV-102 are both published under [`docs/`](docs), IV-102 across three files — the
+> review, its [protocol](docs/iv-102-chapter-plan.md), and its
+> [claim/source record](docs/iv-102-phase1-literature-search-report.md). Read the review's
+> limitations section before citing any figure from it: its declared peer-reviewed share sits
+> below its own stated gate, and its geographic coverage is US-weighted.
 
 ## Roadmap
 
@@ -220,6 +229,8 @@ a platform, not rewritten.
 | [`doc/`](doc) | Upstream Theia developer documentation |
 | [`configs/`](configs) | Shared TypeScript, ESLint, Mocha, and NYC configuration |
 | [`CLAUDE.md`](CLAUDE.md) | Repository guidance for AI coding agents |
+| [`.cursor/environment.json`](.cursor/environment.json) | Cursor Cloud remote development environment |
+| [`AGENTS.md`](AGENTS.md) | Cloud-agent setup, verification, and constraints |
 
 Each Ivory Tower package follows Theia's platform layout: `src/common` for code safe to import
 anywhere, `src/browser` for frontend, `src/node` for backend. `@theia/ivory-identity` splits along
@@ -250,6 +261,38 @@ npx lerna run test --scope @theia/ivory-identity
 ```
 
 Full build and setup details are in [`doc/Developing.md`](doc/Developing.md).
+
+## Observability (Sentry)
+
+`ivory-api` and `ivory-worker` support optional error reporting through
+[Sentry](https://sentry.io/). Sentry is **disabled by default**; set a DSN to
+enable it. This is observability only — it does not replace container hosting
+for the runtime stack.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SENTRY_DSN` | unset | Enables Sentry when set |
+| `SENTRY_ENABLED` | auto | Optional `true`/`false` override |
+| `SENTRY_ENVIRONMENT` | `IVORY_TOWER_ENV` | Sentry environment tag |
+| `SENTRY_RELEASE` | unset | Optional release identifier |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0` | Tracing sample rate (`0`–`1`) |
+
+Example:
+
+```bash
+SENTRY_DSN=https://<key>@o<org>.ingest.sentry.io/<project>
+IVORY_TOWER_ENV=staging
+SENTRY_RELEASE=ivory-tower@0.1.0
+```
+
+Events are scrubbed before they leave the process. Authorization headers and
+evidence, source upload bodies, database URLs, tokens, and passage/content
+fields are redacted. Unexpected API failures and terminal worker execution
+failures are reported; retryable worker errors are skipped to avoid noise.
+
+The adapter lives in
+[`packages/ivory-tower-infrastructure/src/sentry.ts`](packages/ivory-tower-infrastructure/src/sentry.ts).
+Theia browser frontend instrumentation is not wired yet.
 
 ## Contributing
 

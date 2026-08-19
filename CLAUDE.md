@@ -37,7 +37,7 @@ Reference work by issue ID (`IV-83`, `IV-97`) — the doc, the critical path, an
 
 ## What Ivory Tower is
 
-A private, academic-first **corpus-to-cited-conclusion** workflow: ingest authorized scholarly sources, retrieve evidence, extract reported data, generate *proposed* claims, have a researcher adjudicate them, and export a cited brief with verifiable lineage. V1 also carries a second bounded path — authorized non-restricted survey file to validated descriptive analysis — over the same provenance model.
+A private, academic-first **corpus-to-cited-conclusion** workflow: ingest allowlisted open scholarly sources, retrieve evidence, extract reported data, generate *proposed* claims, have a researcher adjudicate them, and export a cited brief with verifiable lineage. V1 also carries a second bounded path — authorized non-restricted survey file to validated descriptive analysis — over the same provenance model.
 
 ## Architectural invariants
 
@@ -59,7 +59,7 @@ Success at an early stage must never mask failure at a later one. Benchmarks, te
 
 **4. Everything is reconstructable.** Protocol, source, passage, job, pipeline, model, prompt, tool, retrieval, validation, human decision, and export versions must all be reconstructable. Hashes, query syntax, ranking weights, model/tool versions, and manifests may be visually collapsed but never omitted from persistence or export.
 
-**5. Admission and egress fail closed.** Restricted content is rejected *before* conversion or external transmission (IV-83). External provider dispatch must be project-authorized, disclosed, and policy-approved (IV-87).
+**5. Admission and egress fail closed.** Path A rejects content outside the V1 safe-open allowlist or otherwise restricted *before* conversion or external transmission (IV-83). External provider dispatch must be project-authorized, disclosed, and policy-approved (IV-87).
 
 **6. Research protocol is staged, not gated.** `exploratory -> specified -> export_snapshot`. Revisions branch and preserve the predecessor, rationale, changed scope, and affected artifacts. No methodological gate before reading; no methodological amnesia afterward.
 
@@ -77,7 +77,7 @@ The full list of non-negotiable release gates is at the end of `docs/v1-build-vs
 - Theia is EPL-2.0, not MIT — IV-19 owns that decision.
 - Because this is a fork, **minimize divergence in files upstream owns.** Prefer new Ivory Tower packages under `packages/` over edits to upstream packages; every upstream file you modify becomes a recurring merge conflict.
 
-Still open (ADR-001 §6): extension-host policy, desktop wrapper technology, local Docling bundling, queue technology, object storage, migration ownership, and per-boundary failure models. Confirm with the user before resolving any of these in code.
+Resolved in `docs/adr-002-runtime-topology.md`: V1 application plugin host omitted while the upstream fork remains unchanged; Theia Electron reserved for the immediately post-V1 local profile; Graphile Worker queue; PostgreSQL canonical state; S3-compatible immutable object storage; forward-only `ivory-migrate`; and explicit per-boundary failure models. Local Docling packaging remains an immediately post-V1 compatibility gate.
 
 The supporting stack:
 
