@@ -22,14 +22,19 @@ const CANONICAL = formatIdentifier('source', '0b7bd0e7bd2d4f2f9c4e6a1d8f3b5c72')
 const SUPERSEDED = formatIdentifier('source', '9a1c4e8f2b6d40a3b8e5c7f1d2a4b6e8');
 
 function alias(from: string, to: string): IdentifierAlias {
-    return { alias: from, aliasScheme: 'iv-id/0', canonicalId: to, reason: 'scheme migration fixture', createdAt: '2026-01-01T00:00:00.000Z' };
+    return {
+        alias: from,
+        aliasScheme: 'iv-id/0',
+        canonicalId: to,
+        reason: 'scheme migration fixture',
+        createdAt: '2026-01-01T00:00:00.000Z',
+    };
 }
 
 describe('resolveIdentifier', () => {
-
     const aliases = new Map([
         ['legacy-source-4711', alias('legacy-source-4711', CANONICAL)],
-        [SUPERSEDED, alias(SUPERSEDED, CANONICAL)]
+        [SUPERSEDED, alias(SUPERSEDED, CANONICAL)],
     ]);
 
     it('resolves a current identifier without consulting the alias table', () => {
@@ -57,7 +62,7 @@ describe('resolveIdentifier', () => {
     it('refuses to follow an alias chain', () => {
         const chained = new Map([
             ['a', alias('a', SUPERSEDED)],
-            [SUPERSEDED, alias(SUPERSEDED, CANONICAL)]
+            [SUPERSEDED, alias(SUPERSEDED, CANONICAL)],
         ]);
         expect(() => resolveIdentifier('a', chained)).to.throw(IdentifierFormatError, 'itself an alias');
     });
