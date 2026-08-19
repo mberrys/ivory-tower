@@ -51,6 +51,26 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
 - Adversarial: floating Docling tag injected into `infra/docker-compose.yml` → rejected, reverted,
   gate green again; every fixture inspected individually for the correct failure reason
 
+## CI evidence
+
+Run [32282211584](https://github.com/mberrys/ivory-tower/actions/runs/32282211584) at `1f4fa2b`:
+
+| Check | Result |
+| --- | --- |
+| `Verify (ubuntu-22.04)` | **pass** — full `verify:ivory-tower` |
+| `Verify (windows-2022)` | `verify:ivory-tower` **passed**; job red only at the separate Electron compatibility step (see below) |
+| `Dependency governance evidence (IV-19)` | **pass** — uploaded 4 SBOMs, the manifest, and the notices artifact (184 KB, artifact 9376303576) |
+| CodeQL, `Analyze (actions/c-cpp/javascript-typescript)` | pass |
+| `github-advanced-security` | fail — a GitHub Copilot SWE-agent cleanup job, unrelated to this diff; failed identically on all three head SHAs (`5baad3e`, `4313de0`, `1f4fa2b`) |
+
+**The Windows Electron failure is the base branch's, not this PR's.** `build:electron` fails on
+upstream `packages/scm/src/browser/dirty-diff/diff-computer.ts` with `TS2707`, `TS4112`, and
+`TS2351` against the `diff` package's types. The identical failure is present on `stable` @
+`40d48b0`, where `verify:ivory-tower` also passed and only the Electron step was red
+([run 32218775390](https://github.com/mberrys/ivory-tower/actions/runs/32218775390)). Not fixed
+here: it is upstream code, outside IV-19, and editing upstream packages adds merge-conflict surface
+against the fork.
+
 ## Evidence produced
 
 `artifacts/sbom/{sbom-source,sbom-ivory-api,sbom-ivory-worker,sbom-ivory-browser}.cdx.json` plus
@@ -74,10 +94,10 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
 
 ## Acceptance criteria still open
 
-- **`npm run verify:ivory-tower` has not been run** on the pinned toolchain. It cannot be here:
-  `check:ivory-toolchain` requires Node 24.16.0 / npm 11.13.0 and there is no install. CI is the
-  first authoritative run. Unverified in particular: `typecheck`, `lint`, and `test` under the
-  widened `@theia/ivory-*` scope, and `test:ivory-browser`.
+- ~~`npm run verify:ivory-tower` has not been run on the pinned toolchain.~~ **Closed by CI at
+  `1f4fa2b`:** the gate passes on both `ubuntu-22.04` and `windows-2022`, including `typecheck`,
+  `lint`, and `test` under the widened `@theia/ivory-*` scope, and `test:ivory-browser`. See
+  **CI evidence** below.
 - **SBOMs describe the lockfile, not a resolved install.** That is deliberate — see the invalid
   dependency edge below — but it means a component present in an installed tree yet absent from
   `package-lock.json` would not appear. The lockfile is the contract, so this is a bounded gap.
@@ -104,9 +124,10 @@ All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dep
 
 ## Known regressions / risks
 
-- The widened lerna scopes now run `compile`, `lint`, and `test` for `@theia/ivory-identity` inside
-  the Ivory gate. Its tests already ran under upstream `test:theia`, so this should be additive —
-  but it is unverified here and is the most likely place for CI to go red first.
+- ~~The widened lerna scopes are unverified.~~ Verified green on both CI platforms at `1f4fa2b`.
+  Bringing `@theia/ivory-identity` into the format scope did require a `.gitattributes` rule
+  (`eol=lf`), without which Windows checked the files out as CRLF and the pinned
+  `endOfLine: "lf"` rejected them.
 - The fail-closed inventory means any new direct dependency now fails until someone records its
   purpose, owner, and data boundary. This is intended friction, and it will surprise the first
   person it stops.
