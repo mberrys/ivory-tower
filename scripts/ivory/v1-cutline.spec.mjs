@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { readManifest, validateManifest } from './cutline-model.mjs';
+import { readManifest, validateManifest, verifyGeneratedMap } from './cutline-model.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = readManifest(path.join(ROOT, 'docs/generated/v1-cutline.json'));
@@ -47,4 +47,16 @@ test('rejects incomplete Conditional metadata', () => {
     const candidate = clone();
     candidate.classificationMetadata[0].ifNotTriggered = '';
     assert.match(validateManifest(candidate).errors.join('\n'), /missing Conditional metadata field ifNotTriggered/);
+});
+
+test('accepts generated cutline blocks with CRLF line endings', () => {
+    const documentPath = path.join(ROOT, 'docs/v1-build-vs-open-source.md');
+    const document = fs.readFileSync(documentPath, 'utf8');
+    const crlfDocumentPath = path.join(ROOT, 'docs/.v1-cutline-crlf-test.md');
+    fs.writeFileSync(crlfDocumentPath, document.replace(/\n/g, '\r\n'), 'utf8');
+    try {
+        assert.equal(verifyGeneratedMap(crlfDocumentPath, manifest).ok, true);
+    } finally {
+        fs.rmSync(crlfDocumentPath, { force: true });
+    }
 });
