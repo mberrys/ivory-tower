@@ -18,7 +18,15 @@ import { expect } from 'chai';
 import { IDENTIFIER_PATTERN } from '../common/identifier';
 import { mintIdentifier } from './identity';
 import {
-    BASELINE_INPUTS, FIXTURE_OTHER_SOURCE_ID, FIXTURE_REVISED_POLICY_VERSION, IDENTITY_KEYS, IdentityKey, mutate, PipelineIdentities, revisedDocumentBytes, runPipeline
+    BASELINE_INPUTS,
+    FIXTURE_OTHER_SOURCE_ID,
+    FIXTURE_REVISED_POLICY_VERSION,
+    IDENTITY_KEYS,
+    IdentityKey,
+    mutate,
+    PipelineIdentities,
+    revisedDocumentBytes,
+    runPipeline,
 } from './test/identity-fixtures';
 
 /**
@@ -31,7 +39,6 @@ import {
  * under-invalidates lets them drift.
  */
 describe('identity boundaries', () => {
-
     const baseline = runPipeline(BASELINE_INPUTS);
 
     function expectPartition(mutated: PipelineIdentities, changed: readonly IdentityKey[]): void {
@@ -46,7 +53,6 @@ describe('identity boundaries', () => {
     }
 
     describe('determinism', () => {
-
         it('reproduces every identifier when the same inputs are run twice', () => {
             expect(runPipeline(BASELINE_INPUTS)).to.deep.equal(runPipeline(BASELINE_INPUTS));
         });
@@ -69,7 +75,6 @@ describe('identity boundaries', () => {
     });
 
     describe('controlled mutations', () => {
-
         it('replacing the source bytes moves everything below the source', () => {
             expectPartition(runPipeline(mutate({ bytes: revisedDocumentBytes() })), [
                 'sourceVersionId',
@@ -80,14 +85,19 @@ describe('identity boundaries', () => {
                 'chunkFingerprint',
                 'chunkArtifactId',
                 'embeddingFingerprint',
-                'embeddingArtifactId'
+                'embeddingArtifactId',
             ]);
         });
 
         it('correcting bibliographic metadata moves nothing', () => {
-            expectPartition(runPipeline(mutate({
-                metadata: { title: 'Institutional Trust and Survey Non-response', author: 'Okonkwo, Adaeze', year: 2019 }
-            })), []);
+            expectPartition(
+                runPipeline(
+                    mutate({
+                        metadata: { title: 'Institutional Trust and Survey Non-response', author: 'Okonkwo, Adaeze', year: 2019 },
+                    }),
+                ),
+                [],
+            );
         });
 
         it('bumping the parser version moves the extraction and everything below it, but not the source version', () => {
@@ -99,7 +109,7 @@ describe('identity boundaries', () => {
                 'chunkFingerprint',
                 'chunkArtifactId',
                 'embeddingFingerprint',
-                'embeddingArtifactId'
+                'embeddingArtifactId',
             ]);
         });
 
@@ -108,14 +118,14 @@ describe('identity boundaries', () => {
                 'chunkFingerprint',
                 'chunkArtifactId',
                 'embeddingFingerprint',
-                'embeddingArtifactId'
+                'embeddingArtifactId',
             ]);
         });
 
         it('changing the embedding model moves only the embeddings', () => {
             expectPartition(runPipeline(mutate({ embeddingModel: 'text-embedding-3-small' })), [
                 'embeddingFingerprint',
-                'embeddingArtifactId'
+                'embeddingArtifactId',
             ]);
         });
 
@@ -128,7 +138,7 @@ describe('identity boundaries', () => {
                 'chunkFingerprint',
                 'chunkArtifactId',
                 'embeddingFingerprint',
-                'embeddingArtifactId'
+                'embeddingArtifactId',
             ]);
         });
 
@@ -138,7 +148,6 @@ describe('identity boundaries', () => {
     });
 
     describe('citation survival', () => {
-
         it('re-indexing unchanged bytes preserves the source version and its passages', () => {
             const reindexed = runPipeline(BASELINE_INPUTS);
             expect(reindexed.sourceVersionId).to.equal(baseline.sourceVersionId);

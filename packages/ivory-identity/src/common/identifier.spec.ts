@@ -16,7 +16,13 @@
 
 import { expect } from 'chai';
 import {
-    formatIdentifier, identifierResourceUri, IdentifierFormatError, isIdentifier, parseIdentifier, parseResourceUri, tryParseIdentifier
+    formatIdentifier,
+    identifierResourceUri,
+    IdentifierFormatError,
+    isIdentifier,
+    parseIdentifier,
+    parseResourceUri,
+    tryParseIdentifier,
 } from './identifier';
 import { IDENTIFIER_KINDS } from './identity-scheme';
 
@@ -25,7 +31,6 @@ const PROJECT_ID = formatIdentifier('project', DIGEST);
 const PASSAGE_ID = formatIdentifier('passage', '1f0c9a3e5b7d2c4a6e8f0b1d3c5a7e92');
 
 describe('identifier grammar', () => {
-
     it('formats and parses every kind', () => {
         for (const kind of IDENTIFIER_KINDS) {
             const id = formatIdentifier(kind, DIGEST);
@@ -46,7 +51,16 @@ describe('identifier grammar', () => {
     });
 
     it('rejects malformed references rather than coercing them', () => {
-        for (const value of ['', 'src', 'src_', '_'.concat(DIGEST), `src-${DIGEST}`, `unknown_${DIGEST}`, ` src_${DIGEST}`, `src_${DIGEST} `]) {
+        for (const value of [
+            '',
+            'src',
+            'src_',
+            '_'.concat(DIGEST),
+            `src-${DIGEST}`,
+            `unknown_${DIGEST}`,
+            ` src_${DIGEST}`,
+            `src_${DIGEST} `,
+        ]) {
             expect(isIdentifier(value), JSON.stringify(value)).to.be.false;
         }
     });
@@ -67,7 +81,6 @@ describe('identifier grammar', () => {
 });
 
 describe('identifier carriage safety', () => {
-
     it('survives URL encoding unchanged', () => {
         for (const kind of IDENTIFIER_KINDS) {
             const id = formatIdentifier(kind, DIGEST);
@@ -94,7 +107,6 @@ describe('identifier carriage safety', () => {
 });
 
 describe('resource URIs', () => {
-
     it('round-trips an unscoped reference', () => {
         const uri = identifierResourceUri('passage', PASSAGE_ID);
         expect(uri).to.equal(`ivory://passage/${PASSAGE_ID}`);
@@ -134,7 +146,7 @@ describe('resource URIs', () => {
             `ivory://unknown/${PASSAGE_ID}`,
             `ivory://passage/${PASSAGE_ID}/extra`,
             'ivory://passage',
-            `ivory://corpus/${PROJECT_ID}/passage/${PASSAGE_ID}`
+            `ivory://corpus/${PROJECT_ID}/passage/${PASSAGE_ID}`,
         ]) {
             expect(parseResourceUri(uri), uri).to.be.undefined;
         }
