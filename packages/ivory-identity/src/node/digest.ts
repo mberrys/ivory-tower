@@ -25,7 +25,9 @@ import { DIGEST_ALGORITHM, IDENTIFIER_DIGEST_LENGTH } from '../common/identity-s
  * `canonicalPreimage` and the derivation rules in `identity.ts`.
  */
 export function digestHex(data: Uint8Array | string): string {
-    return createHash(DIGEST_ALGORITHM).update(typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data)).digest('hex');
+    return createHash(DIGEST_ALGORITHM)
+        .update(typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data))
+        .digest('hex');
 }
 
 /**

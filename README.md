@@ -326,7 +326,20 @@ Theia browser frontend instrumentation is not wired yet.
 A Software Bill of Materials is generated for every upstream Theia release and published to the
 Eclipse Foundation SBOM registry; access instructions are in the
 [Eclipse security handbook](https://eclipse-csi.github.io/security-handbook/sbom/registry.html).
-Ivory Tower's own dependency licensing, SBOM, and version-pinning policy is IV-19, in Phase 1.
+
+Ivory Tower generates its own governance evidence separately (IV-19):
+
+```sh
+npm run dependency:policy   # licences, inventory, quality scope, image pins, adversarial fixtures
+npm run secret:scan         # sentinel and credential scan
+npm run sbom:generate       # CycloneDX SBOMs for the source tree and each deployable
+npm run notices:generate    # deterministic third-party notices
+```
+
+The first two are part of the required `npm run verify:ivory-tower` gate; the last two produce
+release evidence into the gitignored `artifacts/` directory, uploaded by CI. The policy itself is
+[`configs/ivory-dependency-policy.json`](configs/ivory-dependency-policy.json) and is explained in
+[`docs/iv-19-dependency-governance.md`](docs/iv-19-dependency-governance.md).
 
 ## License
 

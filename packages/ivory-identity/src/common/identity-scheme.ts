@@ -61,19 +61,18 @@ export const IDENTIFIER_DIGEST_LENGTH = 32;
  * `Minted` kinds are allocated once from a random source and are never re-derivable.
  * `Derived` kinds are a function of their inputs and are reproducible by anyone holding them.
  */
-export type IdentifierKind =
-    | 'project'
-    | 'corpus'
-    | 'source'
-    | 'sourceVersion'
-    | 'passage'
-    | 'execution'
-    | 'artifact'
-    | 'fingerprint';
+export type IdentifierKind = 'project' | 'corpus' | 'source' | 'sourceVersion' | 'passage' | 'execution' | 'artifact' | 'fingerprint';
 
 /** All identifier kinds, in scheme order. */
 export const IDENTIFIER_KINDS: readonly IdentifierKind[] = [
-    'project', 'corpus', 'source', 'sourceVersion', 'passage', 'execution', 'artifact', 'fingerprint'
+    'project',
+    'corpus',
+    'source',
+    'sourceVersion',
+    'passage',
+    'execution',
+    'artifact',
+    'fingerprint',
 ];
 
 /**
@@ -99,7 +98,7 @@ export const IDENTIFIER_PREFIXES: Readonly<Record<IdentifierKind, string>> = {
     passage: 'psg',
     execution: 'exec',
     artifact: 'art',
-    fingerprint: 'fp'
+    fingerprint: 'fp',
 };
 
 /** The path segment naming a kind inside an `ivory://` resource URI. */
@@ -111,7 +110,7 @@ export const IDENTIFIER_URI_SEGMENTS: Readonly<Record<IdentifierKind, string>> =
     passage: 'passage',
     execution: 'execution',
     artifact: 'artifact',
-    fingerprint: 'fingerprint'
+    fingerprint: 'fingerprint',
 };
 
 /** Scheme of the resource URIs that address Ivory Tower objects, e.g. in MCP resource lists. */

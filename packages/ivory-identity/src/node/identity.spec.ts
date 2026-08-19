@@ -19,8 +19,17 @@ import { IdentifierFormatError, isIdentifier } from '../common/identifier';
 import { IDENTIFIER_SCHEME_VERSION } from '../common/identity-scheme';
 import { digestHex } from './digest';
 import {
-    assertConsistentIdentity, computeQuoteSelector, createArtifactRecord, deriveArtifactId, deriveExecutionFingerprint, derivePassageId, deriveSourceVersionId,
-    IdentifierCollisionError, IdentityDerivationError, mintIdentifier, sourceContentDigest
+    assertConsistentIdentity,
+    computeQuoteSelector,
+    createArtifactRecord,
+    deriveArtifactId,
+    deriveExecutionFingerprint,
+    derivePassageId,
+    deriveSourceVersionId,
+    IdentifierCollisionError,
+    IdentityDerivationError,
+    mintIdentifier,
+    sourceContentDigest,
 } from './identity';
 import { BASELINE_INPUTS, FIXTURE_POLICY_VERSION, FIXTURE_SOURCE_ID, runPipeline } from './test/identity-fixtures';
 
@@ -33,12 +42,11 @@ function fingerprint(overrides: Partial<Parameters<typeof deriveExecutionFingerp
         inputIds: [deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST }).id],
         parameters: { ocr: true },
         policyVersion: FIXTURE_POLICY_VERSION,
-        ...overrides
+        ...overrides,
     }).id;
 }
 
 describe('minting', () => {
-
     it('mints a well-formed identifier for each minted kind', () => {
         for (const kind of ['project', 'corpus', 'source', 'execution'] as const) {
             expect(isIdentifier(mintIdentifier(kind), kind), kind).to.be.true;
@@ -58,7 +66,6 @@ describe('minting', () => {
 });
 
 describe('deriveSourceVersionId', () => {
-
     it('depends on the source and the bytes', () => {
         const baseline = deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST });
         const otherBytes = deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: digestHex('other bytes') });
@@ -73,16 +80,19 @@ describe('deriveSourceVersionId', () => {
     });
 
     it('rejects a source identifier of the wrong kind', () => {
-        expect(() => deriveSourceVersionId({ sourceId: mintIdentifier('corpus'), contentDigest: CONTENT_DIGEST })).to.throw(IdentifierFormatError);
+        expect(() => deriveSourceVersionId({ sourceId: mintIdentifier('corpus'), contentDigest: CONTENT_DIGEST })).to.throw(
+            IdentifierFormatError,
+        );
     });
 
     it('rejects a truncated content digest', () => {
-        expect(() => deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST.slice(0, 32) })).to.throw(IdentityDerivationError);
+        expect(() => deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST.slice(0, 32) })).to.throw(
+            IdentityDerivationError,
+        );
     });
 });
 
 describe('deriveExecutionFingerprint', () => {
-
     it('ignores the order in which dependencies were assembled', () => {
         const a = mintIdentifier('source');
         const b = mintIdentifier('source');
@@ -126,7 +136,6 @@ describe('deriveExecutionFingerprint', () => {
 });
 
 describe('deriveArtifactId', () => {
-
     it('reproduces a deterministic transformation from its fingerprint alone', () => {
         const fp = fingerprint();
         const first = deriveArtifactId({ fingerprint: fp, outputRole: 'text', determinism: 'deterministic' });
@@ -143,39 +152,60 @@ describe('deriveArtifactId', () => {
 
     it('distinguishes two observed outputs of the same computation', () => {
         const fp = fingerprint();
-        const first = deriveArtifactId({ fingerprint: fp, outputRole: 'summary', determinism: 'observed', outputDigest: digestHex('first answer') });
-        const second = deriveArtifactId({ fingerprint: fp, outputRole: 'summary', determinism: 'observed', outputDigest: digestHex('second answer') });
+        const first = deriveArtifactId({
+            fingerprint: fp,
+            outputRole: 'summary',
+            determinism: 'observed',
+            outputDigest: digestHex('first answer'),
+        });
+        const second = deriveArtifactId({
+            fingerprint: fp,
+            outputRole: 'summary',
+            determinism: 'observed',
+            outputDigest: digestHex('second answer'),
+        });
         expect(second.id).to.not.equal(first.id);
     });
 
     it('never gives an observed output the identifier a deterministic one would get', () => {
         const fp = fingerprint();
-        const observed = deriveArtifactId({ fingerprint: fp, outputRole: 'text', determinism: 'observed', outputDigest: digestHex('text') });
+        const observed = deriveArtifactId({
+            fingerprint: fp,
+            outputRole: 'text',
+            determinism: 'observed',
+            outputDigest: digestHex('text'),
+        });
         const deterministic = deriveArtifactId({ fingerprint: fp, outputRole: 'text', determinism: 'deterministic' });
         expect(observed.id).to.not.equal(deterministic.id);
     });
 
     it('requires an observed transformation to declare its output digest', () => {
-        expect(() => deriveArtifactId({ fingerprint: fingerprint(), outputRole: 'summary', determinism: 'observed' }))
-            .to.throw(IdentityDerivationError, 'must supply the digest');
+        expect(() => deriveArtifactId({ fingerprint: fingerprint(), outputRole: 'summary', determinism: 'observed' })).to.throw(
+            IdentityDerivationError,
+            'must supply the digest',
+        );
     });
 
     it('refuses to fold an output digest into a deterministic artifact', () => {
-        expect(() => deriveArtifactId({
-            fingerprint: fingerprint(), outputRole: 'text', determinism: 'deterministic', outputDigest: digestHex('text')
-        })).to.throw(IdentityDerivationError, 'reproducible');
+        expect(() =>
+            deriveArtifactId({
+                fingerprint: fingerprint(),
+                outputRole: 'text',
+                determinism: 'deterministic',
+                outputDigest: digestHex('text'),
+            }),
+        ).to.throw(IdentityDerivationError, 'reproducible');
     });
 });
 
 describe('derivePassageId', () => {
-
     const identities = runPipeline(BASELINE_INPUTS);
 
-    function passage(spans: { start: number, end: number }[]): string {
+    function passage(spans: { start: number; end: number }[]): string {
         return derivePassageId({
             sourceVersionId: identities.sourceVersionId,
             extractionArtifactId: identities.extractionArtifactId,
-            spans
+            spans,
         }).id;
     }
 
@@ -184,18 +214,37 @@ describe('derivePassageId', () => {
     });
 
     it('distinguishes one span from two spans covering the same characters', () => {
-        expect(passage([{ start: 10, end: 30 }])).to.not.equal(passage([{ start: 10, end: 20 }, { start: 20, end: 30 }]));
+        expect(passage([{ start: 10, end: 30 }])).to.not.equal(
+            passage([
+                { start: 10, end: 20 },
+                { start: 20, end: 30 },
+            ]),
+        );
     });
 
     it('separates span lists whose digits would run together without framing', () => {
-        expect(passage([{ start: 1, end: 2 }, { start: 3, end: 45 }])).to.not.equal(passage([{ start: 1, end: 23 }, { start: 45, end: 46 }]));
+        expect(
+            passage([
+                { start: 1, end: 2 },
+                { start: 3, end: 45 },
+            ]),
+        ).to.not.equal(
+            passage([
+                { start: 1, end: 23 },
+                { start: 45, end: 46 },
+            ]),
+        );
     });
 
     it('is bound to the extraction the offsets were measured in', () => {
         const other = derivePassageId({
             sourceVersionId: identities.sourceVersionId,
-            extractionArtifactId: deriveArtifactId({ fingerprint: fingerprint({ transformationVersion: '9.9.9' }), outputRole: 'text', determinism: 'deterministic' }).id,
-            spans: [{ start: 10, end: 20 }]
+            extractionArtifactId: deriveArtifactId({
+                fingerprint: fingerprint({ transformationVersion: '9.9.9' }),
+                outputRole: 'text',
+                determinism: 'deterministic',
+            }).id,
+            spans: [{ start: 10, end: 20 }],
         }).id;
         expect(other).to.not.equal(passage([{ start: 10, end: 20 }]));
     });
@@ -204,21 +253,32 @@ describe('derivePassageId', () => {
         expect(() => passage([])).to.throw();
         expect(() => passage([{ start: 20, end: 10 }])).to.throw();
         expect(() => passage([{ start: -1, end: 10 }])).to.throw();
-        expect(() => passage([{ start: 30, end: 40 }, { start: 10, end: 20 }])).to.throw();
-        expect(() => passage([{ start: 10, end: 25 }, { start: 20, end: 30 }])).to.throw();
+        expect(() =>
+            passage([
+                { start: 30, end: 40 },
+                { start: 10, end: 20 },
+            ]),
+        ).to.throw();
+        expect(() =>
+            passage([
+                { start: 10, end: 25 },
+                { start: 20, end: 30 },
+            ]),
+        ).to.throw();
     });
 
     it('rejects an extraction identifier of the wrong kind', () => {
-        expect(() => derivePassageId({
-            sourceVersionId: identities.sourceVersionId,
-            extractionArtifactId: identities.chunkFingerprint,
-            spans: [{ start: 0, end: 5 }]
-        })).to.throw(IdentifierFormatError);
+        expect(() =>
+            derivePassageId({
+                sourceVersionId: identities.sourceVersionId,
+                extractionArtifactId: identities.chunkFingerprint,
+                spans: [{ start: 0, end: 5 }],
+            }),
+        ).to.throw(IdentifierFormatError);
     });
 });
 
 describe('computeQuoteSelector', () => {
-
     it('recovers the same selector across whitespace and Unicode composition differences', () => {
         const composed = computeQuoteSelector({ prefix: 'as ', exact: 'Adaé reported', suffix: ' in 2019' });
         const decomposed = computeQuoteSelector({ prefix: ' as', exact: 'Adaé reported', suffix: '\nin  2019' });
@@ -237,18 +297,21 @@ describe('computeQuoteSelector', () => {
 });
 
 describe('createArtifactRecord', () => {
-
     const identities = runPipeline(BASELINE_INPUTS);
 
     const input = {
-        identity: deriveArtifactId({ fingerprint: identities.extractionFingerprint, outputRole: 'text', determinism: 'deterministic' as const }),
+        identity: deriveArtifactId({
+            fingerprint: identities.extractionFingerprint,
+            outputRole: 'text',
+            determinism: 'deterministic' as const,
+        }),
         sourceVersionIds: [identities.sourceVersionId],
         transformation: 'docling.convert',
         transformationVersion: '2.4.1',
         determinism: 'deterministic' as const,
         executionFingerprint: identities.extractionFingerprint,
         executionId: mintIdentifier('execution'),
-        outputRole: 'text'
+        outputRole: 'text',
     };
 
     it('states the source versions, transformation, fingerprint, and execution behind an artifact', () => {
@@ -266,7 +329,9 @@ describe('createArtifactRecord', () => {
     });
 
     it('refuses a source version slot holding something else', () => {
-        expect(() => createArtifactRecord({ ...input, sourceVersionIds: [identities.singleSpanPassageId] })).to.throw(IdentifierFormatError);
+        expect(() => createArtifactRecord({ ...input, sourceVersionIds: [identities.singleSpanPassageId] })).to.throw(
+            IdentifierFormatError,
+        );
     });
 
     it('refuses a fingerprint in the execution slot', () => {
@@ -275,11 +340,12 @@ describe('createArtifactRecord', () => {
 });
 
 describe('assertConsistentIdentity', () => {
-
     const derived = deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST });
 
     it('accepts a re-derivation of the same object', () => {
-        expect(() => assertConsistentIdentity(derived, deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST }))).to.not.throw();
+        expect(() =>
+            assertConsistentIdentity(derived, deriveSourceVersionId({ sourceId: FIXTURE_SOURCE_ID, contentDigest: CONTENT_DIGEST })),
+        ).to.not.throw();
     });
 
     it('ignores unrelated identifiers', () => {
