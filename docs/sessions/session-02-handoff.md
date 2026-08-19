@@ -1,11 +1,16 @@
 # Session 02 Handoff
 
+> Session 03 later wrote a [reconstruction](./session-02-handoff-reconstruction.md) of IV-15 scaffold
+> inventory at `40d48b0` because this first-hand handoff had not yet merged. That reconstruction
+> remains useful as an IV-15 inventory; this document is the contemporaneous record of what Session
+> 02 actually did.
+
 ## Objective completed
 
-Reconciled the merged parallel Ivory Tower foundation (PR #13) against the roadmap and **repaired a
+Reconciled the merged parallel Ivory Tower foundation (PR #13) against the roadmap and **root-caused a
 regression that had turned the canonical `stable` gate red**. IV-15 was found already implemented
-and CI-green via PR #13; this session did not rebuild it. Instead it root-caused and fixed the
-dependabot #15 breakage of the inherited Theia Electron build, and recorded the reconciliation gaps.
+and CI-green via PR #13; this session did not rebuild it. Instead it diagnosed the dependabot #15
+breakage of the inherited Theia Electron build and recorded the reconciliation gaps.
 
 ## Canonical commit / branch
 
@@ -14,11 +19,13 @@ dependabot #15 breakage of the inherited Theia Electron build, and recorded the 
 
 ## Files changed
 
-- `packages/scm/package.json` — `diff` `^8.0.3` → `^5.2.2` (revert dependabot #15).
-- `package-lock.json` — surgical revert of #15's `diff` change (spec back to `^5.2.2`; removed the
-  nested `packages/scm/node_modules/diff@8.0.3`). All other #15 changes (fast-xml-parser) kept.
 - `docs/sessions/session-02-reconciliation.md` — the reconciliation + repair report.
 - `docs/sessions/session-02-handoff.md` — this handoff.
+
+This PR originally proposed reverting `diff` in `packages/scm/package.json` (`^8.0.3` → `^5.2.2`).
+That approach was **superseded on `stable` by PR #21**, which updated `diff-computer.ts` to satisfy
+`diff@8`'s generic `Diff` base class while keeping the dependabot bump. The regression repair is
+therefore already on `stable`; this PR now lands only the Session 02 documentation.
 
 ## Tests and commands run
 
@@ -26,8 +33,6 @@ dependabot #15 breakage of the inherited Theia Electron build, and recorded the 
   **success**; run #11 (`40d48b0`) **failure**, isolated to the Windows Electron compatibility step
   compiling `@theia/scm/.../diff-computer.ts` against `diff@8` (TS2707/TS4112/TS2351).
 - `node scripts/verify-lockfile-platforms.js` → libc coverage OK; allowScripts in sync.
-- JSON validity + lockfile equality checks: `packages/scm` now resolves hoisted `diff@5.2.2`, no
-  nested entry — matches the green `2ee6a44` state.
 - Local `verify:ivory-tower` could not complete: `npm ci` fails building `native-keymap` (node-gyp)
   in this container, leaving `@theia/*` unlinked. Non-native gates that ran passed (toolchain,
   Prettier, boundaries, dependency policy).
@@ -38,26 +43,23 @@ dependabot #15 breakage of the inherited Theia Electron build, and recorded the 
 
 ## Acceptance criteria passed
 
-- Regression root-caused to a single dependency bump; fix restores the last-known-green versions.
-- Lockfile fix is minimal, valid, platform-complete (verifier green), and keeps #15's security fix.
+- Regression root-caused to a single dependency bump and its type-API mismatch in `@theia/scm`.
 - IV-15 confirmed satisfied by PR #13's green CI run (not by prose).
+- Repair landed on `stable` via PR #21 (code fix for `diff@8`, not the revert proposed here).
 
 ## Acceptance criteria still open
 
-- Final proof of the fix = `ivory-tower.yml` green on this PR (Windows Electron build). Drive to
-  green.
 - Gate 0 not closed: the Docker/PostgreSQL/MinIO/Docling integration gate remains open per the dev
   doc ("IV-14 must remain open").
 
 ## Known regressions / risks
 
-- The fix could not be compiled locally (container native-build limit); it relies on CI to confirm.
-  Risk is low — it restores the exact versions green in run #9 and `diff-computer.ts` is unchanged.
+- None outstanding from the dependabot #15 `diff` bump after PR #21 merged.
 
 ## Decisions made
 
-- Repair by reverting the errant `diff` bump rather than modifying `diff-computer.ts` or masking the
-  Electron step (never mask a real build break).
+- Session 02 chose a `diff` revert; PR #21 chose a `diff-computer.ts` fix instead (keeps the
+  security-related dependency bump path open). Both are valid; `stable` took the code-fix route.
 - Do not rename/relocate the `@ivory-tower/*` scaffold or the orphaned `@theia/ivory-identity`, and
   do not change the Node-24 toolchain pin — these are owner/architectural decisions, surfaced in the
   reconciliation report as gaps.
@@ -70,7 +72,7 @@ dependabot #15 breakage of the inherited Theia Electron build, and recorded the 
 
 ## Exact prerequisite for next session
 
-`ivory-tower.yml` green on `stable` (via this PR). Then Session 03 may proceed.
+`ivory-tower.yml` green on `stable`. Session 03 (IV‑19) proceeded on that basis after PR #21.
 
 ## Recommended next session
 
