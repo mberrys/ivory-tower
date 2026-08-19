@@ -24,12 +24,11 @@ function request(overrides: Partial<AdmissionRequest> = {}): AdmissionRequest {
         contentClass: 'publisherLicensed',
         topology: 'vendorHosted',
         route: 'upload',
-        ...overrides
+        ...overrides,
     };
 }
 
 describe('the V1 safe subset', () => {
-
     it('admits every safe-subset class for ingest without an agreement', () => {
         for (const contentClass of SAFE_SUBSET) {
             const decision = decideAdmission(request({ contentClass, route: 'openRepository' }));
@@ -54,13 +53,16 @@ describe('the V1 safe subset', () => {
 
     it('records a real basis rather than an assertion', () => {
         expect(decideAdmission(request({ contentClass: 'pmcOpenAccess', route: 'openRepository' })).ingest.basis).to.equal('openLicence');
-        expect(decideAdmission(request({ contentClass: 'researcherAuthored', route: 'upload' })).ingest.basis).to.equal('researcherAuthored');
-        expect(decideAdmission(request({ contentClass: 'publicDomainArchive', route: 'openRepository' })).ingest.basis).to.equal('publicDomain');
+        expect(decideAdmission(request({ contentClass: 'researcherAuthored', route: 'upload' })).ingest.basis).to.equal(
+            'researcherAuthored',
+        );
+        expect(decideAdmission(request({ contentClass: 'publicDomainArchive', route: 'openRepository' })).ingest.basis).to.equal(
+            'publicDomain',
+        );
     });
 });
 
 describe('per-item licence checks', () => {
-
     it('ingests an arXiv item but withholds transfer until its licence is confirmed', () => {
         const decision = decideAdmission(request({ contentClass: 'arxivPreprint', route: 'openRepository' }));
         expect(decision.ingest.outcome).to.equal('permitted');
@@ -74,13 +76,14 @@ describe('per-item licence checks', () => {
     });
 
     it('treats an unset confirmation as unconfirmed', () => {
-        const decision = decideAdmission(request({ contentClass: 'arxivPreprint', route: 'openRepository', itemLicenceConfirmed: undefined }));
+        const decision = decideAdmission(
+            request({ contentClass: 'arxivPreprint', route: 'openRepository', itemLicenceConfirmed: undefined }),
+        );
         expect(decision.transfer.outcome).to.equal('refused');
     });
 });
 
 describe('licensed content requires a stated basis', () => {
-
     it('refuses both gates when no basis is recorded', () => {
         const decision = decideAdmission(request());
         expect(decision.ingest.outcome).to.equal('refused');
@@ -99,7 +102,6 @@ describe('licensed content requires a stated basis', () => {
 });
 
 describe('publisher TDM agreements are API-mediated', () => {
-
     const agreement = { kind: 'publisherTdmAgreement' as const, publisher: 'Elsevier', apiMediated: true };
 
     it('refuses an upload even where an agreement exists, because the grant runs through the API', () => {
@@ -121,28 +123,33 @@ describe('publisher TDM agreements are API-mediated', () => {
 });
 
 describe('transfer is a separate right from ingestion', () => {
-
     it('permits ingest and refuses transfer under a mining agreement that is silent on disclosure', () => {
-        const decision = decideAdmission(request({
-            basis: { kind: 'publisherTdmAgreement', publisher: 'Springer Nature', apiMediated: true },
-            route: 'publisherApi'
-        }));
+        const decision = decideAdmission(
+            request({
+                basis: { kind: 'publisherTdmAgreement', publisher: 'Springer Nature', apiMediated: true },
+                route: 'publisherApi',
+            }),
+        );
         expect(decision.ingest.outcome).to.equal('permitted');
         expect(decision.transfer.outcome).to.equal('refused');
     });
 
     it('treats silence as refusal rather than consent', () => {
-        const decision = decideAdmission(request({
-            basis: { kind: 'publisherTdmAgreement', publisher: 'Wiley', apiMediated: false, permitsThirdPartyDisclosure: undefined }
-        }));
+        const decision = decideAdmission(
+            request({
+                basis: { kind: 'publisherTdmAgreement', publisher: 'Wiley', apiMediated: false, permitsThirdPartyDisclosure: undefined },
+            }),
+        );
         expect(decision.transfer.outcome).to.equal('refused');
         expect(decision.transfer.reason).to.contain('not implied');
     });
 
     it('permits transfer only on express permission', () => {
-        const decision = decideAdmission(request({
-            basis: { kind: 'publisherTdmAgreement', publisher: 'Wiley', apiMediated: false, permitsThirdPartyDisclosure: true }
-        }));
+        const decision = decideAdmission(
+            request({
+                basis: { kind: 'publisherTdmAgreement', publisher: 'Wiley', apiMediated: false, permitsThirdPartyDisclosure: true },
+            }),
+        );
         expect(decision.transfer.outcome).to.equal('permitted');
     });
 
@@ -159,7 +166,6 @@ describe('transfer is a separate right from ingestion', () => {
 });
 
 describe('deployment topology governs the research exception', () => {
-
     const exception = { kind: 'researchOrganizationException' as const, jurisdiction: 'eu' as const };
 
     it('refuses the exception under vendor hosting, because the operator is commercial', () => {
@@ -193,7 +199,6 @@ describe('deployment topology governs the research exception', () => {
 });
 
 describe('fail-closed behaviour', () => {
-
     it('refuses shadow-library content on every route and topology', () => {
         for (const route of ['publisherApi', 'upload', 'openRepository'] as const) {
             const decision = decideAdmission(request({ contentClass: 'shadowLibrary', route }));
@@ -207,11 +212,13 @@ describe('fail-closed behaviour', () => {
     });
 
     it('cannot be overridden by asserting a basis', () => {
-        const decision = decideAdmission(request({
-            contentClass: 'shadowLibrary',
-            basis: { kind: 'publisherTdmAgreement', publisher: 'Elsevier', apiMediated: false, permitsThirdPartyDisclosure: true },
-            route: 'publisherApi'
-        }));
+        const decision = decideAdmission(
+            request({
+                contentClass: 'shadowLibrary',
+                basis: { kind: 'publisherTdmAgreement', publisher: 'Elsevier', apiMediated: false, permitsThirdPartyDisclosure: true },
+                route: 'publisherApi',
+            }),
+        );
         expect(decision.ingest.outcome).to.equal('refused');
     });
 

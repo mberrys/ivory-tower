@@ -1,18 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import {
-    ExecutionEvent,
-    ExecutionFailure,
-    ExecutionKind,
-    ExecutionRecord,
-} from '@ivory-tower/domain';
-import {
-    AcquisitionRoute,
-    ContentClass,
-    DeploymentTopology,
-    RightsBasisKind,
-    SourceMetadata,
-} from '@ivory-tower/contracts';
+import { ExecutionEvent, ExecutionFailure, ExecutionKind, ExecutionRecord } from '@ivory-tower/domain';
+import { AcquisitionRoute, ContentClass, DeploymentTopology, RightsBasisKind, SourceMetadata } from '@ivory-tower/contracts';
 
 export interface ExecutionJob {
     readonly executionId: string;
@@ -106,6 +95,7 @@ export interface ConversionPort {
         readonly contentType: string;
         readonly contentHash: string;
         readonly parserVersion: string;
+        readonly signal?: AbortSignal;
     }): Promise<{
         readonly artifactKey: string;
         readonly parserVersion: string;

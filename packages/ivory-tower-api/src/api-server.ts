@@ -39,7 +39,11 @@ export interface ApiServerDependencies {
 }
 
 export class ApiError extends Error {
-    constructor(readonly statusCode: number, readonly code: string, message: string) {
+    constructor(
+        readonly statusCode: number,
+        readonly code: string,
+        message: string,
+    ) {
         super(message);
         this.name = 'ApiError';
     }
@@ -74,7 +78,11 @@ function parseOptionalBooleanHeader(value: string | string[] | undefined): boole
 
 function sendJson(response: ServerResponse, statusCode: number, body: unknown, headers: Record<string, string> = {}): void {
     const encoded = JSON.stringify(body);
-    response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(encoded), ...headers });
+    response.writeHead(statusCode, {
+        'content-type': 'application/json; charset=utf-8',
+        'content-length': Buffer.byteLength(encoded),
+        ...headers,
+    });
     response.end(encoded);
 }
 
@@ -127,12 +135,18 @@ function writeEvent(response: ServerResponse, event: { id: string; type: string;
     response.write(`id: ${event.id}\nevent: ${event.type}\ndata: ${encoded}\n\n`);
 }
 
-async function uploadSource(request: IncomingMessage, dependencies: ApiServerDependencies, metadata: SourceUploadMetadata, maximumBytes: number): Promise<SourceUploadResponse> {
-    const ingestionUnavailable = dependencies.objectStore === undefined
-        || dependencies.sourceRecords === undefined
-        || dependencies.admission === undefined
-        || dependencies.ids === undefined
-        || dependencies.clock === undefined;
+async function uploadSource(
+    request: IncomingMessage,
+    dependencies: ApiServerDependencies,
+    metadata: SourceUploadMetadata,
+    maximumBytes: number,
+): Promise<SourceUploadResponse> {
+    const ingestionUnavailable =
+        dependencies.objectStore === undefined ||
+        dependencies.sourceRecords === undefined ||
+        dependencies.admission === undefined ||
+        dependencies.ids === undefined ||
+        dependencies.clock === undefined;
     if (ingestionUnavailable) {
         throw new ApiError(503, 'source_ingestion_unavailable', 'Source ingestion is not configured for this runtime.');
     }
@@ -222,7 +236,12 @@ export function createApiServer(dependencies: ApiServerDependencies): Server {
             }
             const eventExecutionId = extractEventExecutionId(url.pathname);
             if (method === 'GET' && eventExecutionId !== undefined) {
-                await streamEvents(response, dependencies, eventExecutionId, Number(url.searchParams.get('after') ?? request.headers['last-event-id'] ?? 0));
+                await streamEvents(
+                    response,
+                    dependencies,
+                    eventExecutionId,
+                    Number(url.searchParams.get('after') ?? request.headers['last-event-id'] ?? 0),
+                );
                 return;
             }
             const executionId = extractExecutionId(url.pathname);
@@ -260,7 +279,12 @@ export function createApiServer(dependencies: ApiServerDependencies): Server {
     });
 }
 
-async function streamEvents(response: ServerResponse, dependencies: ApiServerDependencies, executionId: string, afterSequence: number): Promise<void> {
+async function streamEvents(
+    response: ServerResponse,
+    dependencies: ApiServerDependencies,
+    executionId: string,
+    afterSequence: number,
+): Promise<void> {
     const record = await dependencies.executionService.get(executionId);
     if (record === undefined) {
         throw new ApiError(404, 'execution_not_found', 'Execution was not found.');
@@ -294,7 +318,9 @@ async function streamEvents(response: ServerResponse, dependencies: ApiServerDep
             polling = false;
         }
     };
-    const interval = setInterval(() => { poll().catch(error => response.destroy(error)); }, 500);
+    const interval = setInterval(() => {
+        poll().catch(error => response.destroy(error));
+    }, 500);
     response.on('close', () => clearInterval(interval));
     await poll();
 }

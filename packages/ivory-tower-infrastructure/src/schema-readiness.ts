@@ -14,14 +14,12 @@ export async function isIvoryRuntimeReady(pool: Pool): Promise<boolean> {
             return false;
         }
     }
-    const queue = await pool.query<{ present: boolean }>(
-        'SELECT to_regclass(\'graphile_worker.jobs\') IS NOT NULL AS present',
-    );
+    const queue = await pool.query<{ present: boolean }>("SELECT to_regclass('graphile_worker.jobs') IS NOT NULL AS present");
     return queue.rows[0]?.present === true;
 }
 
 export async function assertIvoryRuntimeReady(pool: Pool): Promise<void> {
-    if (!await isIvoryRuntimeReady(pool)) {
+    if (!(await isIvoryRuntimeReady(pool))) {
         throw new Error(`Ivory Tower schema is incompatible or not migrated (${IVORY_RUNTIME_MIGRATIONS.join(', ')}).`);
     }
 }

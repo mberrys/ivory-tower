@@ -30,8 +30,22 @@ describe('InMemoryExecutionStore', () => {
         const second = execution('execution-2', 'same-request');
 
         const results = await Promise.allSettled([
-            store.createAndEnqueue(first, { executionId: first.id, kind: first.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:1', input: {} }),
-            store.createAndEnqueue(second, { executionId: second.id, kind: second.kind, contractVersion: 1, attempt: 0, jobKey: 'execution:2', input: {} }),
+            store.createAndEnqueue(first, {
+                executionId: first.id,
+                kind: first.kind,
+                contractVersion: 1,
+                attempt: 0,
+                jobKey: 'execution:1',
+                input: {},
+            }),
+            store.createAndEnqueue(second, {
+                executionId: second.id,
+                kind: second.kind,
+                contractVersion: 1,
+                attempt: 0,
+                jobKey: 'execution:2',
+                input: {},
+            }),
         ]);
 
         expect(results.filter(result => result.status === 'fulfilled')).to.have.length(1);

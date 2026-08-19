@@ -2,3 +2,4 @@
 
 export * from './clock-port';
 export * from './execution-ports';
+export * from './research-protocol-ports';

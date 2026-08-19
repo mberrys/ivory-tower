@@ -25,10 +25,10 @@ export class ExecutionProcessor {
     async process(job: ExecutionJob, signal: AbortSignal): Promise<void> {
         const leaseToken = randomUUID();
         const leaseUntil = new Date(Date.now() + this.leaseDurationMs).toISOString();
-        if (!await this.store.markRunning(job.executionId, leaseToken, leaseUntil)) {
+        if (!(await this.store.markRunning(job.executionId, leaseToken, leaseUntil))) {
             return;
         }
-        if (signal.aborted || await this.isCancellationRequested(job.executionId)) {
+        if (signal.aborted || (await this.isCancellationRequested(job.executionId))) {
             await this.store.cancelRunning(job.executionId, leaseToken);
             return;
         }
@@ -49,18 +49,18 @@ export class ExecutionProcessor {
             const result = await handler(job, {
                 signal: handlerController.signal,
                 reportProgress: async (progress, payload) => {
-                    if (!await this.store.updateProgress(job.executionId, leaseToken, progress, payload)) {
+                    if (!(await this.store.updateProgress(job.executionId, leaseToken, progress, payload))) {
                         throw new Error('Execution lease was lost while reporting progress.');
                     }
                 },
             });
-            if (handlerController.signal.aborted || await this.isCancellationRequested(job.executionId)) {
+            if (handlerController.signal.aborted || (await this.isCancellationRequested(job.executionId))) {
                 await this.store.cancelRunning(job.executionId, leaseToken);
                 return;
             }
             await this.store.complete(job.executionId, leaseToken, result);
         } catch (error) {
-            if (handlerController.signal.aborted || await this.isCancellationRequested(job.executionId)) {
+            if (handlerController.signal.aborted || (await this.isCancellationRequested(job.executionId))) {
                 await this.store.cancelRunning(job.executionId, leaseToken);
                 return;
             }
@@ -106,10 +106,14 @@ export class ExecutionProcessor {
                 // if a transient read fails while the handler is running.
             }
             if (!stopped && !controller.signal.aborted) {
-                timer = setTimeout(() => { void poll(); }, this.cancellationPollIntervalMs);
+                timer = setTimeout(() => {
+                    poll().catch(() => undefined);
+                }, this.cancellationPollIntervalMs);
             }
         };
-        timer = setTimeout(() => { void poll(); }, this.cancellationPollIntervalMs);
+        timer = setTimeout(() => {
+            poll().catch(() => undefined);
+        }, this.cancellationPollIntervalMs);
         return () => {
             stopped = true;
             if (timer !== undefined) {

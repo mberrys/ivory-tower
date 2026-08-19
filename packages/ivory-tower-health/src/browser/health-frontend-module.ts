@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import { ClockPort } from '@ivory-tower/adapters';
 import { HealthService } from '@ivory-tower/application';
-import { SystemClockAdapter } from '@ivory-tower/infrastructure';
+import { FrontendApplicationConfigProvider } from '@theia/core/lib/browser/frontend-application-config-provider';
 import {
     bindViewContribution,
     FrontendApplicationContribution,
@@ -15,15 +14,22 @@ import { HealthContribution } from './health-contribution';
 import { HealthWidget } from './health-widget';
 
 export default new ContainerModule((bind: interfaces.Bind) => {
-    bind<ClockPort>(ClockPort).toConstantValue(new SystemClockAdapter());
-    bind(HealthService).toSelf().inSingletonScope();
+    bind(HealthService)
+        .toDynamicValue(() => {
+            const config = FrontendApplicationConfigProvider.get() as { ivoryApiBaseUrl?: string };
+            const apiBaseUrl = config.ivoryApiBaseUrl ?? 'http://localhost:4100';
+            return new HealthService(undefined, async () => (await fetch(`${apiBaseUrl}/health/ready`)).ok);
+        })
+        .inSingletonScope();
 
     bindViewContribution(bind, HealthContribution);
     bind(FrontendApplicationContribution).toService(HealthContribution);
     bind(WidgetStatusBarContribution).toConstantValue(noopWidgetStatusBarContribution(HealthWidget));
     bind(HealthWidget).toSelf();
-    bind(WidgetFactory).toDynamicValue(context => ({
-        id: HealthWidget.ID,
-        createWidget: () => context.container.get<HealthWidget>(HealthWidget),
-    })).inSingletonScope();
+    bind(WidgetFactory)
+        .toDynamicValue(context => ({
+            id: HealthWidget.ID,
+            createWidget: () => context.container.get<HealthWidget>(HealthWidget),
+        }))
+        .inSingletonScope();
 });

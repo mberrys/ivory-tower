@@ -16,7 +16,7 @@ export class HealthContribution extends AbstractViewContribution<HealthWidget> i
         });
     }
 
-    onStart(): void {
-        this.openView({ reveal: true });
+    async initializeLayout(): Promise<void> {
+        await this.openView({ activate: true });
     }
 }

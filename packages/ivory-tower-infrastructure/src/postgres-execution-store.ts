@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
 import { Pool, PoolClient } from 'pg';
-import {
-    ExecutionEvent,
-    ExecutionFailure,
-    ExecutionRecord,
-    ExecutionStatus,
-    assertExecutionTransition,
-} from '@ivory-tower/domain';
+import { ExecutionEvent, ExecutionFailure, ExecutionRecord, ExecutionStatus, assertExecutionTransition } from '@ivory-tower/domain';
 import { ExecutionJob, ExecutionStorePort, ExecutionTransactionPort, SourceRecord, SourceRecordPort } from '@ivory-tower/adapters';
 
 interface ExecutionRow {
@@ -116,13 +110,26 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
             await client.query(
                 `INSERT INTO ivory_executions (id, kind, status, contract_version, idempotency_key, attempt, progress, created_at, updated_at, result, failure)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8, $9, $10)`,
-                [record.id, record.kind, record.status, record.contractVersion, record.idempotencyKey, record.attempt, record.progress, record.createdAt, undefined, undefined],
+                [
+                    record.id,
+                    record.kind,
+                    record.status,
+                    record.contractVersion,
+                    record.idempotencyKey,
+                    record.attempt,
+                    record.progress,
+                    record.createdAt,
+                    undefined,
+                    undefined,
+                ],
             );
             await this.appendEventWithClient(client, record.id, 'status', { status: record.status });
-            await client.query(
-                'SELECT graphile_worker.add_job($1, $2::json, job_key := $3, max_attempts := $4)',
-                ['ivory-execution', JSON.stringify(job), job.jobKey, 25],
-            );
+            await client.query('SELECT graphile_worker.add_job($1, $2::json, job_key := $3, max_attempts := $4)', [
+                'ivory-execution',
+                JSON.stringify(job),
+                job.jobKey,
+                25,
+            ]);
             return record;
         });
     }
@@ -144,10 +151,22 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
              ON CONFLICT (content_hash) DO UPDATE SET content_hash = ivory_sources.content_hash
              RETURNING ${SOURCE_SELECT}`,
             [
-                record.id, record.contentHash, record.objectKey, record.contentType, record.license,
-                record.authorizationEvidence, record.admissionPolicyVersion, record.admittedAt,
-                record.contentClass, record.rightsBasisKind, record.acquisitionRoute, record.deploymentTopology,
-                record.ingestPermitted, record.transferPermitted, record.ingestReason, record.transferReason,
+                record.id,
+                record.contentHash,
+                record.objectKey,
+                record.contentType,
+                record.license,
+                record.authorizationEvidence,
+                record.admissionPolicyVersion,
+                record.admittedAt,
+                record.contentClass,
+                record.rightsBasisKind,
+                record.acquisitionRoute,
+                record.deploymentTopology,
+                record.ingestPermitted,
+                record.transferPermitted,
+                record.ingestReason,
+                record.transferReason,
             ],
         );
         if (result.rows[0] === undefined) {
@@ -157,10 +176,9 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
     }
 
     async getByContentHash(contentHash: string): Promise<SourceRecord | undefined> {
-        const result = await this.pool.query<SourceRow>(
-            `SELECT ${SOURCE_SELECT} FROM ivory_sources WHERE content_hash = $1`,
-            [contentHash],
-        );
+        const result = await this.pool.query<SourceRow>(`SELECT ${SOURCE_SELECT} FROM ivory_sources WHERE content_hash = $1`, [
+            contentHash,
+        ]);
         return result.rows[0] === undefined ? undefined : toSourceRecord(result.rows[0]);
     }
 
@@ -277,23 +295,45 @@ export class PostgresExecutionStore implements ExecutionStorePort, ExecutionTran
         return updated ?? this.get(executionId);
     }
 
-    private async finish(executionId: string, leaseToken: string, status: 'succeeded' | 'failed', result: unknown, failure?: ExecutionFailure): Promise<boolean> {
+    private async finish(
+        executionId: string,
+        leaseToken: string,
+        status: 'succeeded' | 'failed',
+        result: unknown,
+        failure?: ExecutionFailure,
+    ): Promise<boolean> {
         return this.withTransaction(async client => {
             const updated = await client.query(
                 `UPDATE ivory_executions SET status = $3, result = $4, failure = $5, progress = CASE WHEN $3 = 'succeeded' THEN 1 ELSE progress END,
                  lease_token = NULL, lease_until = NULL, updated_at = NOW()
                  WHERE id = $1 AND lease_token = $2 AND status = 'running'`,
-                [executionId, leaseToken, status, result === undefined ? undefined : JSON.stringify(result), failure === undefined ? undefined : JSON.stringify(failure)],
+                [
+                    executionId,
+                    leaseToken,
+                    status,
+                    result === undefined ? undefined : JSON.stringify(result),
+                    failure === undefined ? undefined : JSON.stringify(failure),
+                ],
             );
             if (updated.rowCount !== 1) {
                 return false;
             }
-            await this.appendEventWithClient(client, executionId, status === 'succeeded' ? 'complete' : 'error', status === 'succeeded' ? { result } : failure);
+            await this.appendEventWithClient(
+                client,
+                executionId,
+                status === 'succeeded' ? 'complete' : 'error',
+                status === 'succeeded' ? { result } : failure,
+            );
             return true;
         });
     }
 
-    private async appendEventWithClient(client: PoolClient, executionId: string, type: ExecutionEvent['type'], payload: unknown): Promise<ExecutionEvent> {
+    private async appendEventWithClient(
+        client: PoolClient,
+        executionId: string,
+        type: ExecutionEvent['type'],
+        payload: unknown,
+    ): Promise<ExecutionEvent> {
         const sequence = await client.query<{ next_event_sequence: number }>(
             'UPDATE ivory_executions SET next_event_sequence = next_event_sequence + 1, updated_at = NOW() WHERE id = $1 RETURNING next_event_sequence',
             [executionId],

@@ -56,9 +56,17 @@ export type ContentClass =
 
 /** Every content class, in the order §6 of the register presents them. */
 export const CONTENT_CLASSES: readonly ContentClass[] = [
-    'openLicensed', 'pmcOpenAccess', 'arxivPreprint', 'doajJournal', 'preprintServer',
-    'publicDomainArchive', 'researcherAuthored', 'publisherLicensed',
-    'institutionallyLicensedBook', 'unknownProvenance', 'shadowLibrary'
+    'openLicensed',
+    'pmcOpenAccess',
+    'arxivPreprint',
+    'doajJournal',
+    'preprintServer',
+    'publicDomainArchive',
+    'researcherAuthored',
+    'publisherLicensed',
+    'institutionallyLicensedBook',
+    'unknownProvenance',
+    'shadowLibrary',
 ];
 
 /**
@@ -71,8 +79,13 @@ export const CONTENT_CLASSES: readonly ContentClass[] = [
  * the critical path.
  */
 export const SAFE_SUBSET: readonly ContentClass[] = [
-    'openLicensed', 'pmcOpenAccess', 'arxivPreprint', 'doajJournal', 'preprintServer',
-    'publicDomainArchive', 'researcherAuthored'
+    'openLicensed',
+    'pmcOpenAccess',
+    'arxivPreprint',
+    'doajJournal',
+    'preprintServer',
+    'publicDomainArchive',
+    'researcherAuthored',
 ];
 
 /**

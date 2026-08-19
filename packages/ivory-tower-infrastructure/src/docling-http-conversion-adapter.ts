@@ -9,7 +9,10 @@ export interface DoclingHttpConversionOptions {
 }
 
 export class DoclingConversionError extends Error {
-    constructor(message: string, readonly retryable: boolean) {
+    constructor(
+        message: string,
+        readonly retryable: boolean,
+    ) {
         super(message);
         this.name = 'DoclingConversionError';
     }
@@ -42,6 +45,8 @@ export class DoclingHttpConversionAdapter implements ConversionPort {
         form.append('to_formats', 'md');
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+        const abortRequest = () => controller.abort(request.signal?.reason);
+        request.signal?.addEventListener('abort', abortRequest, { once: true });
         try {
             const headers: Record<string, string> = {};
             if (this.apiKey !== undefined) {
@@ -54,9 +59,12 @@ export class DoclingHttpConversionAdapter implements ConversionPort {
                 signal: controller.signal,
             });
             if (!response.ok) {
-                throw new DoclingConversionError(`Docling conversion failed with HTTP ${response.status}.`, response.status >= 500 || response.status === 429);
+                throw new DoclingConversionError(
+                    `Docling conversion failed with HTTP ${response.status}.`,
+                    response.status >= 500 || response.status === 429,
+                );
             }
-            const result = await response.json() as DoclingResponse;
+            const result = (await response.json()) as DoclingResponse;
             const markdown = result.document?.md_content ?? result.document?.text_content;
             if (result.status === 'failure' || markdown === undefined) {
                 throw new DoclingConversionError('Docling returned no successful markdown conversion.', false);
@@ -67,10 +75,14 @@ export class DoclingHttpConversionAdapter implements ConversionPort {
                 parserVersion: request.parserVersion,
                 artifact,
                 artifactContentType: 'text/markdown',
-                normalizedPassages: markdown.split(/\n{2,}/u).filter(Boolean).map((text, ordinal) => ({ ordinal, text })),
+                normalizedPassages: markdown
+                    .split(/\n{2,}/u)
+                    .filter(Boolean)
+                    .map((text, ordinal) => ({ ordinal, text })),
             };
         } finally {
             clearTimeout(timeout);
+            request.signal?.removeEventListener('abort', abortRequest);
         }
     }
 }

@@ -3,7 +3,11 @@
 import { EgressPolicyPort } from '@ivory-tower/adapters';
 
 export class FailClosedEgressPolicy implements EgressPolicyPort {
-    async authorize(_request: { readonly purpose: string; readonly target: string; readonly contentHash?: string }): Promise<{ allowed: boolean; reason: string }> {
+    async authorize(_request: {
+        readonly purpose: string;
+        readonly target: string;
+        readonly contentHash?: string;
+    }): Promise<{ allowed: boolean; reason: string }> {
         return { allowed: false, reason: 'External egress is not configured for this runtime.' };
     }
 }
@@ -11,7 +15,11 @@ export class FailClosedEgressPolicy implements EgressPolicyPort {
 export class AllowlistedEgressPolicy implements EgressPolicyPort {
     constructor(private readonly allowedHosts: ReadonlySet<string>) {}
 
-    async authorize(request: { readonly purpose: string; readonly target: string; readonly contentHash?: string }): Promise<{ allowed: boolean; reason: string }> {
+    async authorize(request: {
+        readonly purpose: string;
+        readonly target: string;
+        readonly contentHash?: string;
+    }): Promise<{ allowed: boolean; reason: string }> {
         let hostname: string;
         try {
             hostname = new URL(request.target).hostname.toLowerCase();

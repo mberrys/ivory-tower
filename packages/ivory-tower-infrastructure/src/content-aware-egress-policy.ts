@@ -13,7 +13,11 @@ export class ContentAwareAllowlistedEgressPolicy implements EgressPolicyPort {
         this.destinationPolicy = new AllowlistedEgressPolicy(allowedHosts);
     }
 
-    async authorize(request: { readonly purpose: string; readonly target: string; readonly contentHash?: string }): Promise<{ allowed: boolean; reason: string }> {
+    async authorize(request: {
+        readonly purpose: string;
+        readonly target: string;
+        readonly contentHash?: string;
+    }): Promise<{ allowed: boolean; reason: string }> {
         if (request.contentHash === undefined || request.contentHash.length === 0) {
             return { allowed: false, reason: 'Egress requires a content hash to evaluate transfer rights.' };
         }

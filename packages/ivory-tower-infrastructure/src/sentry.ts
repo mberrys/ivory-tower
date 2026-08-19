@@ -17,7 +17,9 @@ export interface IvorySentryConfig {
 
 const REDACTED = '[Filtered]';
 
-const SENSITIVE_KEY_PATTERN = /(?:pass(?:word)?|secret|token|api[_-]?key|authorization(?:evidence)?|credential|dsn|connection(?:string)?|access[_-]?key(?:id)?|secret[_-]?access[_-]?key|session|cookie|bearer|passage|content(?:hash)?|source(?:bytes|content)?|body|payload|prompt|license|evidence)$/i;
+const SENSITIVE_KEY_PATTERN =
+    // eslint-disable-next-line max-len
+    /(?:pass(?:word)?|secret|token|api[_-]?key|authorization(?:evidence)?|credential|dsn|connection(?:string)?|access[_-]?key(?:id)?|secret[_-]?access[_-]?key|session|cookie|bearer|passage|content(?:hash)?|source(?:bytes|content)?|body|payload|prompt|license|evidence)$/i;
 
 let initialized = false;
 
@@ -77,6 +79,7 @@ export function captureIvoryException(error: unknown, context?: Readonly<Record<
     Sentry.withScope(scope => {
         if (context !== undefined) {
             const scrubbed = scrubValue(context);
+            // eslint-disable-next-line no-null/no-null
             if (scrubbed !== null && typeof scrubbed === 'object' && !Array.isArray(scrubbed)) {
                 scope.setContext('ivory', scrubbed as Record<string, unknown>);
             }
@@ -116,6 +119,7 @@ function scrubEventPayload(event: Event, _hint?: EventHint): Event | null {
     if (event.breadcrumbs !== undefined) {
         event.breadcrumbs = event.breadcrumbs
             .map(scrubSentryBreadcrumb)
+            // eslint-disable-next-line no-null/no-null
             .filter((breadcrumb): breadcrumb is Breadcrumb => breadcrumb !== null);
     }
     if (event.extra !== undefined) {
@@ -147,7 +151,7 @@ function registerProcessHandlers(): void {
     });
     process.on('uncaughtException', error => {
         captureIvoryException(error, { stage: 'uncaught_exception' });
-        void flushIvorySentry().finally(() => process.exit(1));
+        flushIvorySentry().finally(() => process.exit(1));
     });
 }
 
@@ -197,6 +201,7 @@ function scrubValue(value: unknown, depth = 0): unknown {
     if (depth > 8) {
         return REDACTED;
     }
+    // eslint-disable-next-line no-null/no-null
     if (value === null || value === undefined) {
         return value;
     }
@@ -230,7 +235,7 @@ function containsSensitiveValue(value: string): boolean {
     if (/postgres(?:ql)?:\/\//i.test(value)) {
         return true;
     }
-    if (/https?:\/\/[^:]+:[^@]+@/i.test(value)) {
+    if (/https?:\/\/[^:@\s]{1,256}:[^@\s]{1,256}@/i.test(value)) {
         return true;
     }
     if (/^Bearer\s+/i.test(value)) {

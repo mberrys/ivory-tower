@@ -12,9 +12,13 @@ export async function runIvoryMigrations(connectionString: string, migrationsDir
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        await client.query('SELECT pg_advisory_xact_lock(hashtext(\'ivory-tower-schema\'))');
-        await client.query('CREATE TABLE IF NOT EXISTS ivory_schema_migrations (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
-        const applied = new Set((await client.query<{ version: string }>('SELECT version FROM ivory_schema_migrations')).rows.map(row => row.version));
+        await client.query("SELECT pg_advisory_xact_lock(hashtext('ivory-tower-schema'))");
+        await client.query(
+            'CREATE TABLE IF NOT EXISTS ivory_schema_migrations (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())',
+        );
+        const applied = new Set(
+            (await client.query<{ version: string }>('SELECT version FROM ivory_schema_migrations')).rows.map(row => row.version),
+        );
         const migrations = (await readdir(migrationsDirectory)).filter(file => file.endsWith('.sql')).sort();
         for (const migration of migrations) {
             if (applied.has(migration)) {

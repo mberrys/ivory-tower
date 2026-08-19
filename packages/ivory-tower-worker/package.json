@@ -11,8 +11,8 @@
     "@ivory-tower/contracts": "0.1.0",
     "@ivory-tower/domain": "0.1.0",
     "@ivory-tower/infrastructure": "0.1.0",
-    "graphile-worker": "^0.17.3",
-    "pg": "^8.16.3"
+    "graphile-worker": "0.17.3",
+    "pg": "8.16.3"
   },
   "scripts": {
     "build": "theiaext build",
