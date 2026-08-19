@@ -84,7 +84,9 @@ export function validateSpans(spans: readonly TextSpan[]): readonly TextSpan[] {
             throw new PassageAnchorError(`span [${span.start}, ${span.end}) must be a non-empty half-open range with a non-negative start`);
         }
         if (span.start < previousEnd) {
-            throw new PassageAnchorError(`span [${span.start}, ${span.end}) overlaps or precedes the previous span, which ended at ${previousEnd}`);
+            throw new PassageAnchorError(
+                `span [${span.start}, ${span.end}) overlaps or precedes the previous span, which ended at ${previousEnd}`,
+            );
         }
         previousEnd = span.end;
     }

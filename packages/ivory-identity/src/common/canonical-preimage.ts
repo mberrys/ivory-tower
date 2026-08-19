@@ -75,10 +75,7 @@ export function canonicalPreimage(domain: string, fields: readonly PreimageField
         throw new CanonicalPreimageError(`preimage for domain '${domain}' has no fields`);
     }
     const seen = new Set<string>();
-    const framed = [
-        frame('v', PREIMAGE_VERSION),
-        frame('d', domain)
-    ];
+    const framed = [frame('v', PREIMAGE_VERSION), frame('d', domain)];
     for (const field of fields) {
         if (!FIELD_NAME_PATTERN.test(field.name)) {
             throw new CanonicalPreimageError(`preimage field name '${field.name}' must match ${FIELD_NAME_PATTERN}`);
