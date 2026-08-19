@@ -201,6 +201,29 @@ Per the IV-19 V1 governance addendum (2026-08-03):
 - SBOMs generated without an install run in `package-lock-only` mode. The mode is recorded in
   `artifacts/sbom/sbom-manifest.json`; **release evidence must be regenerated from an installed
   tree**, and the manifest makes a package-lock-only SBOM impossible to mistake for one.
+- **The installed tree currently contains an invalid dependency edge**, so `npm sbom` refuses to
+  generate from it at all:
+
+  ```text
+  invalid: yauzl@3.3.2, ^2.4.2 required by decompress-unzip@4.0.1
+  ```
+
+  The root `overrides` block pins `yauzl` to `~3.3.2`, which violates the range
+  `decompress-unzip@4.0.1` declares. This predates IV-19 — the SBOM tooling only surfaced it.
+  `sbom:generate` therefore falls back to the lockfile, records the exact diagnostic under
+  `dependencyTreeProblems`, marks the mode `package-lock-only-degraded`, and warns loudly, so a
+  degraded SBOM is never indistinguishable from a clean one.
+
+  Resolving it is a **dependency-resolution decision, not a tooling fix**, and it belongs to
+  whoever owns the override. The narrow remedy is a nested override letting that one consumer keep
+  the 2.x line:
+
+  ```jsonc
+  "overrides": { "yauzl": "~3.3.2", "decompress-unzip": { "yauzl": "^2.4.2" } }
+  ```
+
+  That reintroduces `yauzl` 2.x for one transitive build-time consumer, which is presumably what
+  the flat override was added to avoid — so the trade-off needs a decision rather than a patch.
 - The four licence-unknown packages are unfinished, not settled. Resolving them requires reading
   LICENSE files from an installed tree.
 - Vulnerability disposition (`npm audit` findings and their recorded resolution) is **not**
