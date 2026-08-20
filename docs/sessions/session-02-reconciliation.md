@@ -59,27 +59,22 @@ root‑caused and fixed it:
   and that step runs on Windows only. Upstream `ci-cd.yml` (which would build electron everywhere)
   triggers on `master`, which this fork never uses, so nothing else caught it.
 
-### Fix (this session)
+### Fix (proposed here; landed differently on `stable`)
 
-Restore the last‑known‑green pin, undoing only PR #15's `diff` bump and keeping its fast‑xml‑parser
-security fix:
+Session 02 proposed restoring the last‑known‑green pin, undoing only PR #15's `diff` bump and keeping
+its fast‑xml‑parser security fix (`packages/scm/package.json`: `"diff": "^8.0.3"` → `"^5.2.2"`, plus
+a surgical `package-lock.json` revert). That approach was prepared on branch
+`claude/ivory-tower-next-steps-my1bt8` (PR #19).
 
-- `packages/scm/package.json`: `"diff": "^8.0.3"` → `"^5.2.2"` (realigns with upstream Theia
-  v1.74.0 and with `2ee6a44`).
-- `package-lock.json`: surgical revert — restore the `packages/scm` dependency spec to `^5.2.2`
-  and remove the added nested `packages/scm/node_modules/diff@8.0.3` entry, so `scm` resolves the
-  hoisted `diff@5.2.2` that is already present.
+**What actually merged:** PR #21 (`fix(scm): satisfy diff@8's generic Diff base class in ArrayDiff`)
+updated `packages/scm/src/browser/dirty-diff/diff-computer.ts` to compile against `diff@8` while
+keeping the bumped dependency. CI on `stable` is green with that fix.
 
-Validation performed here:
+Validation performed during Session 02 (for the revert approach):
 
-- Lockfile is valid JSON; `scm` spec `^5.2.2`, no nested `scm/diff` entry, hoisted `diff@5.2.2` —
-  byte-for-byte the `2ee6a44` (green) state for these entries.
 - `node scripts/verify-lockfile-platforms.js` → "libc coverage OK", "allowScripts covers all
   dependencies with install scripts."
-- Diff is minimal: `packages/scm/package.json` (2 lines) + `package-lock.json` (11 lines) only.
-- Final compile validation of the Windows Electron build is delegated to CI (`ivory-tower.yml`),
-  since the exact versions being restored were green in run #9 and the container cannot build the
-  Theia native deps needed for a local electron build.
+- Root cause confirmed via CI run #11 logs (Windows Electron step, TS2707/TS4112/TS2351).
 
 ## Reconciliation gaps recorded (not changed here — flagged for the roadmap/user)
 
@@ -103,9 +98,9 @@ These are deliberate or architectural and are **surfaced, not silently altered**
 
 ## Exact prerequisite for the next session
 
-The canonical branch is green again once this PR's `ivory-tower.yml` passes (Windows Electron build
-compiling `@theia/scm` against `diff@5`). After that, the next roadmap step is **Session 03 —
-IV‑19 (dependency policy, licensing, SBOM, pinning)**; the orphaned‑identity and Gate‑0 integration
+The canonical branch is green again once `ivory-tower.yml` passes the Windows Electron build
+compiling `@theia/scm` against `diff@8` (PR #21). Session 03 — **IV‑19 (dependency policy,
+licensing, SBOM, pinning)** — proceeded on that basis; the orphaned‑identity and Gate‑0 integration
 gaps above should be scheduled explicitly rather than assumed done.
 
 **Recommended next session:** Session 03 — IV‑19, and a deliberate decision on the toolchain pin
