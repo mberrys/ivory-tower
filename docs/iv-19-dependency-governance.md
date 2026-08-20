@@ -263,3 +263,43 @@ survive here because they are not otherwise recorded:
   not by any `@ivory-tower/*` package. Neither is evidence that Ivory Tower's own ADR-002 provider
   registry or a future claim-evidence graph view has started. Whoever adds the real, Ivory-owned
   dependency should add its `packages` (§4) entry at the same time, not after.
+
+## 14. Session 03 addendum 2 — the module-boundary gate had the same gap this document closed elsewhere
+
+A **third** execution against this branch's Session 03 objective hit the same collision described
+in §13, one step later: it fetched `stable`/`claude/session-3-q9tc4o` before starting, found the
+branch apparently unmodified from a stale local checkout, and built a second, independent
+implementation of the entire IV-19 mechanism before discovering — mid-task, on `git push` — that
+this document's mechanism (plus the §13 addendum) was already merged and CI-green. Per the §13
+precedent, the duplicate mechanism was discarded rather than reconciled file-by-file: a real merge
+(`git merge origin/claude/session-3-q9tc4o -X theirs`) took this branch's version of every
+conflicting file, so nothing here changed as a result. `git reset --hard` was not available (blocked
+by this environment's permission policy for destructive git operations), which is why a merge
+commit records this rather than a clean rebase — the effect is the same: no content from the
+discarded duplicate survives except the two findings below.
+
+Both are narrow, previously-unrecorded, and fixed directly (not just recorded) as part of this
+addendum:
+
+- **`scripts/check-ivory-boundaries.mjs` (the IV-15 module-boundary gate) never gained a layer for
+  `@theia/ivory-identity`.** Every other IV-19 gate in this document was widened to include
+  `@theia/ivory-identity` — format, typecheck, lint, dependency policy — but the boundary checker
+  is an IV-15 mechanism this document doesn't own, and it was missed. `packages/ivory-identity/src`
+  imports only its own relative modules and Node's built-in `crypto` (verified by inspection: zero
+  `@theia/`, `@ivory-tower/`, `pg`, `@aws-sdk/`, `graphile-worker`, or `docling` imports), so a
+  layer forbidding all of those was added, along with two negative fixtures in
+  `scripts/ivory-boundary-fixtures.json`. `npm run check:ivory-boundaries` was green both before and
+  after.
+- **`verify:ivory-tower`'s inline `lerna run test` step never picked up the widened
+  `@theia/ivory-*` scope.** `typecheck:ivory-tower`, `lint:ivory-tower`, and the standalone
+  `test:ivory-tower` script all run `--scope "@ivory-tower/*" --scope "@theia/ivory-*"`, but the
+  test step embedded directly inside the `verify:ivory-tower` chain in `package.json` still read
+  `--scope "@ivory-tower/*"` alone — so `@theia/ivory-identity`'s tests were exercised by `npm run
+  test:ivory-tower` in isolation, but silently skipped by the actual CI gate
+  (`.github/workflows/ivory-tower.yml`'s `verify` job, which calls `verify:ivory-tower`). Fixed by
+  widening that one inline scope to match its siblings.
+
+Nothing under `configs/`, `scripts/generate-ivory-*`, `scripts/check-ivory-dependency-policy.mjs`,
+`scripts/check-ivory-secrets.mjs`, `scripts/ivory-lockfile.mjs`, or the `governance` CI job changed
+— the discarded duplicate's version of each was strictly inferior to what's already here, per the
+same reasoning as §13. See `docs/sessions/session-03-addendum-2.md` for the full account.
