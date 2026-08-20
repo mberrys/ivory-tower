@@ -17,19 +17,24 @@ instructions and the Secrets dashboard for provider credentials.
 ## Local workstation
 
 ```powershell
-docker compose -f infra/docker-compose.yml up -d
 copy .env.example .env
 # For this Compose profile, set IVORY_S3_BUCKET=ivory-tower and
 # IVORY_S3_ENDPOINT=http://localhost:9000 in .env when running the API locally.
+npm.cmd ci
+npm.cmd run check:ivory-install
+npm.cmd run verify:ivory-session-04
+```
+
+For an interactive local stack after the clean-environment proof succeeds:
+
+```powershell
+docker compose -f infra/docker-compose.yml up -d --wait
 npm.cmd run migrate:ivory
 npm.cmd run start:ivory-api
 npm.cmd run start:ivory-worker
 ```
 
-The migration command is forward-only. Reset is intentionally limited to a
-disposable development checkout: stop the Compose profile, remove only the
-project-owned `.ivory-tower/` data directories, and start again. Production
-deployments must never use a reset command.
+`verify:ivory-session-04` owns its reset: it stops the Compose profile and removes only the project-owned `.ivory-tower/` data directories before and after the proof. Pass `--keep` for diagnosis. The migration command is forward-only; production deployments must never use a reset command. See [`docs/iv-21-local-runtime.md`](../docs/iv-21-local-runtime.md) for the exact bootstrap, N-1 restore, and evidence contract.
 
 The Docling endpoint is private to the runtime. A source is admitted before it
 is committed to canonical storage or dispatched to any worker. A remote

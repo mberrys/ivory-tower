@@ -2,7 +2,7 @@ name: ivory-tower
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
     environment:
       POSTGRES_DB: ivory_tower
       POSTGRES_USER: ivory
@@ -18,7 +18,7 @@ services:
       retries: 12
 
   object-store:
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1@sha256:e08497cde44985e0c36cacd391c9723831293d789d569cc967685f2fe17a7463
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ivory
@@ -30,7 +30,7 @@ services:
       - ../.ivory-tower/minio:/data
 
   object-store-init:
-    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780
     depends_on:
       - object-store
     entrypoint: ["/bin/sh", "-c"]
@@ -46,7 +46,6 @@ services:
     environment:
       DOCLING_SERVE_HOST: 0.0.0.0
       DOCLING_SERVE_PORT: 5001
-
 # The API and worker run from the workspace so package tests and source maps
 # remain available. Start them after `npm run migrate:ivory` with the root
 # `start:ivory-api` and `start:ivory-worker` scripts.

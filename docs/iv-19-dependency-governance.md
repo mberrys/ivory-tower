@@ -100,13 +100,9 @@ must be registered in `images`.
   `nightly` fail unconditionally, in any environment.
 - **`environment: "runtime"`** requires an `@sha256:` digest. Docling is pinned this way, and
   environment validation rejects a mutable `DOCLING_IMAGE` at startup independently of this gate.
-- **`environment: "local"`** images may carry a tag, but only with a recorded `owner`, `reason`,
-  `expires`, and `compensatingControl`. An expired entry fails the gate.
-
-Three local Compose images currently sit in that second category. `pgvector/pgvector:pg16` is the
-weakest of them — `pg16` is a rebuilt floating tag, not an immutable one. It is recorded rather
-than pinned because the local environment is owned by **IV-21 (Session 04)**, which will pin it by
-digest alongside the fixture and restore work. The expiry exists so this cannot be forgotten.
+- **`environment: "local"`** also requires an `@sha256:` digest. The Compose PostgreSQL/pgvector,
+  MinIO server, and MinIO client references are resolved manifest digests; the verification gate
+  therefore recreates the same local runtime rather than trusting a release tag to remain stable.
 
 ## 7. Exceptions
 

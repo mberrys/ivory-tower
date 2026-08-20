@@ -209,34 +209,25 @@
       "supportedMirror": "ghcr.io/docling-project/docling-serve, only after resolving the same v1.21.0 manifest list and recording the mirror digest"
     },
     "postgres": {
-      "ref": "pgvector/pgvector:pg16",
+      "ref": "pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b",
       "environment": "local",
-      "digestRequired": false,
+      "digestRequired": true,
       "purpose": "Local PostgreSQL + pgvector for the development Compose profile.",
-      "owner": "Engineering",
-      "reason": "pg16 is a rebuilt floating tag. The hosted profile does not deploy this image; local reproducibility is owned by IV-21 (Session 04), which will pin it by digest alongside the fixture and restore work.",
-      "expires": "2026-11-19",
-      "compensatingControl": "Not a production artifact; the hosted profile provisions PostgreSQL separately. Recorded here so the pin cannot be forgotten."
+      "owner": "Engineering"
     },
     "object-store": {
-      "ref": "quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1",
+      "ref": "quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1@sha256:e08497cde44985e0c36cacd391c9723831293d789d569cc967685f2fe17a7463",
       "environment": "local",
-      "digestRequired": false,
+      "digestRequired": true,
       "purpose": "Local S3-compatible object store for the development Compose profile.",
-      "owner": "Engineering",
-      "reason": "Dated MinIO release tag; immutable in practice but not digest-verified. Production uses a managed S3-compatible endpoint, not this image.",
-      "expires": "2026-11-19",
-      "compensatingControl": "Local development only; hosted deployments set IVORY_S3_ENDPOINT to a managed store."
+      "owner": "Engineering"
     },
     "object-store-init": {
-      "ref": "quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z",
+      "ref": "quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
       "environment": "local",
-      "digestRequired": false,
+      "digestRequired": true,
       "purpose": "One-shot bucket creation for the local Compose profile.",
-      "owner": "Engineering",
-      "reason": "Dated MinIO client release tag used only to create the local bucket.",
-      "expires": "2026-11-19",
-      "compensatingControl": "Local development only; runs once and exits."
+      "owner": "Engineering"
     }
   },
 
@@ -276,6 +267,12 @@
       {
         "path": "scripts/verify-ivory-runtime.mjs",
         "reason": "Local runtime verification harness using the same Compose development credentials.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
+        "path": "scripts/verify-ivory-session-04.mjs",
+        "reason": "Local Session 04 runtime and migration-recovery verifier using the same Compose development credentials.",
         "owner": "Engineering",
         "patterns": ["postgres-url"]
       },
