@@ -227,3 +227,39 @@ Per the IV-19 V1 governance addendum (2026-08-03):
 - Vulnerability disposition (`npm audit` findings and their recorded resolution) is **not**
   implemented here. `advisoryExceptions` exists and is validated, but no advisory feed is wired to
   it; that belongs with the release-drill work in Session 38.
+
+## 13. Session 03 addendum — two findings not otherwise recorded
+
+A second, independent execution of Session 03 ran concurrently with the one that produced this
+document and PR #20. By the time it reached verification, PR #20 had already merged, and its
+gate mechanism (this file, `configs/ivory-dependency-policy.json`,
+`scripts/check-ivory-dependency-policy.mjs`, `scripts/generate-ivory-sbom.mjs`,
+`scripts/generate-ivory-notices.mjs`, the fixture suite, and the `governance` CI job) was
+materially more complete than the duplicate implementation the second execution had built. That
+duplicate work was discarded rather than merged or rebased on top of this file's mechanism — see
+`docs/sessions/session-03-addendum.md` for the full account. Two findings from that discarded work
+survive here because they are not otherwise recorded:
+
+- **`quay.io/minio/minio` and `quay.io/minio/mc` (§6) have an unreviewed licence, not just an
+  unpinned digest.** MinIO Server is believed to have moved to AGPL-3.0 in 2021 (from Apache-2.0);
+  neither this document's `exceptions` (§7, npm-package-scoped) nor `images` (§6, digest-pinning-
+  scoped) records that licence. Running the unmodified image as local dev/test infrastructure —
+  its only current use — is unlikely to trigger AGPL's network-copyleft clause, but that is an
+  observation, not a ruling. If either image is ever used as more than local dev/test
+  infrastructure — e.g. a self-hosted production object store instead of the hosted S3-compatible
+  storage ADR-002 calls for — this needs counsel review before that decision is made, the same way
+  `docs/iv-128-content-rights.md` routes open content-rights questions to counsel rather than
+  resolving them here.
+- **Dependencies ADR-001/ADR-002 name but that are not installed yet have no recorded owner.**
+  `liquidify-react` (peers: `react`/`react-dom` ^18 or ^19, `@ark-ui/react`, `framer-motion`,
+  `lucide-react`), `pdfjs-dist`, and an Ivory-owned AI SDK provider adapter for ADR-002's provider
+  registry are absent from `package-lock.json` today, so `packages` (§4) correctly does not list
+  them — an uninstalled dependency isn't yet a dependency. But recording *nothing* about them risks
+  two failure modes when they do land: the add slips in without a `packages` entry, or someone
+  mistakes an unrelated existing package for the real thing. On that second risk: `package-lock.json`
+  already contains `@ai-sdk/anthropic`, `@ai-sdk/gateway`, and related packages, and `cytoscape` —
+  but tracing `package-lock.json`'s dependency graph shows both are pulled in solely by upstream
+  Theia's own `packages/ai-vercel-ai` (its built-in AI Chat feature) and by `mermaid` respectively,
+  not by any `@ivory-tower/*` package. Neither is evidence that Ivory Tower's own ADR-002 provider
+  registry or a future claim-evidence graph view has started. Whoever adds the real, Ivory-owned
+  dependency should add its `packages` (§4) entry at the same time, not after.
