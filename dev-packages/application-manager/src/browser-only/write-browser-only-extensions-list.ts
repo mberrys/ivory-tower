@@ -1,5 +1,5 @@
 // *****************************************************************************
-// Copyright (C) 2017 TypeFox and others.
+// Copyright (C) 2026 Maksim Kachurin and others.
 //
 // This program and the accompanying materials are made available under the
 // terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,15 @@
 //
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 // *****************************************************************************
-// @ts-check
 
-if (process.argv.indexOf('--reject-cycles') === -1) {
-    process.argv.push('--reject-cycles');
+import * as fs from 'fs-extra';
+import { ApplicationPackage } from '@theia/application-package';
+
+/**
+ * Write `lib/frontend/extensions.json` (Theia extension packages) for the About dialog,
+ * matching the backend Theia extension build output.
+ */
+export async function writeBrowserOnlyExtensionsList(applicationPackage: ApplicationPackage): Promise<void> {
+    const extensions = applicationPackage.extensionPackages.map(({ name, version }) => ({ name, version }));
+    await fs.writeJson(applicationPackage.lib('frontend', 'extensions.json'), extensions, { spaces: 2 });
 }
-require(`lerna/${require('lerna/package.json').bin['lerna']}`);

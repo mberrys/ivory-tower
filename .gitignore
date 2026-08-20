@@ -41,6 +41,9 @@ license-check-summary.txt*
 /.theia/chatSessions
 .tmp.cfg
 
+# Ivory Tower governance evidence (IV-19); generated, never committed
+artifacts/
+
 # Ivory Tower local development (IV-15)
 .env
 .env.*

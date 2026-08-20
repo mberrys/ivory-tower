@@ -327,19 +327,19 @@ A Software Bill of Materials is generated for every upstream Theia release and p
 Eclipse Foundation SBOM registry; access instructions are in the
 [Eclipse security handbook](https://eclipse-csi.github.io/security-handbook/sbom/registry.html).
 
-Ivory Tower's own dependency licensing, SBOM, and version-pinning policy is IV-19. The reviewed
-third-party inventory is [`docs/iv-19-dependency-inventory.md`](docs/iv-19-dependency-inventory.md).
-Machine-generated evidence:
+Ivory Tower generates its own governance evidence separately (IV-19):
 
 ```sh
-npm run dependency:policy   # fails on an unapproved license, dependency, or unpinned high-risk package
-npm run secret:scan         # sentinel scan for committed credentials
-npm run sbom:generate       # CycloneDX SBOMs for the source tree and each deployable artifact
-npm run notices:generate    # deterministic third-party notices plus recorded exceptions
+npm run dependency:policy   # licences, inventory, quality scope, image pins, adversarial fixtures
+npm run secret:scan         # sentinel and credential scan
+npm run sbom:generate       # CycloneDX SBOMs for the source tree and each deployable
+npm run notices:generate    # deterministic third-party notices
 ```
 
-SBOMs and notices are written to `artifacts/` (gitignored) and archived as CI evidence by
-[`.github/workflows/ivory-dependency-gate.yml`](.github/workflows/ivory-dependency-gate.yml).
+The first two are part of the required `npm run verify:ivory-tower` gate; the last two produce
+release evidence into the gitignored `artifacts/` directory, uploaded by CI. The policy itself is
+[`configs/ivory-dependency-policy.json`](configs/ivory-dependency-policy.json) and is explained in
+[`docs/iv-19-dependency-governance.md`](docs/iv-19-dependency-governance.md).
 
 ## License
 

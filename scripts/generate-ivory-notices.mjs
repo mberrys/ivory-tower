@@ -2,66 +2,144 @@
 'use strict';
 
 /**
- * Generates a deterministic third-party notices artifact for the Ivory
- * Tower source tree, plus the currently recorded dependency-policy
- * exceptions (IV-19).
+ * Generates the deterministic Ivory Tower third-party notices artifact (IV-19 step 6).
  *
- * Usage: node scripts/generate-ivory-notices.mjs [--out-dir artifacts]
+ * Built from `package-lock.json` rather than from an installed tree, so the same commit always
+ * produces byte-identical output — no install, no registry, no timestamp. Components whose
+ * licence could not be resolved are listed separately and cross-referenced to the recorded
+ * exception, so an unresolved licence is visible rather than quietly omitted.
+ *
+ * Flags:
+ *   --check       fail if the artifact on disk differs from what this commit produces
+ *   --out <dir>   write somewhere other than artifacts/notices
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, IVORY_SOURCE_WORKSPACES, resolveDependencyClosure } from './shared/ivory-dependency-graph.mjs';
+import { fileURLToPath } from 'node:url';
+import { readLockfile, dependencyClosure, packageNameFromKey } from './ivory-lockfile.mjs';
 
-function outDirFromArgs(argv) {
-    const flagIndex = argv.indexOf('--out-dir');
-    if (flagIndex === -1) {
-        return path.join(ROOT, 'artifacts');
-    }
-    const value = argv[flagIndex + 1];
-    if (value === undefined) {
-        throw new Error('--out-dir requires a path argument.');
-    }
-    return path.isAbsolute(value) ? value : path.join(ROOT, value);
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.join(SCRIPT_DIR, '..');
+const NOTICES_FILE = 'NOTICE-IVORY-THIRD-PARTY.md';
+
+const argv = process.argv.slice(2);
+const check = argv.includes('--check');
+const outIndex = argv.indexOf('--out');
+const outputDirectory = outIndex === -1
+    ? path.join(REPO_ROOT, 'artifacts', 'notices')
+    : path.resolve(argv[outIndex + 1]);
+
+const policy = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'configs', 'ivory-dependency-policy.json'), 'utf8'));
+const lockfile = readLockfile(REPO_ROOT);
+if (!lockfile) {
+    console.error('package-lock.json is missing; third-party notices cannot be generated.');
+    process.exit(1);
 }
 
-function formatExceptions() {
-    const policy = JSON.parse(fs.readFileSync(path.join(ROOT, 'configs', 'ivory-dependency-policy.json'), 'utf8'));
-    if (policy.advisoryExceptions.length === 0) {
-        return 'None currently recorded.';
+const deployables = Object.entries(policy.deployables ?? {});
+/** @type {Map<string, { name: string, version: string, license?: string, resolved?: string, deployables: Set<string> }>} */
+const components = new Map();
+
+for (const [label, deployable] of deployables) {
+    const closure = dependencyClosure(lockfile.packages, [deployable.workspace]);
+    for (const key of closure.thirdParty) {
+        const entry = lockfile.packages[key];
+        const name = packageNameFromKey(key);
+        const identifier = `${name}@${entry.version}`;
+        if (!components.has(identifier)) {
+            components.set(identifier, {
+                name,
+                version: String(entry.version),
+                license: entry.license,
+                resolved: entry.resolved,
+                deployables: new Set(),
+            });
+        }
+        components.get(identifier)?.deployables.add(label);
     }
-    return policy.advisoryExceptions
-        .map(exception => `- ${exception.package}: ${exception.advisory} — ${exception.reason} (owner: ${exception.owner}, expires: ${exception.expires})`)
-        .join('\n');
 }
 
-function main() {
-    const outDir = outDirFromArgs(process.argv.slice(2));
-    const closure = resolveDependencyClosure(IVORY_SOURCE_WORKSPACES);
-    const dependencies = [...closure.values()].sort((a, b) => (a.name === b.name ? a.version.localeCompare(b.version) : a.name.localeCompare(b.name)));
+const exceptionsBySubject = new Map((policy.exceptions ?? []).map(exception => [exception.subject, exception]));
+const ordered = [...components.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+const licensed = ordered.filter(([, component]) => component.license !== undefined);
+const unresolved = ordered.filter(([, component]) => component.license === undefined);
 
-    const lines = [
-        '# Ivory Tower — third-party notices',
-        '',
-        `Generated ${new Date().toISOString()} from the resolved package-lock.json dependency graph of:`,
-        ...IVORY_SOURCE_WORKSPACES.map(workspace => `  - ${workspace}`),
-        '',
-        `${dependencies.length} third-party packages.`,
-        '',
-        '## Recorded dependency-policy exceptions',
-        '',
-        formatExceptions(),
-        '',
-        '## Packages',
-        '',
-        ...dependencies.map(dependency => `- ${dependency.name}@${dependency.version} — ${dependency.license}${dependency.resolved ? ` — ${dependency.resolved}` : ''}`),
-        '',
-    ];
+const lines = [];
+lines.push('# Ivory Tower — third-party notices');
+lines.push('');
+lines.push('Generated by `npm run notices:generate` from `package-lock.json`. Do not edit by hand.');
+lines.push('');
+lines.push('This artifact covers the **runtime** dependency closure of each deployable — what actually');
+lines.push('ships. Build and test tooling is excluded. Ivory Tower and upstream Eclipse Theia sources are');
+lines.push('licensed under `EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0`; see `LICENSE-EPL` and');
+lines.push('`NOTICE.md`.');
+lines.push('');
+lines.push('A software licence recorded here is never authorization to ingest scholarly content. Content');
+lines.push('rights and data-use terms are governed separately — see `docs/iv-128-content-rights.md`.');
+lines.push('');
+lines.push('## Deployables');
+lines.push('');
+for (const [label, deployable] of deployables) {
+    lines.push(`- \`${label}\` — ${deployable.package} (\`${deployable.workspace}\`)`);
+}
+lines.push('');
+lines.push(`## Components (${licensed.length})`);
+lines.push('');
+lines.push('| Component | Version | Licence | Ships in |');
+lines.push('| --- | --- | --- | --- |');
+for (const [, component] of licensed) {
+    const shipsIn = [...component.deployables].sort().join(', ');
+    lines.push(`| \`${component.name}\` | ${component.version} | ${component.license} | ${shipsIn} |`);
+}
+lines.push('');
 
-    fs.mkdirSync(outDir, { recursive: true });
-    const outPath = path.join(outDir, 'ivory-third-party-notices.txt');
-    fs.writeFileSync(outPath, lines.join('\n'), 'utf8');
-    console.log(`Ivory Tower third-party notices written: ${path.relative(ROOT, outPath)}`);
+if (unresolved.length > 0) {
+    lines.push(`## Licence unresolved (${unresolved.length})`);
+    lines.push('');
+    lines.push('These packages publish no `license` field. Each carries a recorded exception and must be');
+    lines.push('resolved from the package\'s own LICENSE file before a tagged release.');
+    lines.push('');
+    lines.push('| Component | Version | Recorded exception | Expires |');
+    lines.push('| --- | --- | --- | --- |');
+    for (const [identifier, component] of unresolved) {
+        const exception = exceptionsBySubject.get(identifier);
+        lines.push(`| \`${component.name}\` | ${component.version} | ${exception ? exception.kind : '**none — policy violation**'} | ${exception ? exception.expires : 'n/a'} |`);
+    }
+    lines.push('');
 }
 
-main();
+const reviewed = (policy.exceptions ?? []).filter(exception => exception.kind === 'license-review');
+if (reviewed.length > 0) {
+    lines.push(`## Reviewed licence exceptions (${reviewed.length})`);
+    lines.push('');
+    for (const exception of reviewed) {
+        lines.push(`### ${exception.subject}`);
+        lines.push('');
+        lines.push(`- **Licence:** ${exception.licenseExpression ?? 'see exception record'}`);
+        lines.push(`- **Reason:** ${exception.reason}`);
+        lines.push(`- **Owner:** ${exception.owner}`);
+        lines.push(`- **Review trigger:** ${exception.reviewTrigger ?? 'the stated expiry'} (expires ${exception.expires})`);
+        lines.push(`- **Compensating control:** ${exception.compensatingControl}`);
+        lines.push('');
+    }
+}
+
+const rendered = `${lines.join('\n')}`;
+const target = path.join(outputDirectory, NOTICES_FILE);
+
+if (check) {
+    if (!fs.existsSync(target)) {
+        console.error(`${path.relative(REPO_ROOT, target)} does not exist. Run: npm run notices:generate`);
+        process.exit(1);
+    }
+    if (fs.readFileSync(target, 'utf8') !== rendered) {
+        console.error(`${path.relative(REPO_ROOT, target)} is out of date. Run: npm run notices:generate`);
+        process.exit(1);
+    }
+    console.log(`Ivory Tower third-party notices: up to date (${licensed.length} components).`);
+} else {
+    fs.mkdirSync(outputDirectory, { recursive: true });
+    fs.writeFileSync(target, rendered);
+    console.log(`Ivory Tower third-party notices: ${licensed.length} components, ${unresolved.length} licence-unresolved -> ${path.relative(REPO_ROOT, target)}`);
+}

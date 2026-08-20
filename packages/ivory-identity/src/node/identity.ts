@@ -63,7 +63,7 @@ export class IdentifierCollisionError extends Error {
     constructor(
         readonly id: string,
         readonly existingPreimage: string,
-        readonly incomingPreimage: string
+        readonly incomingPreimage: string,
     ) {
         super(`identifier '${id}' was derived from two different preimages`);
         this.name = 'IdentifierCollisionError';
@@ -118,7 +118,7 @@ export function deriveSourceVersionId(input: SourceVersionIdentityInput): Derive
     assertFullDigest(input.contentDigest, 'contentDigest');
     return derive('sourceVersion', [
         { name: 'sourceId', value: input.sourceId },
-        { name: 'contentDigest', value: input.contentDigest }
+        { name: 'contentDigest', value: input.contentDigest },
     ]);
 }
 
@@ -160,14 +160,18 @@ export function deriveExecutionFingerprint(input: ExecutionFingerprintInput): De
         }
         seen.add(id);
     }
-    return derive('executionFingerprint', [
-        { name: 'transformation', value: input.transformation },
-        { name: 'transformationVersion', value: input.transformationVersion },
-        { name: 'inputCount', value: String(inputIds.length) },
-        { name: 'inputIds', value: inputIds.join(',') },
-        { name: 'parameters', value: canonicalParameters(input.parameters) },
-        { name: 'policyVersion', value: input.policyVersion }
-    ], 'fingerprint');
+    return derive(
+        'executionFingerprint',
+        [
+            { name: 'transformation', value: input.transformation },
+            { name: 'transformationVersion', value: input.transformationVersion },
+            { name: 'inputCount', value: String(inputIds.length) },
+            { name: 'inputIds', value: inputIds.join(',') },
+            { name: 'parameters', value: canonicalParameters(input.parameters) },
+            { name: 'policyVersion', value: input.policyVersion },
+        ],
+        'fingerprint',
+    );
 }
 
 /** Inputs identifying one output of one computation. */
@@ -203,7 +207,7 @@ export function deriveArtifactId(input: ArtifactIdentityInput): DerivedIdentifie
     const fields: PreimageField[] = [
         { name: 'fingerprint', value: input.fingerprint },
         { name: 'outputRole', value: input.outputRole },
-        { name: 'determinism', value: input.determinism }
+        { name: 'determinism', value: input.determinism },
     ];
     if (input.determinism === 'observed') {
         if (input.outputDigest === undefined) {
@@ -214,7 +218,7 @@ export function deriveArtifactId(input: ArtifactIdentityInput): DerivedIdentifie
     } else if (input.determinism === 'deterministic') {
         if (input.outputDigest !== undefined) {
             throw new IdentityDerivationError(
-                "a 'deterministic' transformation must not include its output digest, otherwise its artifact identifier stops being reproducible from its inputs"
+                "a 'deterministic' transformation must not include its output digest, otherwise its artifact identifier stops being reproducible from its inputs",
             );
         }
     } else {
@@ -258,7 +262,7 @@ export function derivePassageId(input: PassageIdentityInput): DerivedIdentifier 
         { name: 'sourceVersionId', value: input.sourceVersionId },
         { name: 'extractionArtifactId', value: input.extractionArtifactId },
         { name: 'spanCount', value: String(spans.length) },
-        { name: 'spans', value: spans.map(span => `${span.start}-${span.end}`).join(',') }
+        { name: 'spans', value: spans.map(span => `${span.start}-${span.end}`).join(',') },
     ]);
 }
 
@@ -270,12 +274,12 @@ export function derivePassageId(input: PassageIdentityInput): DerivedIdentifier 
  * extraction can be located again in a different one, producing a new passage marked
  * `approximate` plus a lineage edge.
  */
-export function computeQuoteSelector(input: { prefix: string, exact: string, suffix: string }): QuoteSelector {
+export function computeQuoteSelector(input: { prefix: string; exact: string; suffix: string }): QuoteSelector {
     return {
         prefixDigest: digestHex(normalizeSelectorText(input.prefix)),
         exactDigest: digestHex(normalizeSelectorText(input.exact)),
         suffixDigest: digestHex(normalizeSelectorText(input.suffix)),
-        normalizationVersion: selectorNormalizationVersion()
+        normalizationVersion: selectorNormalizationVersion(),
     };
 }
 
@@ -322,7 +326,7 @@ export function createArtifactRecord(input: ArtifactRecordInput): ArtifactRecord
         ...input,
         id: input.identity.id,
         digest: input.identity.digest,
-        identifierSchemeVersion: IDENTIFIER_SCHEME_VERSION
+        identifierSchemeVersion: IDENTIFIER_SCHEME_VERSION,
     };
 }
 
@@ -359,7 +363,10 @@ function canonicalParameters(parameters: Readonly<Record<string, ParameterValue>
     if (names.length === 0) {
         return '';
     }
-    return canonicalPreimage('parameters', names.map(name => ({ name, value: typedParameterValue(name, parameters[name]) })));
+    return canonicalPreimage(
+        'parameters',
+        names.map(name => ({ name, value: typedParameterValue(name, parameters[name]) })),
+    );
 }
 
 function typedParameterValue(name: string, value: ParameterValue): string {

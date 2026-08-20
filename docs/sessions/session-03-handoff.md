@@ -2,198 +2,172 @@
 
 ## Objective completed
 
-Dependency, licensing, SBOM, and pinning gate (IV-19, Gate 0). Made third-party dependency and
-release-artifact governance mechanically enforceable: fixed `@theia/ivory-identity`'s exclusion
-from the format/typecheck/lint/test/dependency/boundary gates, added SBOM generation for the
-Ivory Tower source tree and each deployable artifact (`api`, `worker`), added a deterministic
-third-party notices generator, added a sentinel secret scan wired into `verify:ivory-tower`, added
-self-verifying adversarial fixtures for the dependency-policy gate (prohibited license, unapproved
-network dependency, unpinned high-risk dependency, floating Docling tag), and wrote the reviewed
-third-party dependency inventory the issue requires.
+Dependency, licensing, SBOM, and pinning gate (IV-19, Gate 0). Replaced the flat allowlist policy
+with a fail-closed machine-readable policy and an offline gate covering the reviewed dependency
+inventory, licence classes over each deployable's runtime closure, quality scope, image pinning, and
+an owned expiring exception register; added a secret sentinel scan, CycloneDX SBOM and deterministic
+notices generation, seven adversarial fixtures that execute the real gate, and a CI governance job.
+Brought `@theia/ivory-identity` into every Ivory gate. Reconstructed the missing Session 02 handoff
+from repository evidence.
 
 ## Canonical commit / branch
 
-- Started from `stable` @ `40d48b06b579c5301b97401a3ba11067a28ffbd6` (branch
-  `claude/session-3-q9tc4o`, which was identical to `stable` at session start).
-- This session's changes sit directly atop that commit.
+Branch `claude/session-3-q9tc4o`, atop `stable` @ `40d48b0`.
+
+- `1a7afe3` — `style(ivory-identity): apply the pinned Ivory Prettier configuration`
+- `e941c16` — `feat(ivory-tower): enforce dependency, licence, and pinning governance (IV-19)`
+- `5dd4eab` — `docs(ivory-tower): document IV-19 dependency governance`
+- this commit — session records
 
 ## Files changed
 
-New:
+**New:** `scripts/check-ivory-secrets.mjs`, `scripts/generate-ivory-sbom.mjs`,
+`scripts/generate-ivory-notices.mjs`, `scripts/ivory-lockfile.mjs`,
+`scripts/ivory-dependency-policy-fixtures.json`, `scripts/fixtures/dependency-policy/*` (7
+fixtures), `docs/iv-19-dependency-governance.md`, `docs/sessions/session-02-handoff.md`,
+`docs/sessions/session-03-dependency-governance.md`, this handoff.
 
-- `scripts/shared/ivory-dependency-graph.mjs` — shared npm-workspace dependency-closure resolver
-  over `package-lock.json` (used by both generators below). Lives under `scripts/shared/`, not
-  `scripts/lib/`, because the repo's root `.gitignore` has an unanchored `lib` pattern that would
-  otherwise silently exclude it.
-- `scripts/generate-ivory-sbom.mjs` — CycloneDX-shaped SBOM generator (`npm run sbom:generate`):
-  source-tree SBOM plus one SBOM per deployable artifact (`api`, `worker`), written to
-  `artifacts/`.
-- `scripts/generate-ivory-notices.mjs` — deterministic third-party notices generator (`npm run
-  notices:generate`), written to `artifacts/`.
-- `scripts/check-ivory-secrets.mjs` — sentinel secret scan (`npm run secret:scan`); self-tests
-  every pattern against a synthetic sample before scanning real files.
-- `configs/ivory-dependency-policy-fixtures.json` — adversarial fixtures (prohibited license,
-  unapproved network dependency, unpinned high-risk dependency) run through the real
-  violation-detection function on every `dependency:policy` invocation.
-- `docs/iv-19-dependency-inventory.md` — the reviewed third-party dependency inventory the issue's
-  step 4 requires (purpose/owner/license/version-policy/replacement-path per dependency),
-  including LiqUIdify, Docling, PDF.js, AI SDK, pgvector, and visualization libraries as
-  `planned`-status rows since they are not yet installed.
-- `.github/workflows/ivory-dependency-gate.yml` — new workflow (kept separate from upstream's
-  `generate-sbom.yml`/`license-check.yml` per the fork-divergence-minimization rule in
-  `CLAUDE.md`): a `dependency-policy` job (policy + secret scan) and a `sbom-and-notices` job that
-  uploads generated evidence as a build artifact, on push/PR to ivory paths, on release, and on
-  `workflow_dispatch`.
-- `docs/sessions/session-03-handoff.md` — this file.
+**Modified:** `configs/ivory-dependency-policy.json` (restructured),
+`scripts/check-ivory-dependency-policy.mjs` (rewritten), `package.json` (scopes + four new
+scripts), `.github/workflows/ivory-tower.yml` (`governance` job), `.gitignore` (`artifacts/`),
+`README.md`, `docs/ivory-tower-development.md`, and 13 `packages/ivory-identity/src` files
+(formatting only).
 
-Modified:
-
-- `scripts/check-ivory-dependency-policy.mjs` — package discovery is now directory-driven
-  (`packages/ivory-tower-*` or `packages/ivory-identity`) instead of a hardcoded `ivory-tower-`
-  prefix filter, so `@theia/ivory-identity` can no longer be silently omitted from scope; extracted
-  `evaluateManifest`/`evaluateExceptions` as pure functions; added `checkDoclingPin` (verifies the
-  digest-pin regex against both the real `DEFAULT_DOCLING_IMAGE` and a synthetic floating-tag
-  fixture) and `runAdversarialFixtures`.
-- `scripts/check-ivory-boundaries.mjs` — added an `@theia/ivory-identity` layer (forbids
-  `@theia/`, `@ivory-tower/`, `pg`, `@aws-sdk/`, `graphile-worker`, `docling`, `liquidify-react`;
-  its only real import is Node's `crypto`).
-- `scripts/ivory-boundary-fixtures.json` — added two negative fixtures for the new
-  `@theia/ivory-identity` layer.
-- `package.json` — `format:check:ivory-tower` / `format:write:ivory-tower` glob now includes
-  `packages/ivory-identity/src`; `typecheck:ivory-tower`, `lint:ivory-tower`, `test:ivory-tower`,
-  and the inline test step inside `verify:ivory-tower` now add `--scope "@theia/ivory-identity"`
-  alongside `--scope "@ivory-tower/*"`; added `secret:scan`, `sbom:generate`, `notices:generate`
-  scripts; `verify:ivory-tower` now also runs `secret:scan`.
-- `.gitignore` — added `/artifacts/` (generated SBOM/notices evidence, not committed as source).
-- `README.md` — SBOM section now documents the four new commands and links the inventory doc.
-- `docs/ivory-tower-development.md` — "Required commands" section documents the four new commands
-  and states explicitly that `@theia/ivory-identity` participates in every ivory-tower gate.
+No upstream Theia package was modified. `generate-sbom.yml` and `license-check.yml` were left
+untouched.
 
 ## Tests and commands run
 
-Executed directly with the system `node` (v22.22.2; no `node_modules` install was performed this
-session — see "Do not assume" below):
+All on Node 22.22.2 / npm 10.9.7 with no `node_modules`; the new scripts are dependency-free.
 
-- `node scripts/check-ivory-dependency-policy.mjs` — passes; reports 11 manifests checked including
-  `ivory-identity`; adversarial fixtures confirmed catchable.
-- Fault-injection proof: temporarily corrupted one fixture's `expectSubstring` to an unmatchable
-  string, confirmed the script now exits 1 with a clear "gate cannot be trusted" message, then
-  restored the fixture and confirmed exit 0 again.
-- `node scripts/check-ivory-boundaries.mjs` — passes with the new `@theia/ivory-identity` layer and
-  its two negative fixtures.
-- `node scripts/check-ivory-secrets.mjs` — passes (6 self-tested patterns, zero matches in real
-  source/config).
-- Fault-injection proof: wrote a file containing a synthetic `AKIA...` sentinel into
-  `packages/ivory-tower-domain/src/`, confirmed the scan catches it and exits 1, then deleted the
-  file and confirmed exit 0 again (no leftover files committed).
-- `node scripts/generate-ivory-sbom.mjs --out-dir <scratch>` — produced three valid CycloneDX-shaped
-  JSON files; source SBOM has 377 components, `api` has 130, `worker` has 124 (verified non-empty;
-  the generator refuses to write an empty SBOM).
-- `node scripts/generate-ivory-notices.mjs --out-dir <scratch>` — produced a deterministic notices
-  file listing 377 packages plus an explicit "None currently recorded" exceptions section.
-- `python3 -c "import json; json.load(open('package.json'))"` — confirmed `package.json` stays
-  valid JSON after edits.
-- Manual inspection of `packages/ivory-identity/src/**/*.ts` imports confirmed it only imports its
-  own relative modules and Node's built-in `crypto`, justifying the new boundary layer's forbidden
-  list.
+- `node scripts/check-ivory-dependency-policy.mjs` — pass
+- `node scripts/check-ivory-dependency-policy.mjs --fixtures` — pass, 7/7 rejected
+- `node scripts/check-ivory-secrets.mjs` — pass
+- `node scripts/generate-ivory-sbom.mjs` — 4 CycloneDX 1.5 documents (source 551, api 131, worker 130,
+  browser 549 components), validated for duplicate and dangling `bom-ref` values
+- `node scripts/generate-ivory-notices.mjs` and `--check` — 527 components, byte-identical rerun
+- `node scripts/check-ivory-boundaries.mjs` — pass, no regression
+- `npx prettier@3.6.2 --check` over the full Ivory format scope — pass
+- Adversarial: floating Docling tag injected into `infra/docker-compose.yml` → rejected, reverted,
+  gate green again; every fixture inspected individually for the correct failure reason
+
+## CI evidence
+
+Run [32282211584](https://github.com/mberrys/ivory-tower/actions/runs/32282211584) at `1f4fa2b`:
+
+| Check | Result |
+| --- | --- |
+| `Verify (ubuntu-22.04)` | **pass** — full `verify:ivory-tower` |
+| `Verify (windows-2022)` | `verify:ivory-tower` **passed**; job red only at the separate Electron compatibility step (see below) |
+| `Dependency governance evidence (IV-19)` | **pass** — uploaded 4 SBOMs, the manifest, and the notices artifact (184 KB, artifact 9376303576) |
+| CodeQL, `Analyze (actions/c-cpp/javascript-typescript)` | pass |
+| `github-advanced-security` | fail — a GitHub Copilot SWE-agent cleanup job, unrelated to this diff; failed identically on all three head SHAs (`5baad3e`, `4313de0`, `1f4fa2b`) |
+
+**The Windows Electron failure is the base branch's, not this PR's.** `build:electron` fails on
+upstream `packages/scm/src/browser/dirty-diff/diff-computer.ts` with `TS2707`, `TS4112`, and
+`TS2351` against the `diff` package's types. The identical failure is present on `stable` @
+`40d48b0`, where `verify:ivory-tower` also passed and only the Electron step was red
+([run 32218775390](https://github.com/mberrys/ivory-tower/actions/runs/32218775390)). Not fixed
+here: it is upstream code, outside IV-19, and editing upstream packages adds merge-conflict surface
+against the fork.
 
 ## Evidence produced
 
-- `docs/iv-19-dependency-inventory.md` — the reviewed third-party inventory.
-- Ad hoc SBOM/notices output generated into a scratch directory during verification (not
-  committed; regenerate any time with `npm run sbom:generate` / `npm run notices:generate`).
+`artifacts/sbom/{sbom-source,sbom-ivory-api,sbom-ivory-worker,sbom-ivory-browser}.cdx.json` plus
+`sbom-manifest.json` (commit SHA, generation mode, toolchain, per-file SHA-256), and
+`artifacts/notices/NOTICE-IVORY-THIRD-PARTY.md`. `artifacts/` is gitignored; CI uploads it as
+`ivory-governance-evidence-${{ github.sha }}`.
 
 ## Acceptance criteria passed
 
-- [x] CI produces an SBOM for the deployable artifact — `sbom-and-notices` job in
-      `.github/workflows/ivory-dependency-gate.yml` runs `generate-ivory-sbom.mjs`, which emits one
-      SBOM per deployable artifact (`api`, `worker`) plus a source-tree SBOM.
-- [x] Every direct dependency has recorded purpose, version policy, license, and replacement path —
-      `docs/iv-19-dependency-inventory.md`.
-- [x] LiqUIdify, Docling, PDF.js, AI SDK, pgvector, visualization libraries, and model assets are
-      represented — same document (installed rows for Docling/pgvector; planned rows for the rest,
-      accurately marked not-yet-installed rather than claimed as done).
-- [x] A prohibited license or unapproved networked dependency fails the policy check — proven by
-      fault injection (see "Tests and commands run") and by the self-verifying adversarial fixtures
-      that run on every `dependency:policy` invocation.
-- [x] `@sentry/node` is explicitly approved and pinned with a documented data boundary — already
-      true pre-session (`configs/ivory-dependency-policy.json`); reproduced in the inventory doc.
-- [x] `@theia/ivory-identity` participates in format/type/lint/test/dependency/boundary gates — the
-      core fix this session (see "Files changed" above).
-- [x] Third-party notices and reviewed exceptions are reproducible — `notices:generate` plus the
-      inventory doc.
-- [x] No floating production image or unreviewed network-capable dependency can pass CI — Docling
-      digest-pin enforcement now exists in both the runtime (`validateIvoryTowerEnvironment`,
-      pre-existing) and the static dependency-policy gate (`checkDoclingPin`, new); network-capable
-      dependencies are limited to an explicit `approvedNetworkDependencies` allowlist.
+- CI produces an SBOM for the deployable artifacts — source plus one per deployable.
+- Every direct dependency records purpose, owner, licence, version policy, data boundary, and
+  replacement path; an uninventoried direct dependency fails.
+- Docling, PDF.js-class UI libraries, pgvector/PostgreSQL, Graphile Worker, S3, Sentry, Theia, and
+  Playwright are represented; LiqUIdify and provider SDKs are **not yet dependencies** and are
+  recorded as such rather than as fictional entries.
+- A prohibited licence or an unapproved networked dependency fails the policy check — proved by
+  fixture, not by assertion.
+- `@theia/ivory-identity` participates in format, typecheck, lint, test, and dependency gates.
+- Notices and reviewed exceptions are reproducible; regeneration is byte-identical.
+- No floating production image can pass.
 
 ## Acceptance criteria still open
 
-- Source and production SBOMs generated **from an actual tagged release commit** and archived with
-  release evidence — the mechanism exists and is exercised by CI on every push/PR/release event,
-  but no v1 release has occurred yet, so no such archived bundle exists. This is expected: Gate 0
-  does not require a release to exist yet.
-- The new `.github/workflows/ivory-dependency-gate.yml` workflow has not been observed running on
-  GitHub Actions (it will run on the first push of this branch, or on the PR); I verified its two
-  jobs are equivalent to running the underlying scripts directly, which I did run.
+- ~~`npm run verify:ivory-tower` has not been run on the pinned toolchain.~~ **Closed by CI at
+  `1f4fa2b`:** the gate passes on both `ubuntu-22.04` and `windows-2022`, including `typecheck`,
+  `lint`, and `test` under the widened `@theia/ivory-*` scope, and `test:ivory-browser`. See
+  **CI evidence** below.
+- **SBOMs describe the lockfile, not a resolved install.** That is deliberate — see the invalid
+  dependency edge below — but it means a component present in an installed tree yet absent from
+  `package-lock.json` would not appear. The lockfile is the contract, so this is a bounded gap.
+- **Four licences remain unresolved** — `busboy`, `streamsearch`, `fuzzy`, `xmlhttprequest-ssl`
+  publish no licence field. Resolve from an installed tree before the first tagged release; the
+  exceptions expire 2026-11-19.
+- **Vulnerability disposition is not implemented.** `advisoryExceptions` is validated but no
+  advisory feed is wired to it.
+- **The dependency tree has an invalid edge:** upstream Theia's root `overrides` pins
+  `yauzl` to `~3.3.2` against the `^2.4.2` that `decompress-unzip@4.0.1` declares. Pre-existing on
+  `stable`; the first CI run surfaced it. It is why `sbom:generate` reads the lockfile instead of
+  calling `npm sbom`, which refuses to emit anything while such an edge exists. Recorded in every
+  SBOM manifest under `dependencyTreeProblems`. Resolving it is a dependency-resolution decision
+  for the override's owner — `docs/iv-19-dependency-governance.md` §12 has the proposed nested
+  override and its trade-off.
+- **`Verify (windows-2022)` is red on the base branch, not because of this PR.** `verify:ivory-tower`
+  itself passes on Windows; the failure is in the separate Electron compatibility step, on upstream
+  `packages/scm/src/browser/dirty-diff/diff-computer.ts` type errors (`TS2707`/`TS4112`/`TS2351`
+  against the `diff` package). The identical failure is present on `stable` @ `40d48b0`. Not fixed
+  here: it is upstream code, out of IV-19's scope, and editing upstream packages adds merge-conflict
+  surface.
+- **IV-15's clean-checkout evidence is still missing** (see the Session 02 reconstruction). Not
+  Session 03's objective; recorded, not closed.
 
 ## Known regressions / risks
 
-None identified. All changes are additive (new scripts, new workflow, new docs) or narrow
-extensions of existing scripts' scope (adding `ivory-identity` alongside `@ivory-tower/*`, never
-removing an existing check). `scripts/check-ivory-dependency-policy.mjs`'s exported functions are a
-superset of its prior behavior — the CLI output and exit-code contract for the previously-passing
-case (11 → 10 manifests before this session, now 11) is unchanged in shape, only in scope.
+- ~~The widened lerna scopes are unverified.~~ Verified green on both CI platforms at `1f4fa2b`.
+  Bringing `@theia/ivory-identity` into the format scope did require a `.gitattributes` rule
+  (`eol=lf`), without which Windows checked the files out as CRLF and the pinned
+  `endOfLine: "lf"` rejected them.
+- The fail-closed inventory means any new direct dependency now fails until someone records its
+  purpose, owner, and data boundary. This is intended friction, and it will surprise the first
+  person it stops.
+- Dependabot bumps that change a transitive licence class will fail the gate until an exception is
+  recorded or the licence is allowed. Notices were deliberately kept out of the gate so routine
+  bumps do not also require regenerating an artifact.
 
 ## Decisions made
 
-- Hand-rolled the SBOM/notices generators from `package-lock.json` rather than invoking
-  `@cyclonedx/cdxgen` (as upstream's `generate-sbom.yml` does for the whole Theia monorepo at
-  release time): this sandbox has no `node_modules` install and no verified network access to
-  install `cdxgen` globally, and a pure-`fs`-based generator is deterministic, dependency-free, and
-  directly testable without `npm ci`. This does **not** replace `generate-sbom.yml` — that workflow
-  continues to produce Theia's own whole-repo SBOM for the Eclipse SBOM registry; the new workflow
-  is Ivory-scoped and additive.
-- Put the new workflow in its own file rather than extending `generate-sbom.yml` or
-  `license-check.yml`, per `CLAUDE.md`'s fork-divergence-minimization guidance (treat upstream
-  workflow files the same as upstream packages: prefer new files over edits).
-- Scoped the dependency-policy gate's third-party-inventory requirement to **direct** dependencies
-  of Ivory-owned packages, leaving full-transitive-closure license enforcement to upstream's
-  existing `npm run license:check` (dash-licenses over the whole lockfile) — this matches the
-  issue's own step 4 wording ("For every direct dependency...") and avoids duplicating an
-  enforcement mechanism that already exists and already covers the full tree.
-- Marked LiqUIdify, PDF.js, Cytoscape.js, Vega-Lite, and AI SDK provider adapters as `planned` in
-  the inventory rather than skipping them, since the acceptance criterion requires them to be
-  "represented" — but did not claim exact license/version fields as final, since they are not
-  installed yet and must be re-verified at install time.
+- **Image pinning:** production/runtime images require an `@sha256` digest; local-only images may
+  keep a tag only with a recorded owner, reason, and expiry. Mutable tags fail everywhere.
+- **Gate composition:** `secret:scan` and the fixtures join `verify:ivory-tower`; `sbom:generate`
+  and `notices:generate` stay CI/release-only, and `artifacts/` is gitignored rather than committed.
+- **Licence closure scope:** runtime dependencies of each deployable, not build tooling.
+- **`credential-assignment` excludes TypeScript sources** — 36 false positives, zero true ones.
+- **Session 02 handoff reconstructed** from repository evidence, explicitly banner-marked as a
+  reconstruction and not as sign-off.
 
 ## Do not assume
 
-- Do **not** assume `npm run verify:ivory-tower` (the full lerna-orchestrated pipeline) has been
-  executed end-to-end this session. `node_modules` was empty at session start (0 entries) and the
-  pinned toolchain (Node 24.16.0 / npm 11.13.0 per `configs/ivory-toolchain.json`) was not
-  available in this sandbox (only Node 20/21/22 were pre-installed; no network-verified path to
-  install 24.16.0 was attempted, to avoid a long, uncertain `npm ci` across the full Theia
-  monorepo with unknown native-build-dependency availability). What **was** verified: every new
-  script runs correctly as plain Node ESM with zero `node_modules` dependencies, against the real
-  repository files, including fault-injection proofs that each gate actually fails when it should.
-  The `--scope "@theia/ivory-identity"` additions to `typecheck:ivory-tower` / `lint:ivory-tower` /
-  `test:ivory-tower` follow the exact multi-`--scope` pattern already used and presumably working in
-  `test:ivory-runtime`, but were not executed via `lerna` in this session.
-- Do **not** treat `docs/iv-19-dependency-inventory.md`'s `planned` rows (LiqUIdify, PDF.js,
-  Cytoscape.js, Vega-Lite, AI SDK) as evidence that those libraries are installed. They are not.
-- Do **not** assume the Docling image's license ("MIT", as recorded in the inventory doc) has been
-  independently re-verified against the actual upstream Docling project license file this session —
-  it was recorded from ADR-002/prior-session context, not re-checked against the source.
+- Do **not** treat this session as a Gate 0 pass. Gate 0 exit needs Sessions 01–06 reviewed
+  together, and IV-21/IV-22/IV-128 are untouched.
+- Do **not** assume the SBOMs reflect an installed tree; they are generated from `package-lock.json`.
+- Do **not** read the four `license-unknown` exceptions as licence clearance. Nothing has cleared
+  them; they are timed placeholders.
+- Do **not** assume the secret scan covers bundles, logs, telemetry, or audit events. It covers the
+  repository and build output. Redaction breadth is IV-22.
+- Do **not** widen a prefix rule to make the policy pass. The inventory is fail-closed by design;
+  the remedy is a recorded entry or a recorded, expiring exception.
 
 ## Exact prerequisite for next session
 
-A clean canonical baseline with this session's IV-19 work merged, plus (per the recommended
-execution model) Session 02's IV-15 baseline already in place from prior work. No blocking
-prerequisite specific to IV-19 remains for Session 04.
+A green `governance` CI job and a green `verify` matrix on this branch. If either is red, the fix
+belongs to a Session 03 repair (`03A`), not to Session 04.
 
 ## Recommended next session
 
-**Session 04 — Reproducible local environment and migrations (IV-21):** prove fresh checkout →
-healthy seeded system → teardown, plus N-1 upgrade and restore, per the session plan. This session
-did not touch `infra/`, migrations, or seed data.
+**Session 04 — Reproducible local environment and migrations (IV-21):** fresh checkout → healthy
+seeded system → teardown, plus N-1 upgrade and restore. It inherits two items from here:
+
+1. `pgvector/pgvector:pg16` needs a digest pin; its recorded exception expires 2026-11-19.
+2. IV-15's missing clean-checkout verification evidence, which Session 04's own clean-checkout work
+   is the natural place to establish.

@@ -36,6 +36,7 @@ import {
 } from './file-changeset-function-ids';
 import { GET_TASK_CONTEXT_FUNCTION_ID } from './task-context-function-ids';
 import { ArchitectAgentId, ExploreAgentId } from './agent-ids';
+import { OPEN_EDITORS_HINT_FRAGMENT_ID } from './open-editors-hint-fragment-id';
 
 export const CODER_SYSTEM_PROMPT_ID = 'coder-system';
 
@@ -259,6 +260,8 @@ Always retrieve relevant files using ~{${FILE_CONTENT_FUNCTION_ID}} to understan
 ## Project Info
 {{prompt:project-info}}
 
+{{prompt:${OPEN_EDITORS_HINT_FRAGMENT_ID}}}
+
 {{${TASK_CONTEXT_SUMMARY_VARIABLE_ID}}}
 
 # Final Instruction
@@ -459,6 +462,8 @@ When review feedback is recorded in the task context (REVISE verdict): evaluate 
 
 {{capability:apptester default off}}
 
+{{capability:memory default off}}
+
 ## Final Review
 
 Confirm: works as intended, tests pass, code quality OK, no security issues. Then yield.
@@ -544,6 +549,8 @@ Always retrieve relevant files using ~{${FILE_CONTENT_FUNCTION_ID}} to understan
 
 ## Project Info
 {{prompt:project-info}}
+
+{{prompt:${OPEN_EDITORS_HINT_FRAGMENT_ID}}}
 
 {{${TASK_CONTEXT_SUMMARY_VARIABLE_ID}}}
 
@@ -634,6 +641,8 @@ You have previously proposed changes for the following files. Some suggestions m
 {{${CHANGE_SET_SUMMARY_VARIABLE_ID}}}
 
 {{prompt:project-info}}
+
+{{prompt:${OPEN_EDITORS_HINT_FRAGMENT_ID}}}
 
 {{${TASK_CONTEXT_SUMMARY_VARIABLE_ID}}}
 
