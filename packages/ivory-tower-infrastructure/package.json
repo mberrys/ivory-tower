@@ -11,12 +11,12 @@
     "migrations"
   ],
   "dependencies": {
-    "@aws-sdk/client-s3": "3.887.0",
+    "@aws-sdk/client-s3": "3.1113.0",
     "@ivory-tower/adapters": "0.1.0",
     "@ivory-tower/content-policy": "0.1.0",
     "@ivory-tower/contracts": "0.1.0",
     "@ivory-tower/domain": "0.1.0",
-    "@sentry/node": "10.69.0",
+    "@sentry/node": "10.70.0",
     "graphile-worker": "0.17.3",
     "pg": "8.16.3"
   },

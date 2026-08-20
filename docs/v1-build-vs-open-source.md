@@ -3,12 +3,202 @@
 Status: planning baseline hardened for scholarship trust, field reports, and initial research (2026-08-01); application platform decided (2026-08-02). Notion is the execution tracker; this file is the compact repository map. Individual issue bodies own detailed requirements, attributed callouts, and acceptance criteria.
 
 - Tracker: [Ivory Tower Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)
-- Shape: 125 flat issues, 689 estimate points, 0 parent relationships.
-- V1: Phases 1-6, 109 issues, 576 points.
-- Post-v1: Phase 7, 16 issues, 113 points.
+- Shape: 130 flat issues, 705 estimate points, 0 parent relationships.
+- V1: Phases 1-6, 113 issues, 587 points.
+- Post-v1: Phase 7, 17 issues, 118 points.
 - Sequencing: `Blocked by` relations only; IV-8 is the sole root; no epic/sub-issue hierarchy.
 - Application platform: **Eclipse Theia, web-first, wrapped for desktop** — [ADR-001](adr-001-application-platform.md), 2026-08-02.
-- Verified 2026-08-01: acyclic, single-rooted, no phase inversions, no V1 issue blocked by a Phase 7 issue. One Milestone value per phase.
+- Verified 2026-08-09 from the versioned cutline manifest: acyclic, single-rooted, no phase inversions, no V1-required issue blocked by Experimental or Post-V1 work. One Milestone value per phase.
+
+<!-- BEGIN GENERATED: v1-cutline -->
+## Generated V1 cutline reconciliation
+
+- Tracker snapshot: 2026-08-09T19:04:41.219Z
+- Repository commit: `0e168a1559cd2fb964424e979c53cbc705f9633f`
+- Non-template issues: 130
+- V1 phases: 1-6 (113 issues; 587 estimate points)
+- Post-V1 phase: 7 (17 issues; 118 estimate points)
+
+### Phase exit inventory
+
+| Phase | Issues | Estimate points |
+|---|---:|---:|
+| Phase 1 | 24 | 111 |
+| Phase 2 | 12 | 47 |
+| Phase 3 | 11 | 56 |
+| Phase 4 | 17 | 96 |
+| Phase 5 | 30 | 173 |
+| Phase 6 | 19 | 104 |
+
+### Release-class inventory
+
+| Release class | Issues | Estimate points |
+|---|---:|---:|
+| Required | 112 | 584 |
+| Conditional | 1 | 3 |
+| Experimental | 0 | 0 |
+| Post-V1 | 17 | 118 |
+
+### Dependency layers
+
+- Layer 1: IV-8, IV-128
+- Layer 2: IV-14, IV-77, IV-102, IV-104
+- Layer 3: IV-15, IV-16, IV-19, IV-20, IV-103, IV-105, IV-113
+- Layer 4: IV-17, IV-18, IV-21, IV-22, IV-27
+- Layer 5: IV-4, IV-23, IV-28, IV-37, IV-67, IV-78, IV-79, IV-82, IV-92, IV-114, IV-117, IV-119, IV-129
+- Layer 6: IV-5, IV-24, IV-25, IV-29, IV-32, IV-43, IV-48, IV-74, IV-122, IV-131, IV-132
+- Layer 7: IV-26, IV-30, IV-33, IV-34, IV-49, IV-75, IV-80, IV-81, IV-83, IV-130
+- Layer 8: IV-3, IV-31, IV-35, IV-38, IV-53, IV-56, IV-107
+- Layer 9: IV-13, IV-36, IV-39, IV-45, IV-72, IV-87, IV-93, IV-101, IV-111, IV-123
+- Layer 10: IV-40, IV-69, IV-94, IV-121
+- Layer 11: IV-9, IV-41, IV-42, IV-70
+- Layer 12: IV-44, IV-46, IV-47, IV-91
+- Layer 13: IV-7, IV-50, IV-59, IV-84, IV-106
+- Layer 14: IV-6, IV-51, IV-54, IV-55, IV-60, IV-61, IV-73, IV-96, IV-124
+- Layer 15: IV-12, IV-52, IV-57, IV-62, IV-85, IV-86, IV-99
+- Layer 16: IV-10, IV-58, IV-63, IV-95, IV-115, IV-118, IV-120
+- Layer 17: IV-11, IV-97, IV-100, IV-125
+- Layer 18: IV-65, IV-98, IV-126
+- Layer 19: IV-64, IV-66, IV-88
+- Layer 20: IV-76, IV-90, IV-108, IV-109, IV-110, IV-112, IV-116, IV-127
+- Layer 21: IV-71, IV-89
+- Layer 22: IV-68
+
+### Issue classification
+
+| Issue | Title | Phase | Release class | Status |
+|---|---|---|---|---|
+| IV-3 | Establish LiqUIdify GUI foundation | Phase 2 | Required | Backlog |
+| IV-4 | Implement an interchangeable AI-provider abstraction layer | Phase 5 | Required | Backlog |
+| IV-5 | Define capability-based AI agent contracts | Phase 5 | Required | Backlog |
+| IV-6 | Create a cross-provider research-workflow benchmark harness | Phase 6 | Required | Backlog |
+| IV-7 | Every conclusion should be inspectable | Phase 5 | Required | Backlog |
+| IV-8 | Define Ivory Tower's academic-first Knowledge Intelligence product model | Phase 1 | Required | Done |
+| IV-9 | Build a hybrid scholarly corpus and knowledge substrate | Phase 4 | Required | Backlog |
+| IV-10 | Create a conversational research workspace with live visual analysis | Phase 6 | Required | Backlog |
+| IV-11 | Implement research-native visualization primitives | Phase 6 | Required | Backlog |
+| IV-12 | Implement evidence-led research investigation agents | Phase 5 | Required | Backlog |
+| IV-13 | Expose controlled research semantic context through MCP | Phase 7 | Post-V1 | Backlog |
+| IV-14 | Decide V1 runtime topology and repository architecture | Phase 1 | Required | In Progress |
+| IV-15 | Scaffold the TypeScript web application and quality gates | Phase 1 | Required | Blocked |
+| IV-16 | Define the canonical research object schema | Phase 1 | Required | Backlog |
+| IV-17 | Define stable source, passage, and derived-artifact identifiers | Phase 1 | Required | Backlog |
+| IV-18 | Define typed service and API boundaries | Phase 1 | Required | Backlog |
+| IV-19 | Establish dependency licensing, SBOM, and version-pinning policy | Phase 1 | Required | Backlog |
+| IV-20 | Define V1 supported-content and restricted-data policy | Phase 1 | Required | Backlog |
+| IV-21 | Establish local development, migration, and seed workflow | Phase 1 | Required | Backlog |
+| IV-22 | Define deployment, configuration, and secret-management contract | Phase 1 | Required | Backlog |
+| IV-23 | Implement the Ivory Tower UI adapter layer over LiqUIdify | Phase 2 | Required | Backlog |
+| IV-24 | Build the responsive research workspace shell and navigation | Phase 2 | Required | Backlog |
+| IV-25 | Implement shared loading, empty, failure, and retry states | Phase 2 | Required | Backlog |
+| IV-26 | Verify keyboard, focus, contrast, and reduced-motion behavior | Phase 2 | Required | Backlog |
+| IV-27 | Execute a LiqUIdify compatibility and upgrade spike | Phase 2 | Required | Backlog |
+| IV-28 | Implement immutable source storage and content hashing | Phase 3 | Required | Backlog |
+| IV-29 | Implement the source upload and ingestion state machine | Phase 3 | Required | Backlog |
+| IV-30 | Integrate the Docling document-conversion service | Phase 3 | Required | Backlog |
+| IV-31 | Implement OCR fallback and extraction-quality diagnostics | Phase 3 | Required | Backlog |
+| IV-32 | Implement scholarly metadata resolution using Crossref and OpenAlex | Phase 3 | Required | Backlog |
+| IV-33 | Implement source deduplication and version reconciliation | Phase 3 | Required | Backlog |
+| IV-34 | Integrate the PDF.js source viewer | Phase 3 | Required | Backlog |
+| IV-35 | Implement stable passage deep links and highlight overlays | Phase 3 | Required | Backlog |
+| IV-36 | Implement ingestion failure recovery and reprocessing controls | Phase 3 | Required | Backlog |
+| IV-37 | Provision PostgreSQL, pgvector, and versioned schema migrations | Phase 4 | Required | Backlog |
+| IV-38 | Implement provenance-preserving document chunking | Phase 4 | Required | Backlog |
+| IV-39 | Implement embedding generation and model-version tracking | Phase 4 | Required | Backlog |
+| IV-40 | Implement hybrid lexical-vector retrieval | Phase 4 | Required | Backlog |
+| IV-41 | Implement corpus, source, date, entity, and content-type retrieval filters | Phase 4 | Required | Backlog |
+| IV-42 | Implement surrounding-context expansion for retrieved passages | Phase 4 | Required | Backlog |
+| IV-43 | Implement claim, evidence, contradiction, and interpretation persistence | Phase 4 | Required | Backlog |
+| IV-44 | Implement entity resolution and temporal relationship modeling | Phase 4 | Required | Backlog |
+| IV-45 | Implement reproducible citation formatting and export | Phase 4 | Required | Backlog |
+| IV-46 | Implement citation validation and unsupported-claim rejection | Phase 4 | Required | Backlog |
+| IV-47 | Build the retrieval and passage-anchor evaluation corpus | Phase 4 | Required | Backlog |
+| IV-48 | Integrate the AI SDK provider registry and direct provider adapters | Phase 5 | Required | Backlog |
+| IV-49 | Implement the provider-independent structured result envelope | Phase 5 | Required | Backlog |
+| IV-50 | Implement the structured cited-answer capability | Phase 5 | Required | Backlog |
+| IV-51 | Implement persistent conversational research threads | Phase 5 | Required | Backlog |
+| IV-52 | Implement research scope and framing revision controls | Phase 5 | Required | Backlog |
+| IV-53 | Implement uncertainty and competing-interpretation representation | Phase 5 | Required | Backlog |
+| IV-54 | Implement the evidence-gap analysis capability | Phase 5 | Required | Backlog |
+| IV-55 | Implement the bounded literature-review capability | Phase 5 | Required | Backlog |
+| IV-56 | Implement model, prompt, tool, and source audit records | Phase 5 | Required | Backlog |
+| IV-57 | Implement streaming research-response transport and cancellation | Phase 5 | Required | Backlog |
+| IV-58 | Enforce capability-level time, cost, and source budgets | Phase 5 | Required | Backlog |
+| IV-59 | Define the typed research visualization specification | Phase 5 | Required | Backlog |
+| IV-60 | Implement the interactive claim-evidence graph | Phase 6 | Required | Backlog |
+| IV-61 | Implement the temporal evidence timeline | Phase 6 | Required | Backlog |
+| IV-62 | Implement visualization-to-source navigation | Phase 6 | Required | Backlog |
+| IV-63 | Implement visualization selection rationale | Phase 6 | Required | Backlog |
+| IV-64 | Implement the V1 golden benchmark harness | Phase 6 | Required | Backlog |
+| IV-65 | Instrument quality, latency, cost, and failure telemetry | Phase 6 | Required | Backlog |
+| IV-66 | Build the end-to-end corpus-to-cited-conclusion acceptance suite | Phase 6 | Required | Backlog |
+| IV-67 | Complete the V1 security and privacy threat model | Phase 6 | Required | Backlog |
+| IV-68 | Define V1 release gates and the supported-content matrix | Phase 6 | Required | Ready |
+| IV-69 | Integrate the production MCP server SDK for controlled read-only access | Phase 7 | Post-V1 | Backlog |
+| IV-70 | Implement project-scoped authorization for MCP clients | Phase 7 | Post-V1 | Backlog |
+| IV-71 | Implement Zotero and OSF source connectors | Phase 7 | Post-V1 | Backlog |
+| IV-72 | Implement a DuckDB-based statistical analysis sandbox | Phase 7 | Post-V1 | Backlog |
+| IV-73 | Implement geographic and archaeological map visualizations | Phase 7 | Post-V1 | Backlog |
+| IV-74 | Implement multi-user workspace authorization and collaboration | Phase 7 | Post-V1 | Backlog |
+| IV-75 | Implement the restricted-data de-identification workflow | Phase 7 | Post-V1 | Backlog |
+| IV-76 | Evaluate Berry LLM as an optional Ivory Tower provider | Phase 7 | Post-V1 | Backlog |
+| IV-77 | Define staged research protocol and claim-posture contract | Phase 1 | Required | In Progress |
+| IV-78 | Define and implement durable asynchronous job contracts | Phase 1 | Required | Backlog |
+| IV-79 | Implement immutable pipeline-run manifests and artifact invalidation | Phase 1 | Required | Backlog |
+| IV-80 | Implement guided first-project onboarding with a sample corpus | Phase 2 | Required | Backlog |
+| IV-81 | Implement progressive-disclosure method inspector and vocabulary | Phase 2 | Required | Backlog |
+| IV-82 | Implement V1 authentication and project authorization boundary | Phase 2 | Required | Backlog |
+| IV-83 | Enforce supported-content admission before conversion | Phase 3 | Required | Backlog |
+| IV-84 | Implement corpus coverage, selection-rationale, and extraction-quality report | Phase 4 | Required | Backlog |
+| IV-85 | Implement bounded qualitative annotation, codebook, and memo workflow | Phase 5 | Required | Backlog |
+| IV-86 | Implement researcher adjudication workflow for generated claims | Phase 5 | Required | Backlog |
+| IV-87 | Enforce provider data-egress policy | Phase 5 | Required | Backlog |
+| IV-88 | Export verifiable research dossier and reproducibility package | Phase 6 | Required | Backlog |
+| IV-89 | Validate novice and expert research comprehension before release | Phase 6 | Required | Backlog |
+| IV-90 | Implement operational recovery and immutable release evidence bundle | Phase 6 | Required | Backlog |
+| IV-91 | Implement literature-candidate relevance adjudication and search refinement | Phase 4 | Required | Backlog |
+| IV-92 | Define source-grounded reported-data and experimental-observation schema | Phase 1 | Required | Backlog |
+| IV-93 | Extract structured reported data from text, tables, figures, and supplements | Phase 4 | Required | Backlog |
+| IV-94 | Normalize cross-paper variables, units, conditions, and uncertainty | Phase 4 | Required | Backlog |
+| IV-95 | Validate extracted-dataset completeness and adjudicate reported observations | Phase 5 | Required | Backlog |
+| IV-96 | Convert researcher schemas and example plots into reviewable visualization specs | Phase 5 | Required | Backlog |
+| IV-97 | Generate deterministic plots from validated provenance-bearing datasets | Phase 6 | Required | Backlog |
+| IV-98 | Validate plot completeness, legibility, and dataset reconciliation | Phase 6 | Required | Backlog |
+| IV-99 | Implement versioned reusable research workflow recipes and expert-run controls | Phase 5 | Required | Backlog |
+| IV-100 | Implement quota-aware execution preflight and resumable checkpoints | Phase 5 | Required | Backlog |
+| IV-101 | Implement content-addressed research artifact cache and reuse policy | Phase 5 | Required | Backlog |
+| IV-102 | Conduct a systematic social-science tool, source, and adoption landscape review | Phase 1 | Required | Done |
+| IV-103 | Validate the connector-and-workflow-layer product thesis against a standalone vertical application | Phase 1 | Required | Ready |
+| IV-104 | Define and validate equity-of-access requirements and measurements | Phase 1 | Required | Ready |
+| IV-105 | Define applied social-science personas and deliverable contracts | Phase 1 | Required | Ready |
+| IV-106 | Validate federated social-science literature connector demand and architecture | Phase 7 | Post-V1 | Backlog |
+| IV-107 | Validate evidence-clearinghouse and public social-dataset connector demand | Phase 7 | Post-V1 | Backlog |
+| IV-108 | Validate OSF workflow demand and API feasibility | Phase 7 | Post-V1 | Backlog |
+| IV-109 | Validate CAQDAS interchange demand and outcome safety | Phase 7 | Post-V1 | Backlog |
+| IV-110 | Implement portable quantitative-analysis artifact interchange | Phase 7 | Post-V1 | Backlog |
+| IV-111 | Implement authorized survey-platform ingestion connectors | Phase 7 | Post-V1 | Backlog |
+| IV-112 | Implement domain-specific research deliverable profiles | Phase 7 | Post-V1 | Backlog |
+| IV-113 | Define the researcher-authorship and AI-contribution constitution | Phase 1 | Required | Backlog |
+| IV-114 | Extend the canonical schema for protected human records and model contributions | Phase 1 | Required | Backlog |
+| IV-115 | Implement the protected human-only notebook and AI-suggestion boundary | Phase 5 | Required | Backlog |
+| IV-116 | Implement AI-contribution review, diff, purge, and export manifests | Phase 6 | Required | Backlog |
+| IV-117 | Define the typed research-connection proposal and warrant schema | Phase 1 | Required | Backlog |
+| IV-118 | Implement inspectable connection surfacing and researcher adjudication | Phase 5 | Required | Backlog |
+| IV-119 | Define the critical-history identity, terminology, and archive-context model | Phase 1 | Required | Backlog |
+| IV-120 | Implement counter-archive, archival-silence, and positionality workflows | Phase 5 | Required | Backlog |
+| IV-121 | Enforce sensitive-identity non-inference and anti-outing protections | Phase 5 | Required | Backlog |
+| IV-122 | Define the bounded V1 survey-analysis and statistical-warrant contract | Phase 1 | Required | Backlog |
+| IV-123 | Implement survey dataset, questionnaire, and codebook ingestion from authorized uploads | Phase 3 | Required | Backlog |
+| IV-124 | Implement survey weighting, missingness, and data-quality preflight | Phase 4 | Required | Backlog |
+| IV-125 | Implement researcher-approved descriptive survey analysis specifications | Phase 5 | Required | Backlog |
+| IV-126 | Validate survey results, small cells, and causal-language boundaries | Phase 5 | Required | Backlog |
+| IV-127 | Generate provenance-linked accessible survey tables, charts, and analysis packages | Phase 6 | Required | Backlog |
+| IV-128 | Freeze the V1 cutline and phase-exit gates | Phase 1 | Required | Ready |
+| IV-129 | Define Windows Acrylic material roles and fallback contract | Phase 2 | Required | Backlog |
+| IV-130 | Implement and verify the Windows Electron Acrylic adapter | Phase 7 | Post-V1 | Backlog |
+| IV-131 | Implement the Windows Acrylic V1 fallback (no adapter) | Phase 2 | Required | Backlog |
+| IV-132 | Add accent blur window background preference option | Phase 2 | Conditional | Backlog |
+<!-- END GENERATED: v1-cutline -->
 
 ## V1 contract
 
@@ -170,27 +360,27 @@ The supporting stack:
 Derived from the tracker's `Blocked by` relations, not maintained by hand. Each arrow is one dependency layer: every issue on a line is reachable only after every line above it. Regenerate this block whenever relations change — the previous hand-written version had drifted to the point where 75 of its 83 entries sat at the wrong depth.
 
 ```text
-IV-8
+IV-8, IV-128
   -> IV-14, IV-77, IV-102, IV-104
   -> IV-15, IV-16, IV-19, IV-20, IV-103, IV-105, IV-113
   -> IV-17, IV-18, IV-21, IV-22, IV-27
-  -> IV-4, IV-23, IV-28, IV-37, IV-67, IV-78, IV-79, IV-82, IV-92, IV-114, IV-117, IV-119
-  -> IV-5, IV-24, IV-25, IV-29, IV-32, IV-43, IV-48, IV-122
-  -> IV-26, IV-30, IV-33, IV-34, IV-49, IV-80, IV-81, IV-83
-  -> IV-3, IV-31, IV-35, IV-38, IV-53, IV-56
-  -> IV-36, IV-39, IV-45, IV-87, IV-93, IV-101, IV-123
-  -> IV-40, IV-94, IV-121
-  -> IV-9, IV-41, IV-42
+  -> IV-4, IV-23, IV-28, IV-37, IV-67, IV-78, IV-79, IV-82, IV-92, IV-114, IV-117, IV-119, IV-129
+  -> IV-5, IV-24, IV-25, IV-29, IV-32, IV-43, IV-48, IV-74, IV-122, IV-131, IV-132
+  -> IV-26, IV-30, IV-33, IV-34, IV-49, IV-75, IV-80, IV-81, IV-83, IV-130
+  -> IV-3, IV-31, IV-35, IV-38, IV-53, IV-56, IV-107
+  -> IV-13, IV-36, IV-39, IV-45, IV-72, IV-87, IV-93, IV-101, IV-111, IV-123
+  -> IV-40, IV-69, IV-94, IV-121
+  -> IV-9, IV-41, IV-42, IV-70
   -> IV-44, IV-46, IV-47, IV-91
-  -> IV-7, IV-50, IV-59, IV-84
-  -> IV-6, IV-51, IV-54, IV-55, IV-60, IV-61, IV-96, IV-124
+  -> IV-7, IV-50, IV-59, IV-84, IV-106
+  -> IV-6, IV-51, IV-54, IV-55, IV-60, IV-61, IV-73, IV-96, IV-124
   -> IV-12, IV-52, IV-57, IV-62, IV-85, IV-86, IV-99
   -> IV-10, IV-58, IV-63, IV-95, IV-115, IV-118, IV-120
   -> IV-11, IV-97, IV-100, IV-125
   -> IV-65, IV-98, IV-126
   -> IV-64, IV-66, IV-88
-  -> IV-90, IV-116, IV-127
-  -> IV-89
+  -> IV-76, IV-90, IV-108, IV-109, IV-110, IV-112, IV-116, IV-127
+  -> IV-71, IV-89
   -> IV-68
 ```
 
@@ -206,7 +396,7 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 
 ## Tracker map
 
-### Phase 1 - Product and architecture contract (23 issues, 106 points)
+### Phase 1 - Product and architecture contract (24 issues, 111 points)
 
 - IV-8 Define the academic-first Knowledge Intelligence product model.
 - IV-14 Decide runtime topology and repository architecture.
@@ -231,8 +421,9 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 - IV-117 Define the typed research-connection proposal and warrant schema.
 - IV-119 Define the critical-history identity, terminology, and archive-context model.
 - IV-122 Define the bounded V1 survey-analysis and statistical-warrant contract.
+- IV-128 Freeze the V1 cutline and phase-exit gates.
 
-### Phase 2 - Application shell (9 issues, 41 points)
+### Phase 2 - Application shell (12 issues, 47 points)
 
 - IV-3 Establish the LiqUIdify GUI integration contract.
 - IV-23 Implement the Ivory Tower UI adapter over LiqUIdify.
@@ -243,6 +434,9 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 - IV-80 Implement guided first-project onboarding with a sample corpus.
 - IV-81 Implement progressive-disclosure method inspector and vocabulary.
 - IV-82 Implement V1 authentication and project authorization boundary.
+- IV-129 Define Windows Acrylic material roles and fallback contract.
+- IV-131 Implement the Windows Acrylic V1 fallback (no adapter).
+- IV-132 Add accent blur window background preference option (Conditional).
 
 ### Phase 3 - Source ingestion and inspection (11 issues, 56 points)
 
@@ -333,7 +527,7 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 - IV-116 Implement AI-contribution review, diff, purge, and export manifests.
 - IV-127 Generate provenance-linked accessible survey tables, charts, and analysis packages.
 
-### Phase 7 - Explicitly post-v1 (16 issues, 113 points)
+### Phase 7 - Explicitly post-v1 (17 issues, 118 points)
 
 - IV-13 Define controlled semantic access through MCP.
 - IV-69 Integrate production MCP server SDK.
@@ -351,6 +545,7 @@ UI track: `IV-27 -> IV-23 -> IV-24/IV-25 -> IV-80/IV-81 -> IV-26`. IV-113/IV-117
 - IV-110 Implement portable quantitative-analysis artifact interchange.
 - IV-111 Implement authorized survey-platform ingestion connectors.
 - IV-112 Implement domain-specific research deliverable profiles.
+- IV-130 Implement and verify the Windows Electron Acrylic adapter.
 
 ## Non-negotiable release gates
 
