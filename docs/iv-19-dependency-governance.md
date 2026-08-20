@@ -1,86 +1,305 @@
-# IV-19 — Dependency licensing, SBOM, and pinning gate
+# IV-19 — Dependency, licensing, SBOM, and pinning governance
 
-**Status:** implemented-local · **Phase** 1 · **Milestone:** V1 — product and architecture contract
-**Issue:** [IV-19](https://app.notion.com/p/3b09cb079ddb8175b536df461eb73b4a)
+**Status:** implemented at Gate 0 (Session 03). **Owner:** Engineering.
+**Policy as data:** [`configs/ivory-dependency-policy.json`](../configs/ivory-dependency-policy.json).
 
-This document names the mechanism, not the requirement. The requirement lives in the IV-19 issue
-body; this file is a short map from that requirement onto the files that enforce it, so a reviewer
-does not have to reconstruct the wiring from six scripts and two configs.
+This document explains the policy. The JSON file *is* the policy — every rule below is
+mechanically enforced, and prose here never overrides it.
 
-The delivery-evidence state is `implemented-local` per `docs/sessions/README.md`: every gate below
-passes at the commit this document ships in, but it has not yet been proven from a release commit
-(SBOM archived, notices reviewed) — that is release-evidence work for a later Gate 0/exit-review
-session, not this one.
+## 1. Why this exists
 
-## 1. What is governed, and where
+Open-source reuse is a stated Ivory Tower strategy, so the risk is not reuse itself but
+*unreviewed* reuse: a dependency nobody chose, a licence nobody read, a network-capable package
+nobody bounded, or a production image that silently changes under a mutable tag. IV-19 makes each
+of those a mechanical failure rather than a review question.
 
-| Concern | Mechanism | Command |
+The gates are **fail-closed and offline**. Every input — workspace manifests, `package-lock.json`,
+and the Compose and runtime image references — is read from the working tree. No install, no
+registry, no Java, and no external scanner is required, so the result is reproducible from a commit
+by anyone.
+
+## 2. Commands
+
+| Command | What it does | In the required gate |
 | --- | --- | --- |
-| Allowed licenses, approved network-capable dependencies, high-risk exact pins, advisory exceptions | `configs/ivory-dependency-policy.json` | `npm run dependency:policy` |
-| Per-dependency purpose, owner, license, version policy, replacement path, network/native/source-content posture | `configs/ivory-third-party-inventory.json` | `npm run inventory:policy:ivory-tower` |
-| Human-readable rendering of the inventory | `THIRD-PARTY-NOTICES-ivory-tower.md` (generated) | `npm run notices:generate:ivory-tower` / `npm run notices:check:ivory-tower` |
-| Module-boundary enforcement (which layer may import what) | `scripts/check-ivory-boundaries.mjs` + `scripts/ivory-boundary-fixtures.json` | `npm run check:ivory-boundaries` |
-| Sentinel secret scan | `scripts/check-ivory-secret-scan.mjs` | `npm run secret:scan:ivory-tower` |
-| Source and deployable-artifact SBOM | `scripts/generate-ivory-sbom.mjs` | `npm run sbom:generate:ivory-tower` (CI: `.github/workflows/ivory-tower.yml`, job `sbom`) |
-| Immutable production image pin (Docling) | `packages/ivory-tower-infrastructure/src/environment.ts` (`validateIvoryTowerEnvironment`) | exercised by `packages/ivory-tower-infrastructure/src/package.spec.ts` |
-| Upstream Theia's own license/SBOM scan (unchanged, not re-governed here) | `NOTICE.md`, `.github/workflows/license-check.yml`, `.github/workflows/generate-sbom.yml` | `npm run license:check` |
+| `npm run dependency:policy` | Licences, dependency inventory, quality scope, image pins, exception register, **and the adversarial fixtures** | yes |
+| `npm run secret:scan` | Sentinel and credential scan | yes |
+| `npm run sbom:generate` | CycloneDX 1.5 SBOMs into `artifacts/sbom/` — source tree plus one per deployable, built from `package-lock.json` | CI / release |
+| `npm run notices:generate` | Third-party notices into `artifacts/notices/` | CI / release |
+| `npm run notices:check` | Fails if the notices artifact is stale | available, not gate-wired |
+| `npm run license:check` | Upstream Eclipse dash-licenses (Theia's own gate; needs Java and network) | no — upstream-owned |
 
-`npm run verify:ivory-tower` chains every row above except SBOM generation, which needs network
-access to fetch the scanner and is therefore a separate CI job rather than part of the local/CI
-gate every push runs.
+`npm run verify:ivory-tower` runs the first two. SBOM and notices generation is deliberately kept
+out of the local gate: it is release evidence, it is slow, and it depends on install state.
+`artifacts/` is gitignored and uploaded by the CI `governance` job instead of being committed, so a
+dependency bump does not produce a notices diff on every pull request.
 
-## 2. Scope
+## 3. Licence classes
 
-The inventory and dependency-policy gates cover every package under `packages/ivory-tower-*` and
-`packages/ivory-identity` (`@theia/ivory-identity`), plus `examples/ivory-tower-browser`.
-`@theia/ivory-identity` previously ran outside the format/typecheck/lint/test/dependency/boundary
-gates because its package name does not match the `@ivory-tower/*` glob the gates used to filter
-on; it is now included explicitly wherever that glob is used (see the `--scope "@theia/ivory-identity"`
-additions in `package.json` and the boundary layer added in `check-ivory-boundaries.mjs`).
+Three classes, in `licenseClasses`:
 
-Individual `@theia/*` dependencies are not re-inventoried one by one — they are represented as a
-single `theia-platform` entry in the third-party inventory, because they are already governed by
-upstream Theia's own `NOTICE.md` and `license-check.yml`. Duplicating ~2,600 transitive upstream
-entries here would not make them more reviewed; it would just make this file unreadable.
+- **allowed** — permissive and file-level-copyleft expressions that need no per-package decision.
+- **reviewRequired** — weak copyleft (LGPL) and attribution-over-content licences (CC-BY). These
+  fail unless a recorded exception names the exact `package@version`.
+- **prohibited** — strong copyleft and source-available licences (GPL, AGPL, SSPL, BUSL, Elastic),
+  plus `UNLICENSED`. **A prohibited licence has no exception path.** The only remedy is removal.
 
-## 3. Represented-but-not-installed technologies
+A missing licence is `unknown`, which is treated like `reviewRequired` and denied by default
+(`defaults.unknownLicense: "deny"`).
 
-IV-19's acceptance criteria name LiqUIdify, Docling, PDF.js, the AI SDK, pgvector, visualization
-libraries, and model assets explicitly. Several of these are not npm dependencies of any
-Ivory-owned package yet (LiqUIdify, PDF.js, an Ivory-owned AI SDK provider-adapter package,
-Cytoscape.js/Vega-Lite) or are not npm dependencies at all (Docling is a pinned container image;
-pgvector is a PostgreSQL extension; model assets are deliberately not redistributed). Each still has
-an entry in `configs/ivory-third-party-inventory.json` with a `status` field recording exactly
-that, so a reviewer can see the governance commitment now instead of discovering it only when the
-package first lands. `scripts/check-ivory-third-party-inventory.mjs` fails if any of these entries
-goes missing.
+SPDX expressions are evaluated, not string-matched: an `OR` expression passes if any operand is
+allowed (`(MPL-2.0 OR Apache-2.0)` resolves through Apache-2.0), and an `AND` expression requires
+every operand to be allowed (`(OFL-1.1 AND MIT)`).
 
-## 4. Verification (adversarial fixtures)
+**Scope.** The licence closure is computed over the **runtime** dependencies of each entry in
+`deployables` — what actually ships. Build and test tooling is out of scope: its licences do not
+travel to users, and including it would bury the real signal.
 
-Per the issue's own verification instruction ("inject a known policy-violating dependency … confirm
-the gate fails"), each rule below has a fixture proving the current policy would reject the case,
-without literally introducing the violation into the tree:
+## 4. The dependency inventory
 
-- Unapproved network dependency, prohibited license, and a high-risk dependency with a floating
-  (non-exact) version: `configs/ivory-dependency-policy-fixtures.json`, checked inside
-  `scripts/check-ivory-dependency-policy.mjs`.
-- A package silently omitted from the quality scope: the same fixtures file proves package-directory
-  discovery is name-pattern-based (`isIvoryOwnedPackageDirectory`), not a hardcoded list, so a future
-  `packages/ivory-tower-*` or `packages/ivory-identity` directory cannot be added without being
-  picked up.
-- A floating (non-digest-pinned) Docling image tag: `packages/ivory-tower-infrastructure/src/package.spec.ts`,
-  test `"rejects a floating Docling image tag (IV-19 adversarial fixture)"`.
-- A forbidden cross-layer import for `@theia/ivory-identity`: `scripts/ivory-boundary-fixtures.json`.
-- A sentinel secret: `scripts/check-ivory-secret-scan.mjs` self-tests each pattern against an
-  in-memory fixture on every run, so the gate proves it still catches its own adversarial cases
-  without ever committing a real secret-shaped string to the tree.
+`packages` is the reviewed third-party inventory. Every direct dependency of every Ivory-owned
+workspace must have an entry recording:
 
-## 5. What this does not settle
+`allowed`, `scope`, `purpose`, `owner`, `license`, `networkCapable`, `native`, `dataBoundary`,
+`sourceContentCrossesBoundary`, `versionPolicy`, `replacementPath`.
 
-- SBOM archival and third-party notices review **from a release commit** (as opposed to every push)
-  is release-evidence work, not part of this gate. `docs/sessions/README.md`'s delivery-evidence
-  states apply.
-- LiqUIdify's actual license is unconfirmed because the package is not installed; the inventory
-  entry deliberately blocks on that until IV-23 installs it and updates the record.
-- This document does not re-litigate ADR-001/ADR-002 topology decisions; it only wires the
-  governance gate around whatever those decisions already fixed.
+A direct dependency with no entry fails the gate
+(`defaults.uninventoriedDirectDependency: "deny"`). There is no prefix allowlist — the previous
+`@types/*` and `@theia/*` prefix rules let unreviewed packages through, and they are gone.
+
+Two fields carry weight beyond bookkeeping:
+
+- **`dataBoundary` / `sourceContentCrossesBoundary`** record whether research content can cross the
+  package boundary. `@sentry/node` is approved as `scrubbed operational metadata only`; if that
+  ever stops being true, the entry is wrong and must change before the code does.
+- **`replacementPath`** names how the dependency would be replaced. Architectural invariant 2 says
+  libraries stay behind owned adapters; a dependency with no credible replacement path is a
+  dependency that has quietly become the architecture.
+
+`versionPolicy` is enforced: `exact` requires a pinned version, `range` accepts a reviewable
+caret/tilde range, and everything is lockfile-pinned regardless.
+
+## 5. Quality scope
+
+The gate reads the root `package.json` and asserts that **every** Ivory-owned workspace — matched
+by name (`@ivory-tower/*`, `@theia/ivory-*`), not by directory prefix — is covered by the scope of
+`format:check:ivory-tower`, `typecheck:ivory-tower`, `lint:ivory-tower`, and `test:ivory-tower`.
+
+This closes the specific hole IV-19 step 2 names. Before Session 03, `@theia/ivory-identity` was
+invisible to all four: the format globs matched `packages/ivory-tower-*` only, and the lerna scopes
+matched `@ivory-tower/*` only. A dependency or lint defect in the identity package failed nothing.
+Adding a package under an Ivory name but outside those scopes is now itself a gate failure.
+
+## 6. Image pinning
+
+Every image reference in `infra/docker-compose.yml`, `.env.example`,
+`scripts/verify-ivory-runtime.mjs`, and `packages/ivory-tower-infrastructure/src/environment.ts`
+must be registered in `images`.
+
+- **Mutable tags are never admissible.** `latest`, `main`, `master`, `edge`, `stable`, `dev`, and
+  `nightly` fail unconditionally, in any environment.
+- **`environment: "runtime"`** requires an `@sha256:` digest. Docling is pinned this way, and
+  environment validation rejects a mutable `DOCLING_IMAGE` at startup independently of this gate.
+- **`environment: "local"`** images may carry a tag, but only with a recorded `owner`, `reason`,
+  `expires`, and `compensatingControl`. An expired entry fails the gate.
+
+Three local Compose images currently sit in that second category. `pgvector/pgvector:pg16` is the
+weakest of them — `pg16` is a rebuilt floating tag, not an immutable one. It is recorded rather
+than pinned because the local environment is owned by **IV-21 (Session 04)**, which will pin it by
+digest alongside the fixture and restore work. The expiry exists so this cannot be forgotten.
+
+## 7. Exceptions
+
+An exception is a **specific, owned, expiring** record. Every one requires `kind`, `subject`,
+`reason`, `owner`, `expires`, and `compensatingControl`; the gate fails on a missing field, on an
+expired record, and on a **stale** record that no longer matches anything in the tree. There is no
+wildcard form, by construction.
+
+Current register:
+
+| Subject | Kind | Why |
+| --- | --- | --- |
+| `jschardet@2.3.0` | licence-review | LGPL-2.1+ encoding detection inherited from upstream Theia core; consumed unmodified and dynamically imported |
+| `@vscode/codicons@0.0.45` | licence-review | CC-BY-4.0 icon font; the obligation is attribution, satisfied by the notices artifact |
+| `busboy@1.6.0`, `streamsearch@1.1.0`, `fuzzy@0.1.3`, `xmlhttprequest-ssl@2.1.2` | licence-unknown | These packages publish **no** `license` field — confirmed against the registry packument on 2026-08-19, not merely absent from the lockfile. Their licence text ships only in their own LICENSE files and must be read from an installed tree before a tagged release |
+
+The four licence-unknown records expire sooner than the review records precisely because they are
+unfinished work, not settled decisions.
+
+## 8. Secret scanning
+
+Two tiers, because a single tier is either noisy or useless:
+
+- **Critical patterns** — the sentinel, AWS access keys, private-key blocks, GitHub tokens, and
+  Sentry DSNs — are scanned across the whole repository. These have effectively no false-positive
+  surface.
+- **Remaining patterns** are scanned over the Ivory-owned surface (`secretScan.scanPaths`).
+  Upstream Theia's own hygiene is not this gate's subject.
+
+The `credential-assignment` pattern deliberately does not run on TypeScript sources: in
+TypeScript, `leaseToken: string` is a type annotation, not a credential, and scanning source files
+produced dozens of such false positives with no true ones. It runs on configuration-shaped files,
+where a literal value under a credential-shaped key really does mean a committed secret.
+
+The scan covers files that are **staged but not yet committed** (`git ls-files --cached --others
+--exclude-standard`), because a credential about to be committed is exactly what the gate is for.
+
+Allowlist entries are exact paths with a reason, an owner, and the specific pattern ids they
+suppress — never a directory wildcard.
+
+**Boundary:** this is a repository and build-output scan. Redaction across bundles, logs,
+telemetry, and audit events is **IV-22 (Session 05)** and is not claimed here.
+
+## 9. Adversarial fixtures
+
+`npm run dependency:policy` runs seven fixtures under
+`scripts/fixtures/dependency-policy/`, each a minimal synthetic tree executed through the **real**
+checker. Each must exit non-zero with the expected message:
+
+| Fixture | Proves |
+| --- | --- |
+| `prohibited-license` | a deployable whose closure reaches GPL-3.0-only is rejected |
+| `unapproved-network-dependency` | a network-capable package the inventory refused cannot be depended on |
+| `missing-inventory-entry` | a direct dependency with no recorded purpose or data boundary fails |
+| `floating-image-tag` | a production image on a mutable tag fails |
+| `expired-exception` | a lapsed review window fails |
+| `omitted-from-quality-scope` | an Ivory package no required script covers fails |
+| `sentinel-secret` | the secret scan rejects a planted sentinel |
+
+These **execute** the gate rather than asserting that a rule exists. The existing boundary fixtures
+in `scripts/ivory-boundary-fixtures.json` only check that some rule covers each import, which
+cannot catch a checker that stops rejecting; these can.
+
+Fixtures declare their own sentinel value so the repository sentinel never appears in the fixture
+tree, and the planted file is named `deploy.env` rather than `.env` so `.gitignore` cannot hide it.
+
+## 10. Model licences and scholarly-data terms
+
+`dataTerms` records these **separately from software licences**, and the separation is the point.
+
+> A software licence is never authorization to ingest scholarly content.
+
+Content admissibility is governed by IV-20 and IV-83 and documented in
+[`docs/iv-128-content-rights.md`](iv-128-content-rights.md). This file records only that the
+distinction is tracked: V1 bundles **no** model assets (recorded as an explicit empty set, not an
+omission), and the scholarly sources named in the safe-open allowlist carry their own terms.
+
+## 11. Update cadence
+
+Per the IV-19 V1 governance addendum (2026-08-03):
+
+- Theia upstream synchronization is owned by Engineering, with a **monthly drift review** and a
+  review at each adopted upstream release. Both re-check the licence expressions behind the
+  recorded exceptions, since those exceptions describe upstream-inherited packages.
+- Exception expiries are the backstop: an expired record fails the gate whether or not a review
+  happened on schedule.
+- CI runs the full governance job on every push and pull request to `stable` and `dev`, uploading
+  SBOMs and notices as build artifacts.
+
+## 12. Known limits
+
+- **The dependency tree contains an invalid edge**, recorded in every SBOM manifest under
+  `dependencyTreeProblems`:
+
+  ```text
+  invalid: root override "yauzl": "~3.3.2" conflicts with "^2.4.2" required by decompress-unzip@4.0.1
+  ```
+
+  Upstream Theia's root `overrides` block pins `yauzl` to `~3.3.2` while `decompress-unzip@4.0.1`
+  declares `^2.4.2`. This predates IV-19; the SBOM work only surfaced it. It is also why
+  `sbom:generate` does **not** use `npm sbom`: npm refuses to emit any document at all while such
+  an edge exists — on npm 11 that killed the source tree and the browser deployable outright, and
+  neither `--force` nor `--omit` bypasses it. The generator reads `package-lock.json` directly
+  instead, like every other gate here.
+
+  Resolving the edge is a **dependency-resolution decision, not a tooling fix**, and it belongs to
+  whoever owns the override. The narrow remedy is a nested override letting that one consumer keep
+  the 2.x line:
+
+  ```jsonc
+  "overrides": { "yauzl": "~3.3.2", "decompress-unzip": { "yauzl": "^2.4.2" } }
+  ```
+
+  That reintroduces `yauzl` 2.x for one transitive build-time consumer, which is presumably what
+  the flat override was added to avoid — so the trade-off needs a decision rather than a patch.
+- The four licence-unknown packages are unfinished, not settled. Resolving them requires reading
+  LICENSE files from an installed tree.
+- Vulnerability disposition (`npm audit` findings and their recorded resolution) is **not**
+  implemented here. `advisoryExceptions` exists and is validated, but no advisory feed is wired to
+  it; that belongs with the release-drill work in Session 38.
+
+## 13. Session 03 addendum — two findings not otherwise recorded
+
+A second, independent execution of Session 03 ran concurrently with the one that produced this
+document and PR #20. By the time it reached verification, PR #20 had already merged, and its
+gate mechanism (this file, `configs/ivory-dependency-policy.json`,
+`scripts/check-ivory-dependency-policy.mjs`, `scripts/generate-ivory-sbom.mjs`,
+`scripts/generate-ivory-notices.mjs`, the fixture suite, and the `governance` CI job) was
+materially more complete than the duplicate implementation the second execution had built. That
+duplicate work was discarded rather than merged or rebased on top of this file's mechanism — see
+`docs/sessions/session-03-addendum.md` for the full account. Two findings from that discarded work
+survive here because they are not otherwise recorded:
+
+- **`quay.io/minio/minio` and `quay.io/minio/mc` (§6) have an unreviewed licence, not just an
+  unpinned digest.** MinIO Server is believed to have moved to AGPL-3.0 in 2021 (from Apache-2.0);
+  neither this document's `exceptions` (§7, npm-package-scoped) nor `images` (§6, digest-pinning-
+  scoped) records that licence. Running the unmodified image as local dev/test infrastructure —
+  its only current use — is unlikely to trigger AGPL's network-copyleft clause, but that is an
+  observation, not a ruling. If either image is ever used as more than local dev/test
+  infrastructure — e.g. a self-hosted production object store instead of the hosted S3-compatible
+  storage ADR-002 calls for — this needs counsel review before that decision is made, the same way
+  `docs/iv-128-content-rights.md` routes open content-rights questions to counsel rather than
+  resolving them here.
+- **Dependencies ADR-001/ADR-002 name but that are not installed yet have no recorded owner.**
+  `liquidify-react` (peers: `react`/`react-dom` ^18 or ^19, `@ark-ui/react`, `framer-motion`,
+  `lucide-react`), `pdfjs-dist`, and an Ivory-owned AI SDK provider adapter for ADR-002's provider
+  registry are absent from `package-lock.json` today, so `packages` (§4) correctly does not list
+  them — an uninstalled dependency isn't yet a dependency. But recording *nothing* about them risks
+  two failure modes when they do land: the add slips in without a `packages` entry, or someone
+  mistakes an unrelated existing package for the real thing. On that second risk: `package-lock.json`
+  already contains `@ai-sdk/anthropic`, `@ai-sdk/gateway`, and related packages, and `cytoscape` —
+  but tracing `package-lock.json`'s dependency graph shows both are pulled in solely by upstream
+  Theia's own `packages/ai-vercel-ai` (its built-in AI Chat feature) and by `mermaid` respectively,
+  not by any `@ivory-tower/*` package. Neither is evidence that Ivory Tower's own ADR-002 provider
+  registry or a future claim-evidence graph view has started. Whoever adds the real, Ivory-owned
+  dependency should add its `packages` (§4) entry at the same time, not after.
+
+## 14. Session 03 addendum 2 — the module-boundary gate had the same gap this document closed elsewhere
+
+A **third** execution against this branch's Session 03 objective hit the same collision described
+in §13, one step later: it fetched `stable`/`claude/session-3-q9tc4o` before starting, found the
+branch apparently unmodified from a stale local checkout, and built a second, independent
+implementation of the entire IV-19 mechanism before discovering — mid-task, on `git push` — that
+this document's mechanism (plus the §13 addendum) was already merged and CI-green. Per the §13
+precedent, the duplicate mechanism was discarded rather than reconciled file-by-file: a real merge
+(`git merge origin/claude/session-3-q9tc4o -X theirs`) took this branch's version of every
+conflicting file, so nothing here changed as a result. `git reset --hard` was not available (blocked
+by this environment's permission policy for destructive git operations), which is why a merge
+commit records this rather than a clean rebase — the effect is the same: no content from the
+discarded duplicate survives except the two findings below.
+
+Both are narrow, previously-unrecorded, and fixed directly (not just recorded) as part of this
+addendum:
+
+- **`scripts/check-ivory-boundaries.mjs` (the IV-15 module-boundary gate) never gained a layer for
+  `@theia/ivory-identity`.** Every other IV-19 gate in this document was widened to include
+  `@theia/ivory-identity` — format, typecheck, lint, dependency policy — but the boundary checker
+  is an IV-15 mechanism this document doesn't own, and it was missed. `packages/ivory-identity/src`
+  imports only its own relative modules and Node's built-in `crypto` (verified by inspection: zero
+  `@theia/`, `@ivory-tower/`, `pg`, `@aws-sdk/`, `graphile-worker`, or `docling` imports), so a
+  layer forbidding all of those was added, along with two negative fixtures in
+  `scripts/ivory-boundary-fixtures.json`. `npm run check:ivory-boundaries` was green both before and
+  after.
+- **`verify:ivory-tower`'s inline `lerna run test` step never picked up the widened
+  `@theia/ivory-*` scope.** `typecheck:ivory-tower`, `lint:ivory-tower`, and the standalone
+  `test:ivory-tower` script all run `--scope "@ivory-tower/*" --scope "@theia/ivory-*"`, but the
+  test step embedded directly inside the `verify:ivory-tower` chain in `package.json` still read
+  `--scope "@ivory-tower/*"` alone — so `@theia/ivory-identity`'s tests were exercised by `npm run
+  test:ivory-tower` in isolation, but silently skipped by the actual CI gate
+  (`.github/workflows/ivory-tower.yml`'s `verify` job, which calls `verify:ivory-tower`). Fixed by
+  widening that one inline scope to match its siblings.
+
+Nothing under `configs/`, `scripts/generate-ivory-*`, `scripts/check-ivory-dependency-policy.mjs`,
+`scripts/check-ivory-secrets.mjs`, `scripts/ivory-lockfile.mjs`, or the `governance` CI job changed
+— the discarded duplicate's version of each was strictly inferior to what's already here, per the
+same reasoning as §13. See `docs/sessions/session-03-addendum-2.md` for the full account.

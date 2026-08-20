@@ -327,26 +327,19 @@ A Software Bill of Materials is generated for every upstream Theia release and p
 Eclipse Foundation SBOM registry; access instructions are in the
 [Eclipse security handbook](https://eclipse-csi.github.io/security-handbook/sbom/registry.html).
 
-Ivory Tower's own dependency licensing, SBOM, and version-pinning policy (IV-19) is enforced
-separately from upstream Theia's:
+Ivory Tower generates its own governance evidence separately (IV-19):
 
-- `configs/ivory-dependency-policy.json` — allowed license expressions, approved network-capable
-  dependencies, high-risk exact-pin requirements, and recorded advisory exceptions; checked by
-  `npm run dependency:policy`.
-- `configs/ivory-third-party-inventory.json` — purpose, owner, license, version policy, and
-  replacement path for every direct dependency of an Ivory-owned package, plus LiqUIdify, Docling,
-  PDF.js, the AI SDK provider adapters, pgvector, visualization libraries, and model assets
-  represented even before they are installed; checked by `npm run inventory:policy:ivory-tower`.
-  Rendered to [`THIRD-PARTY-NOTICES-ivory-tower.md`](./THIRD-PARTY-NOTICES-ivory-tower.md) by
-  `npm run notices:generate:ivory-tower` (drift is caught by `npm run notices:check:ivory-tower`).
-- `npm run sbom:generate:ivory-tower` — generates a CycloneDX source SBOM plus a derived
-  deployable-artifact SBOM for `@ivory-tower/api` and `@ivory-tower/worker`, archived per-commit by
-  the `sbom` job in `.github/workflows/ivory-tower.yml`.
-- `npm run secret:scan:ivory-tower` — sentinel scan for committed secret-shaped values across
-  Ivory-owned source, config, infra, and docs.
+```sh
+npm run dependency:policy   # licences, inventory, quality scope, image pins, adversarial fixtures
+npm run secret:scan         # sentinel and credential scan
+npm run sbom:generate       # CycloneDX SBOMs for the source tree and each deployable
+npm run notices:generate    # deterministic third-party notices
+```
 
-All of the above (except SBOM generation, which needs network access to fetch the scanner) run as
-part of `npm run verify:ivory-tower`.
+The first two are part of the required `npm run verify:ivory-tower` gate; the last two produce
+release evidence into the gitignored `artifacts/` directory, uploaded by CI. The policy itself is
+[`configs/ivory-dependency-policy.json`](configs/ivory-dependency-policy.json) and is explained in
+[`docs/iv-19-dependency-governance.md`](docs/iv-19-dependency-governance.md).
 
 ## License
 
