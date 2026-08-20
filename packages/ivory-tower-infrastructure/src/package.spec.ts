@@ -31,6 +31,13 @@ describe('@ivory-tower/infrastructure', () => {
         ).to.throw('Filesystem object storage');
     });
 
+    it('rejects a floating Docling image tag (IV-19 adversarial fixture)', () => {
+        const env = readIvoryTowerEnvironment('library', {
+            DOCLING_IMAGE: 'quay.io/docling-project/docling-serve:v1.21.0',
+        });
+        expect(() => validateIvoryTowerEnvironment(env)).to.throw('DOCLING_IMAGE must be pinned by an immutable sha256 digest.');
+    });
+
     it('provides a system clock adapter', () => {
         const clock = new SystemClockAdapter();
         expect(clock.now()).to.be.instanceOf(Date);

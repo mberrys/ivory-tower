@@ -15,7 +15,12 @@
 // *****************************************************************************
 
 import {
-    IDENTIFIER_DIGEST_LENGTH, IDENTIFIER_KINDS, IDENTIFIER_PREFIXES, IDENTIFIER_URI_SEGMENTS, IdentifierKind, IVORY_URI_SCHEME
+    IDENTIFIER_DIGEST_LENGTH,
+    IDENTIFIER_KINDS,
+    IDENTIFIER_PREFIXES,
+    IDENTIFIER_URI_SEGMENTS,
+    IdentifierKind,
+    IVORY_URI_SCHEME,
 } from './identity-scheme';
 
 /**
@@ -28,16 +33,12 @@ import {
  * upper-cases or trims it produces something that fails to parse rather than something that
  * silently addresses a different object.
  */
-export const IDENTIFIER_PATTERN = new RegExp(
-    `^(${Object.values(IDENTIFIER_PREFIXES).join('|')})_[0-9a-f]{${IDENTIFIER_DIGEST_LENGTH}}$`
-);
+export const IDENTIFIER_PATTERN = new RegExp(`^(${Object.values(IDENTIFIER_PREFIXES).join('|')})_[0-9a-f]{${IDENTIFIER_DIGEST_LENGTH}}$`);
 
-const KIND_BY_PREFIX: ReadonlyMap<string, IdentifierKind> = new Map(
-    IDENTIFIER_KINDS.map(kind => [IDENTIFIER_PREFIXES[kind], kind])
-);
+const KIND_BY_PREFIX: ReadonlyMap<string, IdentifierKind> = new Map(IDENTIFIER_KINDS.map(kind => [IDENTIFIER_PREFIXES[kind], kind]));
 
 const KIND_BY_URI_SEGMENT: ReadonlyMap<string, IdentifierKind> = new Map(
-    IDENTIFIER_KINDS.map(kind => [IDENTIFIER_URI_SEGMENTS[kind], kind])
+    IDENTIFIER_KINDS.map(kind => [IDENTIFIER_URI_SEGMENTS[kind], kind]),
 );
 
 /** An identifier decomposed into the kind it types and the digest it carries. */
@@ -70,7 +71,7 @@ export class IdentifierFormatError extends Error {
 export function formatIdentifier(kind: IdentifierKind, digest: string): string {
     if (!new RegExp(`^[0-9a-f]{${IDENTIFIER_DIGEST_LENGTH}}$`).test(digest)) {
         throw new IdentifierFormatError(
-            `expected ${IDENTIFIER_DIGEST_LENGTH} lowercase hex characters for a '${kind}' identifier, got '${digest}'`
+            `expected ${IDENTIFIER_DIGEST_LENGTH} lowercase hex characters for a '${kind}' identifier, got '${digest}'`,
         );
     }
     return `${IDENTIFIER_PREFIXES[kind]}_${digest}`;

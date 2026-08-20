@@ -50,3 +50,7 @@ data/
 .ivory-tower/
 examples/ivory-tower-browser/ivory-tower-browser.log
 examples/ivory-tower-browser/test-results/
+
+# Ivory Tower generated dependency-governance evidence (IV-19)
+# SBOMs are generated evidence, archived per-commit as CI artifacts, not committed source.
+/artifacts/

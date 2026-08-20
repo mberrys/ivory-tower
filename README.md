@@ -326,7 +326,27 @@ Theia browser frontend instrumentation is not wired yet.
 A Software Bill of Materials is generated for every upstream Theia release and published to the
 Eclipse Foundation SBOM registry; access instructions are in the
 [Eclipse security handbook](https://eclipse-csi.github.io/security-handbook/sbom/registry.html).
-Ivory Tower's own dependency licensing, SBOM, and version-pinning policy is IV-19, in Phase 1.
+
+Ivory Tower's own dependency licensing, SBOM, and version-pinning policy (IV-19) is enforced
+separately from upstream Theia's:
+
+- `configs/ivory-dependency-policy.json` — allowed license expressions, approved network-capable
+  dependencies, high-risk exact-pin requirements, and recorded advisory exceptions; checked by
+  `npm run dependency:policy`.
+- `configs/ivory-third-party-inventory.json` — purpose, owner, license, version policy, and
+  replacement path for every direct dependency of an Ivory-owned package, plus LiqUIdify, Docling,
+  PDF.js, the AI SDK provider adapters, pgvector, visualization libraries, and model assets
+  represented even before they are installed; checked by `npm run inventory:policy:ivory-tower`.
+  Rendered to [`THIRD-PARTY-NOTICES-ivory-tower.md`](./THIRD-PARTY-NOTICES-ivory-tower.md) by
+  `npm run notices:generate:ivory-tower` (drift is caught by `npm run notices:check:ivory-tower`).
+- `npm run sbom:generate:ivory-tower` — generates a CycloneDX source SBOM plus a derived
+  deployable-artifact SBOM for `@ivory-tower/api` and `@ivory-tower/worker`, archived per-commit by
+  the `sbom` job in `.github/workflows/ivory-tower.yml`.
+- `npm run secret:scan:ivory-tower` — sentinel scan for committed secret-shaped values across
+  Ivory-owned source, config, infra, and docs.
+
+All of the above (except SBOM generation, which needs network access to fetch the scanner) run as
+part of `npm run verify:ivory-tower`.
 
 ## License
 

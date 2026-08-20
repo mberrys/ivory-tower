@@ -57,13 +57,13 @@ export interface IdentifierAlias {
 export function resolveIdentifier(
     reference: string,
     aliases: ReadonlyMap<string, IdentifierAlias>,
-    expectedKind?: IdentifierKind
+    expectedKind?: IdentifierKind,
 ): string | undefined {
     const alias = aliases.get(reference);
     if (alias) {
         if (aliases.has(alias.canonicalId)) {
             throw new IdentifierFormatError(
-                `alias '${reference}' resolves to '${alias.canonicalId}', which is itself an alias; aliases must point directly at a canonical identifier`
+                `alias '${reference}' resolves to '${alias.canonicalId}', which is itself an alias; aliases must point directly at a canonical identifier`,
             );
         }
         parseIdentifier(alias.canonicalId, expectedKind);
