@@ -44,6 +44,7 @@
     "debug": "^4.4.3",
     "electron-mocha": "^13.1.0",
     "esbuild": "^0.28.2",
+    "esbuild-plugins-node-modules-polyfill": "^1.8.3",
     "eslint": "^8.57.1",
     "eslint-plugin-deprecation": "^3.0.0",
     "eslint-plugin-import": "^2.32.0",
@@ -60,6 +61,7 @@
     "node-abi": "^4.33.0",
     "node-gyp": "^11.5.0",
     "nyc": "^18.0.0",
+    "prettier": "3.6.2",
     "puppeteer": "25.1.0",
     "puppeteer-core": "25.1.0",
     "puppeteer-to-istanbul": "1.4.0",
@@ -69,7 +71,6 @@
     "tslint": "^5.20.1",
     "typedoc": "0.28.13",
     "typescript": "~5.9.3",
-    "prettier": "3.6.2",
     "yargs": "^17.7.3"
   },
   "scripts": {
