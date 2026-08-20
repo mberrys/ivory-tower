@@ -1,0 +1,77 @@
+name: Ivory Tower dependency, license, and SBOM gate
+
+on:
+  push:
+    branches: [stable, dev]
+    paths:
+      - "packages/ivory-tower-*/**"
+      - "packages/ivory-identity/**"
+      - "examples/ivory-tower-browser/**"
+      - "configs/ivory-*"
+      - "package-lock.json"
+      - "package.json"
+      - "scripts/check-ivory-dependency-policy.mjs"
+      - "scripts/check-ivory-secrets.mjs"
+      - "scripts/generate-ivory-sbom.mjs"
+      - "scripts/generate-ivory-notices.mjs"
+      - "scripts/lib/ivory-dependency-graph.mjs"
+      - ".github/workflows/ivory-dependency-gate.yml"
+  pull_request:
+    branches: [stable, dev]
+    paths:
+      - "packages/ivory-tower-*/**"
+      - "packages/ivory-identity/**"
+      - "examples/ivory-tower-browser/**"
+      - "configs/ivory-*"
+      - "package-lock.json"
+      - "package.json"
+      - "scripts/check-ivory-dependency-policy.mjs"
+      - "scripts/check-ivory-secrets.mjs"
+      - "scripts/generate-ivory-sbom.mjs"
+      - "scripts/generate-ivory-notices.mjs"
+      - "scripts/lib/ivory-dependency-graph.mjs"
+      - ".github/workflows/ivory-dependency-gate.yml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-policy:
+    name: Dependency policy and secret scan
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pinned Node toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Ivory Tower dependency policy (IV-19)
+        run: node scripts/check-ivory-dependency-policy.mjs
+      - name: Ivory Tower secret sentinel scan (IV-19)
+        run: node scripts/check-ivory-secrets.mjs
+
+  sbom-and-notices:
+    name: Generate Ivory Tower SBOM and notices
+    runs-on: ubuntu-22.04
+    needs: dependency-policy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pinned Node toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Generate SBOMs (source, api, worker)
+        run: node scripts/generate-ivory-sbom.mjs --out-dir artifacts
+      - name: Generate third-party notices
+        run: node scripts/generate-ivory-notices.mjs --out-dir artifacts
+      - name: Upload dependency-governance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ivory-dependency-governance-evidence
+          path: artifacts/
+          if-no-files-found: error

@@ -57,12 +57,24 @@ application does not load a runtime plugin host.
 - `npm run format:check:ivory-tower` — pinned first-party formatting check.
 - `npm run format:write:ivory-tower` — explicit developer formatting.
 - `npm run dependency:policy` — license, network-capability, high-risk version,
-  and advisory-exception policy.
+  advisory-exception, and Docling-pin policy (IV-19); self-verifies against
+  adversarial fixtures in `configs/ivory-dependency-policy-fixtures.json` on
+  every run.
+- `npm run secret:scan` — sentinel scan for committed credentials (IV-19).
+- `npm run sbom:generate` — CycloneDX SBOMs for the Ivory Tower source tree and
+  each deployable artifact (`api`, `worker`), written to `artifacts/` (IV-19).
+- `npm run notices:generate` — deterministic third-party notices plus recorded
+  dependency-policy exceptions, written to `artifacts/` (IV-19).
 - `npm run test:ivory-browser` — the health-view Playwright test.
 
 The aggregate gate runs boundaries, compile, lint, package tests, production
-browser build, browser tests, dependency policy, `git diff --check`, and a
-clean-tree assertion. Run it from a clean checkout when validating CI parity.
+browser build, browser tests, dependency policy, secret scan, `git diff
+--check`, and a clean-tree assertion. Run it from a clean checkout when
+validating CI parity. `@theia/ivory-identity` participates in every one of
+these gates alongside the `@ivory-tower/*` packages; nothing scopes to the
+`@ivory-tower/*` glob alone. See
+[`docs/iv-19-dependency-inventory.md`](iv-19-dependency-inventory.md) for the
+reviewed third-party dependency inventory.
 
 ## Docling pin and supported registry
 
