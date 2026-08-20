@@ -5,6 +5,8 @@
 Ivory Tower development and CI use Node 24.16.0 and npm 11.13.0. The root
 Theia engine declaration remains `>=22` for upstream compatibility; the pinned
 Ivory toolchain is recorded in `.nvmrc` and `configs/ivory-toolchain.json`.
+The monorepo uses Lerna 10 as an intentional fork pin until Eclipse Theia
+upgrades; do not revert it to 9 during upstream merges.
 
 On Windows PowerShell, use `npm.cmd`:
 
