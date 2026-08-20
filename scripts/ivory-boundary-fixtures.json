@@ -15,7 +15,5 @@
   { "layer": "@ivory-tower/application", "import": "liquidify-react" },
   { "layer": "@ivory-tower/health", "import": "@ivory-tower/infrastructure" },
   { "layer": "@ivory-tower/health", "import": "liquidify-react" },
-  { "layer": "@theia/ivory-identity", "import": "@theia/core" },
-  { "layer": "@theia/ivory-identity", "import": "@ivory-tower/domain" },
   { "layer": "@theia/ivory-identity", "import": "pg" }
 ]

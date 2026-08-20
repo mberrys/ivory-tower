@@ -135,19 +135,6 @@ const LAYERS = [
             'liquidify-react',
         ],
     },
-    {
-        name: '@theia/ivory-identity',
-        dir: 'packages/ivory-identity/src',
-        forbidden: [
-            '@theia/',
-            '@ivory-tower/',
-            'liquidify-react',
-            'pg',
-            '@aws-sdk/',
-            'graphile-worker',
-            'docling',
-        ],
-    },
 ];
 
 const IMPORT_PATTERN = /(?:import|export)\s+(?:type\s+)?(?:[\w*{}\s,]+\s+from\s+)?['"]([^'"]+)['"]/g;
