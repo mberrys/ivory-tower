@@ -14,6 +14,19 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const LAYERS = [
     {
+        name: '@theia/ivory-identity',
+        dir: 'packages/ivory-identity/src',
+        forbidden: [
+            '@theia/',
+            '@ivory-tower/',
+            'liquidify-react',
+            'pg',
+            '@aws-sdk/',
+            'graphile-worker',
+            'docling',
+        ],
+    },
+    {
         name: '@ivory-tower/contracts',
         dir: 'packages/ivory-tower-contracts/src',
         forbidden: [
