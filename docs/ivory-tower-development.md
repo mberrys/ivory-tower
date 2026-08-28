@@ -99,7 +99,7 @@ See `docs/iv-21-local-runtime.md` (IV-21) for exact operational sequencing and f
 evidence.
 
 The aggregate gate runs the install bootstrap, boundaries, compile, lint, package tests, production
-browser build, browser tests, dependency policy, `git diff --check`,
+browser build, browser tests, dependency policy, secret scan, `git diff --check`,
 and a clean-tree assertion. Run it from a clean checkout when validating CI parity.
 
 The Ivory quality scopes cover every workspace named `@ivory-tower/*` **or**

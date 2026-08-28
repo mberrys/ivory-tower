@@ -27,16 +27,15 @@ function fail(problem, remediation = `From the repository root, run \`${repairCo
     process.exitCode = 1;
 }
 
-function readNpmVersion() {
-    return process.platform === 'win32'
-        ? execFileSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', 'npm.cmd --version'], { encoding: 'utf8' }).trim()
-        : execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim();
-}
-
 function verifyToolchain() {
     const expected = readPackage(toolchainConfig);
     const actualNode = process.versions.node;
-    const actualNpm = readNpmVersion();
+    const npmUserAgentVersion = /^npm\/([^\s]+)/u.exec(process.env.npm_config_user_agent ?? '')?.[1];
+    const actualNpm =
+        npmUserAgentVersion ??
+        (process.platform === 'win32'
+            ? execFileSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', 'npm.cmd --version'], { encoding: 'utf8' }).trim()
+            : execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim());
     if (actualNode !== expected.node || actualNpm !== expected.npm) {
         fail(
             `the required Node/npm toolchain is ${expected.node}/${expected.npm}, but this checkout is running ${actualNode}/${actualNpm}.`,

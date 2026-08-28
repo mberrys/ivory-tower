@@ -271,6 +271,12 @@
         "patterns": ["postgres-url"]
       },
       {
+        "path": "scripts/verify-ivory-session-04.mjs",
+        "reason": "Local Session 04 runtime and migration-recovery verifier using the same Compose development credentials.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
         "path": "packages/ivory-tower-infrastructure/src/sentry.spec.ts",
         "reason": "Fabricated connection string used to assert that Sentry scrubs database URLs out of event payloads; the test would be meaningless without a password-shaped value.",
         "owner": "Engineering",
@@ -386,6 +392,5 @@
       "compensatingControl": "Transitive dependency of engine.io-client via upstream Theia; recorded in the SBOM and flagged in the notices artifact as licence-unconfirmed."
     }
   ],
-
   "advisoryExceptions": []
 }
