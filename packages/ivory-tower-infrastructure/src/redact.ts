@@ -46,7 +46,7 @@ export function redactSecrets(value: unknown, depth = 0): unknown {
 export function redactText(value: string): string {
     if (containsSensitiveValue(value)) {
         return value
-            .replace(/postgres(?:ql)?:\/\/[^:\s]+:[^@\s]+@/gi, 'postgres://[Filtered]@')
+            .replace(/postgres(?:ql)?:\/\/[^:\s]{1,256}:[^@\s]{1,256}@/gi, 'postgres://[Filtered]@')
             .replace(/https?:\/\/[^:@\s]{1,256}:[^@\s]{1,256}@/gi, 'https://[Filtered]@')
             .replace(/Bearer\s+\S+/gi, 'Bearer [Filtered]')
             .replace(/ivory-development-only/g, IVORY_REDACTED);
