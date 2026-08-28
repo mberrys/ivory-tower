@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const composeFile = path.join(root, 'infra', 'docker-compose.yml');
 const compose = ['compose', '-f', composeFile];
+const dockerCommand = process.platform === 'win32' ? 'docker.exe' : 'docker';
 const clean = process.argv.includes('--clean');
 const recovery = process.argv.includes('--recovery');
 const runtimeEnv = {
@@ -26,7 +27,7 @@ const runtimeEnv = {
 };
 
 function runDocker(args) {
-    execFileSync('docker.exe', args, { cwd: root, stdio: 'inherit' });
+    execFileSync(dockerCommand, args, { cwd: root, stdio: 'inherit' });
 }
 
 function runNpm(args) {
@@ -68,9 +69,9 @@ async function waitForTerminal(baseUrl, id) {
 
 async function main() {
     try {
-        execFileSync('docker.exe', ['info'], { cwd: root, stdio: 'ignore' });
+        execFileSync(dockerCommand, ['info'], { cwd: root, stdio: 'ignore' });
     } catch {
-        console.error('Docker Desktop daemon is unavailable; IV-14 real runtime proof cannot run in this environment.');
+        console.error('Docker daemon is unavailable; IV-14 real runtime proof cannot run in this environment.');
         process.exitCode = 2;
         return;
     }
@@ -80,6 +81,7 @@ async function main() {
     }
     runDocker([...compose, 'up', '-d', 'postgres', 'object-store', 'object-store-init', 'docling']);
     runNpm(['run', 'migrate:ivory']);
+    runNpm(['run', 'compile:ivory-services']);
 
     const api = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-api'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });
     const worker = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-worker'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });

@@ -93,20 +93,20 @@ Adding a package under an Ivory name but outside those scopes is now itself a ga
 ## 6. Image pinning
 
 Every image reference in `infra/docker-compose.yml`, `.env.example`,
-`scripts/verify-ivory-runtime.mjs`, and `packages/ivory-tower-infrastructure/src/environment.ts`
-must be registered in `images`.
+`scripts/verify-ivory-runtime.mjs`, `scripts/verify-ivory-session-04.mjs`, and
+`packages/ivory-tower-infrastructure/src/environment.ts` must be registered in `images`.
 
 - **Mutable tags are never admissible.** `latest`, `main`, `master`, `edge`, `stable`, `dev`, and
   `nightly` fail unconditionally, in any environment.
 - **`environment: "runtime"`** requires an `@sha256:` digest. Docling is pinned this way, and
   environment validation rejects a mutable `DOCLING_IMAGE` at startup independently of this gate.
-- **`environment: "local"`** images may carry a tag, but only with a recorded `owner`, `reason`,
-  `expires`, and `compensatingControl`. An expired entry fails the gate.
+- **`environment: "local"`** images may carry a tag only with a recorded `owner`, `reason`,
+  `expires`, and `compensatingControl`. An expired entry fails the gate. Session 04 (IV-21) pinned
+  the three local Compose images — `pgvector/pgvector:pg16`, MinIO server, and MinIO client — so
+  none of them currently use that exception path.
 
-Three local Compose images currently sit in that second category. `pgvector/pgvector:pg16` is the
-weakest of them — `pg16` is a rebuilt floating tag, not an immutable one. It is recorded rather
-than pinned because the local environment is owned by **IV-21 (Session 04)**, which will pin it by
-digest alongside the fixture and restore work. The expiry exists so this cannot be forgotten.
+Digest-pinning MinIO does **not** clear the unreviewed AGPL-3.0 licence question in §13. Those
+images remain local-dev/test infrastructure only.
 
 ## 7. Exceptions
 
@@ -241,15 +241,16 @@ duplicate work was discarded rather than merged or rebased on top of this file's
 survive here because they are not otherwise recorded:
 
 - **`quay.io/minio/minio` and `quay.io/minio/mc` (§6) have an unreviewed licence, not just an
-  unpinned digest.** MinIO Server is believed to have moved to AGPL-3.0 in 2021 (from Apache-2.0);
-  neither this document's `exceptions` (§7, npm-package-scoped) nor `images` (§6, digest-pinning-
-  scoped) records that licence. Running the unmodified image as local dev/test infrastructure —
-  its only current use — is unlikely to trigger AGPL's network-copyleft clause, but that is an
-  observation, not a ruling. If either image is ever used as more than local dev/test
-  infrastructure — e.g. a self-hosted production object store instead of the hosted S3-compatible
-  storage ADR-002 calls for — this needs counsel review before that decision is made, the same way
-  `docs/iv-128-content-rights.md` routes open content-rights questions to counsel rather than
-  resolving them here.
+  unpinned digest.** Session 04 (IV-21) pinned both images by digest for local reproducibility.
+  That does not resolve the licence. MinIO Server is believed to have moved to AGPL-3.0 in 2021
+  (from Apache-2.0); neither this document's `exceptions` (§7, npm-package-scoped) nor `images`
+  (§6, digest-pinning-scoped) records that licence. Running the unmodified image as local
+  dev/test infrastructure — its only current use — is unlikely to trigger AGPL's network-copyleft
+  clause, but that is an observation, not a ruling. If either image is ever used as more than
+  local dev/test infrastructure — e.g. a self-hosted production object store instead of the hosted
+  S3-compatible storage ADR-002 calls for — this needs counsel review before that decision is
+  made, the same way `docs/iv-128-content-rights.md` routes open content-rights questions to
+  counsel rather than resolving them here.
 - **Dependencies ADR-001/ADR-002 name but that are not installed yet have no recorded owner.**
   `liquidify-react` (peers: `react`/`react-dom` ^18 or ^19, `@ark-ui/react`, `framer-motion`,
   `lucide-react`), `pdfjs-dist`, and an Ivory-owned AI SDK provider adapter for ADR-002's provider
