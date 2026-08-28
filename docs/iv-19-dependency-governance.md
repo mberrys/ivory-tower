@@ -147,8 +147,9 @@ The scan covers files that are **staged but not yet committed** (`git ls-files -
 Allowlist entries are exact paths with a reason, an owner, and the specific pattern ids they
 suppress — never a directory wildcard.
 
-**Boundary:** this is a repository and build-output scan. Redaction across bundles, logs,
-telemetry, and audit events is **IV-22 (Session 05)** and is not claimed here.
+**Boundary:** this is a repository and build-output scan. Redaction across process logs,
+HTTP error bodies, telemetry, and audit-shaped payloads is the **IV-22 contract**
+(`docs/iv-22-deployment-secrets.md`) and is not claimed here.
 
 ## 9. Adversarial fixtures
 
