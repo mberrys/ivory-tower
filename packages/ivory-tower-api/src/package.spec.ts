@@ -150,4 +150,110 @@ describe('@ivory-tower/api package', () => {
             await new Promise<void>(resolve => server.close(() => resolve()));
         }
     });
+
+    it('returns structured readiness checks', async () => {
+        const store = new InMemoryExecutionStore();
+        const server = createApiServer({
+            executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), new SystemClockAdapter()),
+            executionStore: store,
+            readiness: async () => ({
+                status: 'ready',
+                checks: [
+                    { name: 'postgres', status: 'ok' },
+                    { name: 'schema', status: 'ok' },
+                    { name: 'queue', status: 'ok' },
+                    { name: 'objectStore', status: 'ok' },
+                    { name: 'docling', status: 'skipped' },
+                ],
+            }),
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+        const address = server.address();
+        if (!(address instanceof Object) || typeof address === 'string') {
+            throw new Error('Test server did not expose a TCP address.');
+        }
+        try {
+            const response = await fetch(`http://127.0.0.1:${address.port}/health/ready`);
+            expect(response.status).to.equal(200);
+            expect(await response.json()).to.deep.equal({
+                status: 'ready',
+                checks: [
+                    { name: 'postgres', status: 'ok' },
+                    { name: 'schema', status: 'ok' },
+                    { name: 'queue', status: 'ok' },
+                    { name: 'objectStore', status: 'ok' },
+                    { name: 'docling', status: 'skipped' },
+                ],
+            });
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
+    });
+
+    it('returns HTTP 503 when a required readiness check fails', async () => {
+        const store = new InMemoryExecutionStore();
+        const server = createApiServer({
+            executionService: new ExecutionService(store, store, new SystemExecutionIdAdapter(), new SystemClockAdapter()),
+            executionStore: store,
+            readiness: async () => ({
+                status: 'unavailable',
+                checks: [
+                    { name: 'postgres', status: 'ok' },
+                    { name: 'schema', status: 'unavailable' },
+                    { name: 'queue', status: 'ok' },
+                    { name: 'objectStore', status: 'ok' },
+                    { name: 'docling', status: 'skipped' },
+                ],
+            }),
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+        const address = server.address();
+        if (!(address instanceof Object) || typeof address === 'string') {
+            throw new Error('Test server did not expose a TCP address.');
+        }
+        try {
+            const response = await fetch(`http://127.0.0.1:${address.port}/health/ready`);
+            expect(response.status).to.equal(503);
+            expect(response.ok).to.equal(false);
+            const body = (await response.json()) as { status: string };
+            expect(body.status).to.equal('unavailable');
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
+    });
+
+    it('does not leak secrets in HTTP 500 bodies', async () => {
+        const store = new InMemoryExecutionStore();
+        const server = createApiServer({
+            executionService: {
+                create: async () => {
+                    throw new Error('connect postgres://ivory:ivory-development-only@db/ivory');
+                },
+                get: async () => undefined,
+                cancel: async () => undefined,
+            } as unknown as ExecutionService,
+            executionStore: store,
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+        const address = server.address();
+        if (!(address instanceof Object) || typeof address === 'string') {
+            throw new Error('Test server did not expose a TCP address.');
+        }
+        try {
+            const response = await fetch(`http://127.0.0.1:${address.port}/v1/executions`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'idempotency-key': 'secret-test' },
+                body: JSON.stringify({ kind: 'convert', input: { sourceId: 'source-1' } }),
+            });
+            expect(response.status).to.equal(500);
+            const body = await response.text();
+            expect(body).not.to.contain('ivory-development-only');
+            expect(body).not.to.contain('postgres://ivory:');
+            expect(JSON.parse(body)).to.deep.equal({
+                error: { code: 'internal_error', message: 'The request could not be completed.' },
+            });
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
+    });
 });

@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
-import { GetObjectCommand, HeadObjectCommand, NotFound, PutObjectCommand, S3Client, S3ServiceException } from '@aws-sdk/client-s3';
+import {
+    HeadBucketCommand,
+    GetObjectCommand,
+    HeadObjectCommand,
+    NotFound,
+    PutObjectCommand,
+    S3Client,
+    S3ServiceException,
+} from '@aws-sdk/client-s3';
 import { createHash } from 'node:crypto';
 import { ObjectStorePort } from '@ivory-tower/adapters';
 
@@ -31,6 +39,10 @@ export class S3CompatibleObjectStore implements ObjectStorePort {
                           secretAccessKey: options.secretAccessKey,
                       },
         });
+    }
+
+    async probe(): Promise<void> {
+        await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
     }
 
     async putImmutable(key: string, content: Uint8Array, contentType: string): Promise<{ key: string; etag: string }> {

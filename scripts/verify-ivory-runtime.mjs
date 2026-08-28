@@ -95,6 +95,17 @@ async function main() {
     try {
         const baseUrl = 'http://127.0.0.1:4100';
         await waitFor('API readiness', async () => (await fetch(`${baseUrl}/health/ready`)).ok);
+        const readyBody = await fetch(`${baseUrl}/health/ready`).then(response => response.json());
+        const requiredChecks = ['postgres', 'schema', 'queue', 'objectStore'];
+        for (const name of requiredChecks) {
+            const check = Array.isArray(readyBody.checks) ? readyBody.checks.find(entry => entry.name === name) : undefined;
+            if (check?.status !== 'ok') {
+                throw new Error(`Ready check ${name} was ${check?.status ?? 'missing'}: ${JSON.stringify(readyBody)}`);
+            }
+        }
+        if (readyBody.status !== 'ready' && readyBody.status !== 'degraded') {
+            throw new Error(`API readiness status was ${JSON.stringify(readyBody.status)}.`);
+        }
         const content = Buffer.from('# Ivory Tower runtime proof\n\nA public, reusable test source.');
         const upload = await fetch(`${baseUrl}/v1/sources`, {
             method: 'POST',

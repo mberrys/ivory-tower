@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { ObjectStorePort } from '@ivory-tower/adapters';
 
@@ -10,6 +10,11 @@ export class FilesystemObjectStore implements ObjectStorePort {
 
     constructor(rootDirectory: string) {
         this.root = resolve(rootDirectory);
+    }
+
+    async probe(): Promise<void> {
+        await mkdir(this.root, { recursive: true });
+        await stat(this.root);
     }
 
     async putImmutable(key: string, content: Uint8Array, _contentType: string): Promise<{ key: string; etag: string }> {
