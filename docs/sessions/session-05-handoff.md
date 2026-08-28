@@ -125,8 +125,9 @@ succeeded.
 
 Merge this PR (and Session 04 PR #29, if it is still open) to `stable` after human review. Session
 06 may assume the profile contract, structured `/health/ready`, and shared redactor as already
-recorded here. If a later head on this branch turns the runtime job red because the new ready
-payload assertion failed, the fix belongs to a Session 05 repair (`05A`), not to Session 06.
+recorded on run 33196186623. If a later head on this branch turns the runtime job red because the
+new ready payload assertion failed, the fix belongs to a Session 05 repair (`05A`), not to Session
+06.
 
 **Session 06 — IV-128 cutline:** produce the content-rights cutline manifest only. Do not reopen
 deployment profiles, readiness probes, or redaction unless a Session 05 repair is required.
