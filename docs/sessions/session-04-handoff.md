@@ -39,9 +39,16 @@ Recorded during implementation; CI run IDs are filled after the PR's `ivory-towe
 - `npm run dependency:policy` — including the existing `floating-image-tag` fixture
 - infrastructure package tests — `resolveIvoryMigrationBatch` rejects an unknown upper boundary
   and includes the named N-1 filename
-- `npm run verify:ivory-tower` — static gate, including the new bootstrap check
+- `npm run verify:ivory-tower` — static gate, including the new bootstrap check and
+  Session 04 verifier contract tests
 - `npm run verify:ivory-session-04` — Docker-backed proof when a daemon is available; otherwise
   the Ubuntu runtime job is the evidence producer
+
+CI run 33183761714 (`ivory-tower.yml` on this branch) greened verify and governance, then the
+runtime job failed after a successful N-1 dump/restore/upgrade: API/worker `lib/start.js` was
+missing, and teardown could not remove root-owned `.ivory-tower/minio`. The follow-up commit
+compiles `@ivory-tower/api` and `@ivory-tower/worker` inside `verify:ivory-runtime` and deletes
+bind-mount children through the digest-pinned Postgres image.
 
 ## Evidence produced
 
@@ -77,6 +84,11 @@ Recorded during implementation; CI run IDs are filled after the PR's `ivory-towe
   That is required so the subsequent `verify:ivory-runtime` happy path can run against the same
   profile.
 - First Compose pull of three digest-pinned images is slow on a cold runner.
+- A lockfile install does not emit `packages/ivory-tower-{api,worker}/lib`. The runtime
+  verifier now compiles those packages before `start`; do not assume the static `verify` job
+  left artifacts for the runtime job.
+- Compose bind mounts under `.ivory-tower/` are root-owned. Host `rm -rf` is not sufficient;
+  teardown must delete children through a container bound only at that directory.
 
 ## Decisions made
 

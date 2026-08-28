@@ -25,6 +25,7 @@ For an interactive local stack after the clean-environment proof succeeds:
 ```powershell
 docker compose -f infra/docker-compose.yml up -d --wait
 npm.cmd run migrate:ivory
+npm.cmd run compile:ivory-services
 npm.cmd run start:ivory-api
 npm.cmd run start:ivory-worker
 ```

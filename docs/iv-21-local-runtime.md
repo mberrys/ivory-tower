@@ -52,10 +52,14 @@ The command performs this sequence:
 6. takes a PostgreSQL custom-format snapshot, restores it into an isolated database, and migrates
    both the primary and restored databases to the latest migration;
 7. verifies migration ledgers, original source identity, object hash metadata, and the current
-   migration's compatibility/backfill expectation; then runs the API/worker/Docling happy-path
+   migration's compatibility/backfill expectation; compiles `@ivory-tower/api` and
+   `@ivory-tower/worker` from the lockfile install; then runs the API/worker/Docling happy-path
    runtime proof; and
 8. records non-secret evidence in `artifacts/session-04/result.json`, tears down Compose, and
-   removes only `.ivory-tower/`.
+   removes only `.ivory-tower/`. Postgres and MinIO write bind-mount files as root, so the
+   verifier deletes those children through the digest-pinned Postgres image with the host path
+   bound at `/ivory-tower-state`, then removes the now-empty checkout-local directory. It still
+   refuses any path other than `<repo>/.ivory-tower`.
 
 Pass `--keep` to retain the Compose profile and `.ivory-tower/` for diagnosis. On failure the
 verifier writes redacted Compose logs to `artifacts/session-04/compose.log`; credentials and

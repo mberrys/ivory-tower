@@ -81,6 +81,7 @@ async function main() {
     }
     runDocker([...compose, 'up', '-d', 'postgres', 'object-store', 'object-store-init', 'docling']);
     runNpm(['run', 'migrate:ivory']);
+    runNpm(['run', 'compile:ivory-services']);
 
     const api = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-api'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });
     const worker = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-worker'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });
