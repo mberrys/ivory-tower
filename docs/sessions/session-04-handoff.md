@@ -12,50 +12,68 @@ path, then tears down only checkout-local `.ivory-tower/` state.
 ## Canonical commit / branch
 
 Branch `cursor/session-04-runtime-migrations-9419`, atop `origin/stable` @ `9030ac2` (Session 03
-including PR #28 addenda).
+including PR #28 addenda). Implementation `0dddca26c`, contract docs `2e166a1c4`, runtime-job
+repair `f882f5254`.
 
 ## Files changed
 
 **New:** `scripts/check-ivory-install.mjs`, `scripts/verify-ivory-session-04.mjs`,
+`scripts/verify-ivory-session-04.spec.mjs`,
 `packages/ivory-tower-infrastructure/src/node/migrate.spec.ts`, `docs/iv-21-local-runtime.md`,
 `docs/sessions/session-04-runtime-migrations.md`, this handoff.
 
-**Modified:** `package.json` (bootstrap and Session 04 scripts; `check:ivory-install` in
-`verify:ivory-tower`), `.github/workflows/ivory-tower.yml` (bootstrap step after every `npm ci`;
-Ubuntu runtime job), `infra/docker-compose.yml` (digest pins),
+**Modified:** `package.json` (bootstrap, `compile:ivory-services`, Session 04 scripts and
+contract tests; `check:ivory-install` in `verify:ivory-tower`), `.github/workflows/ivory-tower.yml`
+(bootstrap step after every `npm ci`; Ubuntu runtime job), `infra/docker-compose.yml` (digest pins),
 `configs/ivory-dependency-policy.json` (local images `digestRequired: true`),
 `scripts/check-ivory-dependency-policy.mjs` (Session 04 verifier is an image source),
 `packages/ivory-tower-infrastructure/src/node/migrate.ts` (`IVORY_MIGRATIONS_UP_TO`),
-`scripts/verify-ivory-runtime.mjs` (portable Docker binary), `docs/iv-19-dependency-governance.md`,
-`docs/ivory-tower-development.md`, `infra/README.md`.
+`scripts/verify-ivory-runtime.mjs` (portable Docker binary; compiles API/worker before start),
+`docs/iv-19-dependency-governance.md`, `docs/ivory-tower-development.md`, `infra/README.md`.
 
 No upstream Theia package was modified. `package-lock.json` was not rewritten.
 
 ## Tests and commands run
 
-Recorded during implementation; CI run IDs are filled after the PR's `ivory-tower.yml` completes.
-
 - `npm run check:ivory-install` — toolchain plus linked `@theia/ext-scripts` binary
 - `npm run dependency:policy` — including the existing `floating-image-tag` fixture
 - infrastructure package tests — `resolveIvoryMigrationBatch` rejects an unknown upper boundary
   and includes the named N-1 filename
-- `npm run verify:ivory-tower` — static gate, including the new bootstrap check and
-  Session 04 verifier contract tests
-- `npm run verify:ivory-session-04` — Docker-backed proof when a daemon is available; otherwise
-  the Ubuntu runtime job is the evidence producer
+- `npm run compile:ivory-services` — emits `packages/ivory-tower-{api,worker}/lib/start.js`
+- `npm run test:ivory-session-04` — teardown bind and compile-before-start contract tests
+- `npm run verify:ivory-tower` — static gate, including the new bootstrap check
+- `npm run verify:ivory-session-04` — Ubuntu runtime job (this environment has no Docker daemon)
 
-CI run 33183761714 (`ivory-tower.yml` on this branch) greened verify and governance, then the
-runtime job failed after a successful N-1 dump/restore/upgrade: API/worker `lib/start.js` was
-missing, and teardown could not remove root-owned `.ivory-tower/minio`. The follow-up commit
-compiles `@ivory-tower/api` and `@ivory-tower/worker` inside `verify:ivory-runtime` and deletes
-bind-mount children through the digest-pinned Postgres image.
+`ivory-tower.yml` [run 33186189634](https://github.com/mberrys/ivory-tower/actions/runs/33186189634)
+on `f882f5254` is green:
+
+| Job | ID | Result |
+|---|---|---|
+| Verify (ubuntu-22.04) | 98899677792 | success |
+| Verify (windows-2022) | 98899677592 | success |
+| Dependency governance evidence (IV-19) | 98899677774 | success |
+| Runtime and migration recovery (Session 04) | 98902380283 | success |
+
+The runtime job logged `Session 04 verification passed: 001_runtime_topology.sql snapshot restored
+and migrated through 002_source_rights.sql` and `IV-14 happy path passed` for execution
+`6495d702-24e3-4a9a-8014-dc054a20e79c`.
+
+Earlier [run 33183761714](https://github.com/mberrys/ivory-tower/actions/runs/33183761714) greened
+verify and governance, then the runtime job failed after N-1 dump/restore/upgrade: missing
+`lib/start.js`, and `EACCES` removing `.ivory-tower/minio`. `f882f5254` is that repair.
+
+A failing GitHub Advanced Security / Copilot “Code scanning AI findings” check is unrelated
+(Session 03 pattern) and is not Session 04 evidence.
 
 ## Evidence produced
 
-- Passing `check:ivory-install` after `npm ci` (IV-15 clean-checkout bootstrap).
+- Passing `check:ivory-install` after `npm ci` (IV-15 clean-checkout bootstrap), including on the
+  runtime job after a lockfile install.
 - Digest-pinned local images in Compose and the IV-19 policy.
-- `artifacts/session-04/result.json` from a passing runtime job (gitignored; the passing job is
-  the evidence). On failure, sanitized `artifacts/session-04/compose.log` is uploaded.
+- Ubuntu runtime job 98902380283: N-1 snapshot at `001_runtime_topology.sql` restored and migrated
+  through `002_source_rights.sql`, then the API/worker/Docling happy path. `result.json` is
+  gitignored; the passing job is the evidence. On failure, sanitized
+  `artifacts/session-04/compose.log` is uploaded.
 
 ## Acceptance criteria passed
 
@@ -68,8 +86,6 @@ bind-mount children through the digest-pinned Postgres image.
 
 ## Acceptance criteria still open
 
-- **Docker-backed proof is the Ubuntu runtime job.** A cloud agent without a Docker daemon cannot
-  substitute for that job.
 - **MinIO AGPL-3.0 remains unreviewed.** Digest-pinning is not a licence ruling. Counsel review is
   required before either image is more than local-dev/test infrastructure.
 - **Gate 0 is not closed.** Sessions 05–06 (IV-22 and remaining Gate 0 work) are untouched.
@@ -112,9 +128,10 @@ bind-mount children through the digest-pinned Postgres image.
 
 ## Exact prerequisite for next session
 
-Green `verify` matrix, green `governance` job, and a green
-`Runtime and migration recovery (Session 04)` job on this branch. If the runtime job is red, the
-fix belongs to a Session 04 repair (`04A`), not to Session 05.
+Merge this PR to `stable` after human review. Session 05 may assume a green
+`verify` matrix, `governance` job, and `Runtime and migration recovery (Session 04)` job as
+already recorded on run 33186189634. If a later head on this branch turns the runtime job red,
+the fix belongs to a Session 04 repair (`04A`), not to Session 05.
 
 ## Recommended next session
 

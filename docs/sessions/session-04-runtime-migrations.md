@@ -34,9 +34,13 @@ closed in the follow-up commit on this branch.
 
 ## Evidence boundary
 
-This session adds the execution contracts and CI job. A passing static gate is not Session 04
-sign-off. The Ubuntu `Runtime and migration recovery (Session 04)` job is the required
-clean-install, Docker-backed evidence producer.
+The Ubuntu `Runtime and migration recovery (Session 04)` job is the required clean-install,
+Docker-backed evidence producer. A passing static gate is not Session 04 sign-off.
+
+Recorded on [run 33186189634](https://github.com/mberrys/ivory-tower/actions/runs/33186189634)
+(`f882f5254`): verify Ubuntu/Windows, governance, and runtime job 98902380283 all succeeded.
+The runtime log records `001_runtime_topology.sql` restored and migrated through
+`002_source_rights.sql`, then the IV-14 happy path.
 
 See [IV-21](../iv-21-local-runtime.md) for the operational contract and
 [the handoff](session-04-handoff.md) for commands, CI, and remaining gaps.
