@@ -11,7 +11,8 @@ audit-shaped payloads. This does **not** close Gate 0 and does **not** start IV-
 
 Branch `cursor/session-05-deployment-secrets-9419`, atop Session 04
 `origin/cursor/session-04-runtime-migrations-9419` @ `2a181b917` (PR #29 still open on `stable` at
-execution). `origin/stable` was Session 03 @ `9030ac2` and did not contain Session 04.
+execution). Implementation `0250381e4`, contract docs `b992489e4`. `origin/stable` was Session 03
+@ `9030ac2` and did not contain Session 04.
 
 ## Files changed
 
@@ -37,11 +38,30 @@ replaced.
   shared helper
 - API package tests — structured `/health/ready` 200/503 and generic HTTP 500 body
 - `npx lerna run compile --scope @ivory-tower/api --scope @ivory-tower/worker --scope @ivory-tower/infrastructure --include-dependencies`
-- `npm run verify:ivory-tower` — static gate (Ubuntu+Windows in CI)
+- `npm run secret:scan` — no credential findings; planted test URLs are allowlisted
+- `npm run verify:ivory-tower` — local static gate green on this environment
 - Docker proof is the existing Session 04 runtime job after `verify-ivory-runtime` asserts the
   ready payload. This environment has no Docker daemon.
 
-CI run IDs are recorded in **Evidence produced** after the Ubuntu runtime job on this branch.
+`ivory-tower.yml` [run 33196186623](https://github.com/mberrys/ivory-tower/actions/runs/33196186623)
+on `b992489e4` is green:
+
+| Job | ID | Result |
+|---|---|---|
+| Verify (ubuntu-22.04) | 98933796899 | success |
+| Verify (windows-2022) | 98933796778 | success |
+| Dependency governance evidence (IV-19) | 98933797012 | success |
+| Runtime and migration recovery (Session 04) | 98936599351 | success |
+
+The runtime job logged `IV-14 happy path passed` for execution
+`f1f68df9-5375-49f2-9887-d566eb93c65e` immediately after the structured `/health/ready` assertion
+(postgres, schema, queue, and objectStore `ok`). A failed ready-payload check would have stopped
+the job before that line.
+
+A failing GitHub Advanced Security / Copilot Autofind check (`The requested model is not supported`)
+and the 3-second GHAS `CodeQL` status are unrelated infrastructure failures, the same class Session
+04 recorded, and are not Session 05 evidence. The CodeQL `Analyze (*)` jobs on run 33196184183
+succeeded.
 
 ## Evidence produced
 
@@ -53,6 +73,8 @@ CI run IDs are recorded in **Evidence produced** after the Ubuntu runtime job on
   absent from serialized logs and HTTP 500 bodies.
 - `secret:scan` / `sentinel-secret` still cover the repository; they do not claim runtime
   redaction.
+- Ubuntu runtime job 98936599351: structured ready assertion held; IV-14 happy path execution
+  `f1f68df9-5375-49f2-9887-d566eb93c65e`.
 
 ## Acceptance criteria passed
 

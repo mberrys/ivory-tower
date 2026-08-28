@@ -27,7 +27,11 @@ The Playwright health view was not changed: it still uses `fetch(.../health/read
 
 Package tests prove profile rejection, structured ready statuses, and redaction. Docker proof is
 the existing `Runtime and migration recovery (Session 04)` job after the ready-payload assertion.
-This environment has no Docker daemon.
+
+Recorded on [run 33196186623](https://github.com/mberrys/ivory-tower/actions/runs/33196186623)
+(`b992489e4`): verify Ubuntu/Windows, governance, and runtime job 98936599351 all succeeded.
+The runtime log records the IV-14 happy path after that assertion (execution
+`f1f68df9-5375-49f2-9887-d566eb93c65e`).
 
 See [IV-22](../iv-22-deployment-secrets.md) for the operational contract and
 [the handoff](session-05-handoff.md) for commands, CI, and remaining gaps.
