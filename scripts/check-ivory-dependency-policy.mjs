@@ -34,6 +34,7 @@ const IMAGE_SOURCE_FILES = [
     'infra/docker-compose.yml',
     '.env.example',
     'scripts/verify-ivory-runtime.mjs',
+    'scripts/verify-ivory-session-04.mjs',
     'packages/ivory-tower-infrastructure/src/environment.ts',
 ];
 const IMAGE_REFERENCE_PATTERN =
