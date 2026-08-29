@@ -1,0 +1,7 @@
+{
+  "$comment": "A status-only update: claims completion without the frozen authority header. IV1-1 acceptance requires this to be rejected.",
+  "status": "done",
+  "session": "IVS-1",
+  "sessionStatus": "complete",
+  "note": "Session 00 finished"
+}
