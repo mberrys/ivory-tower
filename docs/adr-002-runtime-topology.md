@@ -1,5 +1,14 @@
 # ADR-002: V1 runtime topology and repository architecture
 
+> ⚠️ **Superseded in part as V1 planning authority (2026-08-29).** The unified Notion roadmap
+> (**revision 4**) re-decides the runtime topology around four layers — Ivory Core / Ivory Compute
+> / Ivory Studio / IDE Bridge — with a local-first, Electron-first Studio rather than the hosted
+> container topology below, and with the CLI + MCP as first-class V1 surfaces. The current
+> authority chain and the roadmap's architecture subpages are named in
+> [`v1-reset-manifest.md`](v1-reset-manifest.md) and
+> [`../release-evidence/cutline.json`](../release-evidence/cutline.json). Retained as the record
+> of the 2026-08-02 decision; Session 00 rewrote nothing below this banner.
+
 **Status:** Accepted  
 **Date:** 2026-08-02  
 **Issue:** [IV-14](https://app.notion.com/p/3b09cb079ddb81089f9cee6413df7b33)  

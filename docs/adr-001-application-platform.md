@@ -1,5 +1,14 @@
 # ADR-001: Application platform and surface strategy
 
+> ⚠️ **Superseded in part as V1 planning authority (2026-08-29).** The unified Notion roadmap
+> (**revision 4**) changes the surface strategy this ADR set: Ivory Studio is **Electron-first**
+> (the browser build is dev/test only, not a shipped surface), and the **CLI and MCP are
+> first-class V1** via the IDE Bridge. Theia remains required, now scoped to the Studio layer
+> only. The current authority chain is frozen in
+> [`v1-reset-manifest.md`](v1-reset-manifest.md) and
+> [`../release-evidence/cutline.json`](../release-evidence/cutline.json). Retained as the record
+> of the 2026-08-02 decision; Session 00 rewrote nothing below this banner.
+
 **Status:** Accepted
 **Date:** 2026-08-02
 **Issue:** [IV-14](https://app.notion.com/p/3b09cb079ddb81089f9cee6413df7b33) — Decide V1 runtime topology and repository architecture
