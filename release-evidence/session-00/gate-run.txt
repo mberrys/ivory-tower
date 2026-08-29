@@ -64,9 +64,20 @@ Session 00 - see "Environmental blocker" below.
   17. git diff --check              exit 0
   18. git diff --exit-code          exit 0
 
-## CI parity
+## CI parity - RESOLVED
 
-.github/workflows/ivory-tower.yml runs verify:ivory-tower on windows-2022 and ubuntu-22.04 on
-push / PR to stable or dev only. A PR to dev is required to exercise links 10-14 in a non-worktree,
-non-sandboxed environment. Not done this session (no push authorized). This is the recommended
-close-out for the repair.
+PR https://github.com/mberrys/ivory-tower/pull/34 (branch cc/freeze-reset-authority-repository-e4d51a
+-> dev) ran .github/workflows/ivory-tower.yml:
+https://github.com/mberrys/ivory-tower/actions/runs/33277875398
+
+  Verify (windows-2022)                 SUCCESS
+  Verify (ubuntu-22.04)                 SUCCESS
+  Dependency governance evidence (IV-19) SUCCESS
+
+Full `verify:ivory-tower` (all 18 links, including typecheck:ivory-tower / lint:ivory-tower /
+test:ivory-tower / build:ivory-tower / test:ivory-browser) is GREEN on both platforms. The
+missing-scripts repair is proven end-to-end; the local link-10 TS5033 EPERM was confirmed as the
+linked-worktree + Codex-sandbox environmental condition, not a code or Session 00 defect.
+
+(The workflow's separate "Runtime and migration recovery (Session 04)" job - a Docker/Postgres/MinIO/
+Docling runtime proof, not part of verify:ivory-tower - is outside Session 00's scope.)

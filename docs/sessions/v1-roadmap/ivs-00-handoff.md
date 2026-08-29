@@ -72,11 +72,16 @@ Verification (Node 24.16.0; npm aligned to the pinned 11.13.0 for this run):
 - `npm run check:ivory-toolchain` — OK (after `npm i -g npm@11.13.0`)
 - `npm run check:ivory-install` — OK (after `npm ci` in this worktree)
 - `npm run check:ivory-boundaries` — OK; `npm run format:check:ivory-tower` — OK
-- Full `npm run verify:ivory-tower` at `3a4ad1ab8` — **links 1–9 PASS** (the missing-scripts defect is
-  repaired); **link 10 `typecheck:ivory-tower` fails on a pre-existing environmental condition**
-  (`lerna`/`nx` from a linked worktree targets the primary checkout → sandbox `TS5033 EPERM`; the
-  package compiles cleanly with direct `tsc`); links 15–18 PASS on the clean tree. Full evidence and
-  root-cause in `release-evidence/session-00/gate-run.txt`.
+- Full `npm run verify:ivory-tower` locally at `3a4ad1ab8` — **links 1–9 + 15–18 PASS**; link 10
+  `typecheck:ivory-tower` fails on a pre-existing environmental condition (`lerna`/`nx` from a linked
+  worktree targets the primary checkout → sandbox `TS5033 EPERM`; the package compiles cleanly with
+  direct `tsc`).
+- **CI: `verify:ivory-tower` is GREEN end-to-end on both platforms.** PR #34 →
+  [run 33277875398](https://github.com/mberrys/ivory-tower/actions/runs/33277875398): `Verify
+  (windows-2022)` SUCCESS, `Verify (ubuntu-22.04)` SUCCESS, `Dependency governance (IV-19)` SUCCESS.
+  All 18 links pass — the missing-scripts repair is proven; link 10 locally was confirmed as the
+  worktree/sandbox condition, not a defect. Evidence + root-cause in
+  `release-evidence/session-00/gate-run.txt`.
 
 ## Evidence produced
 
@@ -103,13 +108,10 @@ output + gate run). All reproducible from a checkout of this branch per
 
 ## Acceptance criteria still open
 
-- **`verify:ivory-tower` links 10–14** (`typecheck:ivory-tower`, `lint:ivory-tower`, lerna `test`,
-  `build:ivory-tower`, `test:ivory-browser`) were **not proven** — they are `lerna`/`nx`-based and
-  cannot run from a linked git worktree (see next section). They exercise **no Session 00 change**.
-  Prove them from the **primary checkout** on a clean branch, or via a **PR to `dev`** so
-  `.github/workflows/ivory-tower.yml` runs the win + ubuntu matrix. Not done this session (no push
-  authorized).
-- **Notion write-back** — not applied (Notion MCP unauthenticated in this session). See "Decisions".
+- None for Session 00. `verify:ivory-tower` links 10–14 (the `lerna`/`nx` links that can't run from a
+  linked worktree) are **proven green in CI** — PR #34, run 33277875398, both platforms SUCCESS.
+- Notion write-back **applied** (IV1-1 / IV1-2 → Done / Satisfied with Implementation Evidence;
+  Session 00 → Done / Complete; Session 01 → Ready).
 
 ## Known regressions / risks
 
