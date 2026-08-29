@@ -1,0 +1,139 @@
+{
+  "artifact": "session-00-repository-baseline",
+  "artifactVersion": 1,
+  "session": "IVS-1",
+  "issue": "IV1-2",
+  "capturedAtSessionStart": "2026-08-29",
+  "workingWorktree": "C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69",
+  "anchor": {
+    "branch": "cc/freeze-reset-authority-repository-e4d51a",
+    "headAtSessionStart": "1e45afd5182a58f12205472e4f05f02c5086d44d",
+    "aheadBehindOriginDev": { "ahead": 0, "behind": 0 },
+    "upstreamTrackingBranch": null,
+    "origin": "https://github.com/mberrys/ivory-tower.git",
+    "upstreamBase": {
+      "project": "Eclipse Theia",
+      "version": "1.74.0",
+      "commit": "172494ea2564ca07690e230805861146007fae79",
+      "forkDeltaCommits": 104,
+      "note": "v1.74.0 tag is not imported into the fork; the sha is origin/master, origin/original-cb, and the merge-base with HEAD; packages/core version is 1.74.0."
+    }
+  },
+  "worktrees": [
+    { "path": "C:/.dev/repos/ivory-tower", "branch": "dev", "head": "1e45afd5182a58f12205472e4f05f02c5086d44d", "clean": false },
+    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69", "branch": "cc/freeze-reset-authority-repository-e4d51a", "head": "1e45afd5182a58f12205472e4f05f02c5086d44d", "clean": true },
+    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966", "branch": null, "head": "f312f02a02e9b080b4b05b640f3b3f39b39112cd", "clean": true },
+    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30", "branch": null, "head": "fe9b619cdf32e6cea45effd78099287b245e66a6", "clean": true }
+  ],
+  "primaryWorktreeState": {
+    "path": "C:/.dev/repos/ivory-tower",
+    "stashCount": 0,
+    "diffStat": { "filesChanged": 5, "insertions": 93, "deletions": 5 },
+    "modifiedTracked": [
+      { "path": ".gitignore", "committedBlob": "6ceadccf31dc863c001acb31cb36eef716668041", "workingBlobAtSessionStart": "583f7805cba977897d6c19b670365a30c028906f", "workingBlobAtSessionEnd": null },
+      { "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts", "workingBlobAtSessionStart": "856d4381923b0bd2b2739cdd300bccc156581de5", "workingBlobAtSessionEnd": null },
+      { "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts", "workingBlobAtSessionStart": "18008fde46c4b097c18ccd0f10f981bce8238086", "workingBlobAtSessionEnd": null },
+      { "path": "packages/ivory-tower-infrastructure/src/postgres-execution-store.ts", "workingBlobAtSessionStart": "f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912", "workingBlobAtSessionEnd": null },
+      { "path": "packages/ivory-tower-worker/src/package.spec.ts", "workingBlobAtSessionStart": "2230ac0c31c97984f163d44ae61620d642d0b9ed", "workingBlobAtSessionEnd": null }
+    ],
+    "untracked": [
+      { "path": ".claude/policy-brief.md", "blobAtSessionStart": "6035780def29fc574869d30a0b7a3054fe69b220", "blobAtSessionEnd": null },
+      { "path": ".claude/settings.json", "blobAtSessionStart": "7beeebbeafa504ea0ce55a79eff1493d4dc39c32", "blobAtSessionEnd": null },
+      { "path": ".codex/environments/environment.toml", "blobAtSessionStart": "7e2a69e183fc29a871bb158059453d58788808c7", "blobAtSessionEnd": null },
+      { "path": ".pre-commit-config.yaml", "blobAtSessionStart": "fdd04e2edb6d06fc7165f4e114bd19b2157e89f5", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/cc-guard-bash.sh", "blobAtSessionStart": "0fe3837a84050133c370fe4717c12edb58f391ec", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/cc-guard-write.sh", "blobAtSessionStart": "71ee1ee17f25ce07d82c20e319f664d5403f0a8a", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/cc-stop-self-review.sh", "blobAtSessionStart": "ac4c034f9bc22f445cbdf0ccc45ceffddece3343", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/cmake-discipline.sh", "blobAtSessionStart": "50f0b11099e53204746ef0cd3b3c6fa8ab639374", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/commit-msg-conventional.sh", "blobAtSessionStart": "b5ef04fecf4bec6d09126ee301747aa6ceef6475", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/forbid-secret-files.sh", "blobAtSessionStart": "98001b5e1b0efb581165d0692fb19f5e7237b122", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/pre-push.sh", "blobAtSessionStart": "9df9d1575b170de569ead45b1617dad7621f06db", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/prod-data-guard.sh", "blobAtSessionStart": "4acd25d7d1338078c5d75a36e9adae468f69d4df", "blobAtSessionEnd": null },
+      { "path": "scripts/hooks/run-bash.py", "blobAtSessionStart": "8134ee5f10b8179a1d588e5d1489fa5f1a207c5b", "blobAtSessionEnd": null }
+    ]
+  },
+  "toolchain": {
+    "nvmrc": "24.16.0",
+    "pinned": { "node": "24.16.0", "npm": "11.13.0" },
+    "upstreamEngineDeclaration": ">=22",
+    "observedAtSessionStart": { "node": "24.16.0", "npm": "11.17.0" },
+    "drift": "npm 11.17.0 != pinned 11.13.0; check:ivory-toolchain fails until aligned (npm i -g npm@11.13.0). Environment-only."
+  },
+  "ivoryPackages": [
+    "@theia/ivory-identity",
+    "@ivory-tower/adapters",
+    "@ivory-tower/api",
+    "@ivory-tower/application",
+    "@ivory-tower/content-policy",
+    "@ivory-tower/contracts",
+    "@ivory-tower/domain",
+    "@ivory-tower/health",
+    "@ivory-tower/infrastructure",
+    "@ivory-tower/worker"
+  ],
+  "gateInventory": {
+    "aggregate": "verify:ivory-tower",
+    "static": [
+      "check:ivory-toolchain",
+      "check:ivory-install",
+      "check:ivory-boundaries",
+      "format:check:ivory-tower",
+      "typecheck:ivory-tower",
+      "lint:ivory-tower",
+      "dependency:policy",
+      "secret:scan",
+      "verify:ivory-cutline",
+      "verify:ivory-phase-gates",
+      "test:ivory-cutline",
+      "verify:ivory-reset-authority",
+      "test:ivory-reset-authority",
+      "test:ivory-tower"
+    ],
+    "localRuntime": [
+      "verify:ivory-session-04",
+      "verify:ivory-runtime",
+      "test:ivory-runtime",
+      "migrate:ivory"
+    ],
+    "ci": [
+      ".github/workflows/ivory-tower.yml",
+      ".github/workflows/generate-sbom.yml",
+      ".github/workflows/license-check.yml",
+      ".github/workflows/native-dependencies.yml",
+      ".github/workflows/performance-tests.yml",
+      ".github/workflows/playwright.yml",
+      ".github/workflows/production-smoke-test.yml",
+      ".github/workflows/ci-cd.yml"
+    ]
+  },
+  "knownBaselineDefects": [
+    {
+      "id": "verify-ivory-tower-missing-scripts",
+      "severity": "red",
+      "detail": "verify:ivory-tower chained verify:ivory-cutline, generate:ivory-cutline, verify:ivory-phase-gates, test:ivory-cutline with no definitions (dropped by merge ecda63ed1; added in 7309a7f83). npm run verify:ivory-cutline -> 'Missing script'.",
+      "state": "repaired-in-IVS-1"
+    },
+    {
+      "id": "toolchain-drift-npm",
+      "severity": "yellow",
+      "detail": "local npm 11.17.0 != pinned 11.13.0",
+      "state": "environment-only"
+    },
+    {
+      "id": "worktree-not-installed",
+      "severity": "info",
+      "detail": "the new-session-1dda69 worktree had an empty node_modules at session start; npm ci is required before the install-dependent gate links can run locally.",
+      "state": "environment-only"
+    }
+  ],
+  "gateRun": {
+    "status": "see release-evidence/session-00/gate-run.txt",
+    "recordedAtSessionEnd": null
+  },
+  "isolatedWorktreeRecommendation": "Every later session that changes live branch topology or broad architecture must run in its own git worktree cut from origin/dev (git -C C:/.dev/repos/ivory-tower worktree add .claude/worktrees/<slug> -b cc/<slug> origin/dev). Never do invasive work in the primary worktree while it holds ambient uncommitted changes.",
+  "preservationResult": {
+    "destructiveGitCommandsRun": [],
+    "assertion": "Session 00 ran no reset / checkout -- / restore / switch / stash / clean / branch -D / gc --prune in any worktree; only read-only inspection plus git add/commit on cc/freeze-reset-authority-repository-e4d51a inside the new-session-1dda69 worktree.",
+    "verifiedAtSessionEnd": null
+  }
+}

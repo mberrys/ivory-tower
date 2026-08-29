@@ -1,0 +1,16 @@
+# Session 00 (IVS-1) — verify:ivory-tower repair evidence
+#
+# This file is finalized at session end with the verbatim output of the repaired gate run.
+# Until then, the individually verified links are:
+#
+#   node scripts/ivory/verify-reset-authority.mjs     -> PASS
+#   node --test scripts/ivory/reset-authority.spec.mjs -> 25/25 pass
+#   node scripts/ivory/verify-v1-cutline.mjs          -> PASS (130 legacy issues; generated block current)
+#   node --test scripts/ivory/v1-cutline.spec.mjs     -> 7/7 pass
+#   node scripts/ivory/evaluate-phase-gates.mjs       -> exit 0
+#   npm run check:ivory-toolchain                     -> OK (npm aligned to 11.13.0)
+#   npm run check:ivory-boundaries                    -> OK
+#   npm run dependency:policy                         -> tree clean; 7 fixtures rejected
+#   npm run secret:scan                               -> clean
+#
+# <full `npm run verify:ivory-tower` transcript appended at session end>
