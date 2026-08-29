@@ -8,7 +8,10 @@
   "anchor": {
     "branch": "cc/freeze-reset-authority-repository-e4d51a",
     "headAtSessionStart": "1e45afd5182a58f12205472e4f05f02c5086d44d",
-    "aheadBehindOriginDev": { "ahead": 0, "behind": 0 },
+    "aheadBehindOriginDev": {
+      "ahead": 0,
+      "behind": 0
+    },
     "upstreamTrackingBranch": null,
     "origin": "https://github.com/mberrys/ivory-tower.git",
     "upstreamBase": {
@@ -20,43 +23,146 @@
     }
   },
   "worktrees": [
-    { "path": "C:/.dev/repos/ivory-tower", "branch": "dev", "head": "1e45afd5182a58f12205472e4f05f02c5086d44d", "clean": false },
-    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69", "branch": "cc/freeze-reset-authority-repository-e4d51a", "head": "1e45afd5182a58f12205472e4f05f02c5086d44d", "clean": true },
-    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966", "branch": null, "head": "f312f02a02e9b080b4b05b640f3b3f39b39112cd", "clean": true },
-    { "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30", "branch": null, "head": "fe9b619cdf32e6cea45effd78099287b245e66a6", "clean": true }
+    {
+      "path": "C:/.dev/repos/ivory-tower",
+      "branch": "dev",
+      "head": "1e45afd5182a58f12205472e4f05f02c5086d44d",
+      "clean": false
+    },
+    {
+      "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69",
+      "branch": "cc/freeze-reset-authority-repository-e4d51a",
+      "head": "1e45afd5182a58f12205472e4f05f02c5086d44d",
+      "clean": true
+    },
+    {
+      "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966",
+      "branch": null,
+      "head": "f312f02a02e9b080b4b05b640f3b3f39b39112cd",
+      "clean": true
+    },
+    {
+      "path": "C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30",
+      "branch": null,
+      "head": "fe9b619cdf32e6cea45effd78099287b245e66a6",
+      "clean": true
+    }
   ],
   "primaryWorktreeState": {
     "path": "C:/.dev/repos/ivory-tower",
     "stashCount": 0,
-    "diffStat": { "filesChanged": 5, "insertions": 93, "deletions": 5 },
+    "diffStat": {
+      "filesChanged": 5,
+      "insertions": 93,
+      "deletions": 5
+    },
     "modifiedTracked": [
-      { "path": ".gitignore", "committedBlob": "6ceadccf31dc863c001acb31cb36eef716668041", "workingBlobAtSessionStart": "583f7805cba977897d6c19b670365a30c028906f", "workingBlobAtSessionEnd": null },
-      { "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts", "workingBlobAtSessionStart": "856d4381923b0bd2b2739cdd300bccc156581de5", "workingBlobAtSessionEnd": null },
-      { "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts", "workingBlobAtSessionStart": "18008fde46c4b097c18ccd0f10f981bce8238086", "workingBlobAtSessionEnd": null },
-      { "path": "packages/ivory-tower-infrastructure/src/postgres-execution-store.ts", "workingBlobAtSessionStart": "f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912", "workingBlobAtSessionEnd": null },
-      { "path": "packages/ivory-tower-worker/src/package.spec.ts", "workingBlobAtSessionStart": "2230ac0c31c97984f163d44ae61620d642d0b9ed", "workingBlobAtSessionEnd": null }
+      {
+        "path": ".gitignore",
+        "committedBlob": "6ceadccf31dc863c001acb31cb36eef716668041",
+        "workingBlobAtSessionStart": "583f7805cba977897d6c19b670365a30c028906f",
+        "workingBlobAtSessionEnd": "583f7805cba977897d6c19b670365a30c028906f"
+      },
+      {
+        "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts",
+        "workingBlobAtSessionStart": "856d4381923b0bd2b2739cdd300bccc156581de5",
+        "workingBlobAtSessionEnd": "856d4381923b0bd2b2739cdd300bccc156581de5"
+      },
+      {
+        "path": "packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts",
+        "workingBlobAtSessionStart": "18008fde46c4b097c18ccd0f10f981bce8238086",
+        "workingBlobAtSessionEnd": "18008fde46c4b097c18ccd0f10f981bce8238086"
+      },
+      {
+        "path": "packages/ivory-tower-infrastructure/src/postgres-execution-store.ts",
+        "workingBlobAtSessionStart": "f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912",
+        "workingBlobAtSessionEnd": "f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912"
+      },
+      {
+        "path": "packages/ivory-tower-worker/src/package.spec.ts",
+        "workingBlobAtSessionStart": "2230ac0c31c97984f163d44ae61620d642d0b9ed",
+        "workingBlobAtSessionEnd": "2230ac0c31c97984f163d44ae61620d642d0b9ed"
+      }
     ],
     "untracked": [
-      { "path": ".claude/policy-brief.md", "blobAtSessionStart": "6035780def29fc574869d30a0b7a3054fe69b220", "blobAtSessionEnd": null },
-      { "path": ".claude/settings.json", "blobAtSessionStart": "7beeebbeafa504ea0ce55a79eff1493d4dc39c32", "blobAtSessionEnd": null },
-      { "path": ".codex/environments/environment.toml", "blobAtSessionStart": "7e2a69e183fc29a871bb158059453d58788808c7", "blobAtSessionEnd": null },
-      { "path": ".pre-commit-config.yaml", "blobAtSessionStart": "fdd04e2edb6d06fc7165f4e114bd19b2157e89f5", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/cc-guard-bash.sh", "blobAtSessionStart": "0fe3837a84050133c370fe4717c12edb58f391ec", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/cc-guard-write.sh", "blobAtSessionStart": "71ee1ee17f25ce07d82c20e319f664d5403f0a8a", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/cc-stop-self-review.sh", "blobAtSessionStart": "ac4c034f9bc22f445cbdf0ccc45ceffddece3343", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/cmake-discipline.sh", "blobAtSessionStart": "50f0b11099e53204746ef0cd3b3c6fa8ab639374", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/commit-msg-conventional.sh", "blobAtSessionStart": "b5ef04fecf4bec6d09126ee301747aa6ceef6475", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/forbid-secret-files.sh", "blobAtSessionStart": "98001b5e1b0efb581165d0692fb19f5e7237b122", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/pre-push.sh", "blobAtSessionStart": "9df9d1575b170de569ead45b1617dad7621f06db", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/prod-data-guard.sh", "blobAtSessionStart": "4acd25d7d1338078c5d75a36e9adae468f69d4df", "blobAtSessionEnd": null },
-      { "path": "scripts/hooks/run-bash.py", "blobAtSessionStart": "8134ee5f10b8179a1d588e5d1489fa5f1a207c5b", "blobAtSessionEnd": null }
+      {
+        "path": ".claude/policy-brief.md",
+        "blobAtSessionStart": "6035780def29fc574869d30a0b7a3054fe69b220",
+        "blobAtSessionEnd": "6035780def29fc574869d30a0b7a3054fe69b220"
+      },
+      {
+        "path": ".claude/settings.json",
+        "blobAtSessionStart": "7beeebbeafa504ea0ce55a79eff1493d4dc39c32",
+        "blobAtSessionEnd": "7beeebbeafa504ea0ce55a79eff1493d4dc39c32"
+      },
+      {
+        "path": ".codex/environments/environment.toml",
+        "blobAtSessionStart": "7e2a69e183fc29a871bb158059453d58788808c7",
+        "blobAtSessionEnd": "7e2a69e183fc29a871bb158059453d58788808c7"
+      },
+      {
+        "path": ".pre-commit-config.yaml",
+        "blobAtSessionStart": "fdd04e2edb6d06fc7165f4e114bd19b2157e89f5",
+        "blobAtSessionEnd": "fdd04e2edb6d06fc7165f4e114bd19b2157e89f5"
+      },
+      {
+        "path": "scripts/hooks/cc-guard-bash.sh",
+        "blobAtSessionStart": "0fe3837a84050133c370fe4717c12edb58f391ec",
+        "blobAtSessionEnd": "0fe3837a84050133c370fe4717c12edb58f391ec"
+      },
+      {
+        "path": "scripts/hooks/cc-guard-write.sh",
+        "blobAtSessionStart": "71ee1ee17f25ce07d82c20e319f664d5403f0a8a",
+        "blobAtSessionEnd": "71ee1ee17f25ce07d82c20e319f664d5403f0a8a"
+      },
+      {
+        "path": "scripts/hooks/cc-stop-self-review.sh",
+        "blobAtSessionStart": "ac4c034f9bc22f445cbdf0ccc45ceffddece3343",
+        "blobAtSessionEnd": "ac4c034f9bc22f445cbdf0ccc45ceffddece3343"
+      },
+      {
+        "path": "scripts/hooks/cmake-discipline.sh",
+        "blobAtSessionStart": "50f0b11099e53204746ef0cd3b3c6fa8ab639374",
+        "blobAtSessionEnd": "50f0b11099e53204746ef0cd3b3c6fa8ab639374"
+      },
+      {
+        "path": "scripts/hooks/commit-msg-conventional.sh",
+        "blobAtSessionStart": "b5ef04fecf4bec6d09126ee301747aa6ceef6475",
+        "blobAtSessionEnd": "b5ef04fecf4bec6d09126ee301747aa6ceef6475"
+      },
+      {
+        "path": "scripts/hooks/forbid-secret-files.sh",
+        "blobAtSessionStart": "98001b5e1b0efb581165d0692fb19f5e7237b122",
+        "blobAtSessionEnd": "98001b5e1b0efb581165d0692fb19f5e7237b122"
+      },
+      {
+        "path": "scripts/hooks/pre-push.sh",
+        "blobAtSessionStart": "9df9d1575b170de569ead45b1617dad7621f06db",
+        "blobAtSessionEnd": "9df9d1575b170de569ead45b1617dad7621f06db"
+      },
+      {
+        "path": "scripts/hooks/prod-data-guard.sh",
+        "blobAtSessionStart": "4acd25d7d1338078c5d75a36e9adae468f69d4df",
+        "blobAtSessionEnd": "4acd25d7d1338078c5d75a36e9adae468f69d4df"
+      },
+      {
+        "path": "scripts/hooks/run-bash.py",
+        "blobAtSessionStart": "8134ee5f10b8179a1d588e5d1489fa5f1a207c5b",
+        "blobAtSessionEnd": "8134ee5f10b8179a1d588e5d1489fa5f1a207c5b"
+      }
     ]
   },
   "toolchain": {
     "nvmrc": "24.16.0",
-    "pinned": { "node": "24.16.0", "npm": "11.13.0" },
+    "pinned": {
+      "node": "24.16.0",
+      "npm": "11.13.0"
+    },
     "upstreamEngineDeclaration": ">=22",
-    "observedAtSessionStart": { "node": "24.16.0", "npm": "11.17.0" },
+    "observedAtSessionStart": {
+      "node": "24.16.0",
+      "npm": "11.17.0"
+    },
     "drift": "npm 11.17.0 != pinned 11.13.0; check:ivory-toolchain fails until aligned (npm i -g npm@11.13.0). Environment-only."
   },
   "ivoryPackages": [
@@ -114,26 +220,61 @@
       "state": "repaired-in-IVS-1"
     },
     {
+      "id": "lerna-nx-worktree-resolution",
+      "severity": "yellow",
+      "detail": "lerna (v9 / nx) run from a linked git worktree resolves every package location to the primary checkout (npx lerna list reports C:\\.dev\\repos\\ivory-tower\\dev-packages\\... not the worktree). lerna-based gates (typecheck:ivory-tower, lint:ivory-tower, test:ivory-tower, build:ivory-tower, and thus the full verify:ivory-tower) therefore operate on the primary worktree and are denied by the Codex sandbox (TS5033 EPERM). Direct `tsc --project .` and package-local `npm run compile` succeed. nx reset does not change it. Run lerna gates from the primary checkout or in CI.",
+      "state": "environment-tooling; pre-existing"
+    },
+    {
       "id": "toolchain-drift-npm",
       "severity": "yellow",
-      "detail": "local npm 11.17.0 != pinned 11.13.0",
+      "detail": "developer environment ran npm 11.17.0 vs pinned 11.13.0. Session 00 installed npm@11.13.0 globally to run check:ivory-toolchain; left at 11.13.0 (the repo pin).",
       "state": "environment-only"
     },
     {
       "id": "worktree-not-installed",
       "severity": "info",
-      "detail": "the new-session-1dda69 worktree had an empty node_modules at session start; npm ci is required before the install-dependent gate links can run locally.",
+      "detail": "the new-session-1dda69 worktree had an empty node_modules at session start; Session 00 ran `npm ci` in it (exit 0) so the static gate links could run.",
       "state": "environment-only"
     }
   ],
   "gateRun": {
-    "status": "see release-evidence/session-00/gate-run.txt",
-    "recordedAtSessionEnd": null
+    "commit": "3a4ad1ab8b6d022cb9c9ca1a7477d12d9a27dfa3",
+    "transcript": "release-evidence/session-00/gate-run.txt",
+    "missingScriptsDefect": "repaired",
+    "linksPassed": [
+      "check:ivory-toolchain",
+      "check:ivory-install",
+      "format:check:ivory-tower",
+      "check:ivory-boundaries",
+      "verify:ivory-cutline",
+      "verify:ivory-phase-gates",
+      "test:ivory-cutline",
+      "verify:ivory-reset-authority",
+      "test:ivory-reset-authority",
+      "dependency:policy",
+      "secret:scan",
+      "git diff --check",
+      "git diff --exit-code"
+    ],
+    "linksBlocked": {
+      "reason": "lerna-nx-worktree-resolution",
+      "links": [
+        "typecheck:ivory-tower",
+        "lint:ivory-tower",
+        "test:ivory-tower",
+        "build:ivory-tower",
+        "test:ivory-browser"
+      ]
+    }
   },
   "isolatedWorktreeRecommendation": "Every later session that changes live branch topology or broad architecture must run in its own git worktree cut from origin/dev (git -C C:/.dev/repos/ivory-tower worktree add .claude/worktrees/<slug> -b cc/<slug> origin/dev). Never do invasive work in the primary worktree while it holds ambient uncommitted changes.",
   "preservationResult": {
     "destructiveGitCommandsRun": [],
     "assertion": "Session 00 ran no reset / checkout -- / restore / switch / stash / clean / branch -D / gc --prune in any worktree; only read-only inspection plus git add/commit on cc/freeze-reset-authority-repository-e4d51a inside the new-session-1dda69 worktree.",
-    "verifiedAtSessionEnd": null
+    "verifiedAtSessionEnd": true,
+    "evidence": "release-evidence/session-00/git-evidence-end.txt",
+    "allBlobsIdentical": true,
+    "primaryWorktreeHeadUnchanged": "1e45afd5182a58f12205472e4f05f02c5086d44d"
   }
 }

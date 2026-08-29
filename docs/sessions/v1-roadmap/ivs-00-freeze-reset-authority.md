@@ -48,12 +48,18 @@ npm run test:ivory-reset-authority     # 25/25 pass
 npm run verify:ivory-cutline           # PASS — 130 legacy issues; generated block current
 npm run test:ivory-cutline             # 7/7 pass
 npm run verify:ivory-phase-gates       # exit 0 — reports; all evidence artifacts present
+npm run check:ivory-toolchain          # OK (npm aligned to 11.13.0)
+npm run check:ivory-install            # OK (npm ci in this worktree)
 npm run check:ivory-boundaries         # OK
+npm run format:check:ivory-tower       # OK
 npm run dependency:policy              # tree clean; 7 fixtures rejected
 npm run secret:scan                    # clean
 ```
 
-Full `verify:ivory-tower` result: see `release-evidence/session-00/gate-run.txt`.
+Full `npm run verify:ivory-tower`: **links 1–9 PASS** (missing-scripts defect repaired); link 10
+`typecheck:ivory-tower` fails on a pre-existing environmental condition — `lerna`/`nx` from a linked
+worktree targets the primary checkout → sandbox `TS5033 EPERM`; `@ivory-tower/domain` compiles
+cleanly with direct `tsc`. Full evidence + root cause: `release-evidence/session-00/gate-run.txt`.
 
 ## What this session did NOT do
 

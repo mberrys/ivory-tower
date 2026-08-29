@@ -96,23 +96,25 @@ worktree was never checked out, reset, or cleaned; its uncommitted work is struc
 on a separate branch.
 
 **Assertion 3 — every pre-existing item in the primary worktree is byte-identical before and
-after.** `git hash-object` for each file in §3, captured at session start and after the final
-Session 00 commit.
+after.** `git hash-object` for each file in §3, captured at session start
+([`git-evidence.txt`](git-evidence.txt)) and at session end
+([`git-evidence-end.txt`](git-evidence-end.txt)).
 
 | Item | Kind | Blob at start | Blob at end | Identical |
 |---|---|---|---|---|
-| `.gitignore` | tracked, modified | `583f7805…` | _<filled at session end>_ | — |
-| `packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts` | tracked, modified | `856d4381…` | _<filled>_ | — |
-| `packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts` | tracked, modified | `18008fde…` | _<filled>_ | — |
-| `packages/ivory-tower-infrastructure/src/postgres-execution-store.ts` | tracked, modified | `f2fcc0aa…` | _<filled>_ | — |
-| `packages/ivory-tower-worker/src/package.spec.ts` | tracked, modified | `2230ac0c…` | _<filled>_ | — |
-| `.claude/policy-brief.md` | untracked | `6035780d…` | _<filled>_ | — |
-| `.claude/settings.json` | untracked | `7beeebbe…` | _<filled>_ | — |
-| `.codex/environments/environment.toml` | untracked | `7e2a69e1…` | _<filled>_ | — |
-| `.pre-commit-config.yaml` | untracked | `fdd04e2e…` | _<filled>_ | — |
-| `scripts/hooks/*` (9 files) | untracked | see §3 | _<filled>_ | — |
-| stash stack (all worktrees) | — | empty | _<filled>_ | — |
-| `next-steps-74f966`, `pr-30` worktrees | — | clean | _<filled>_ | — |
+| `.gitignore` | tracked, modified | `583f7805cba977897d6c19b670365a30c028906f` | `583f7805cba977897d6c19b670365a30c028906f` | ✅ |
+| `packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts` | tracked, modified | `856d4381923b0bd2b2739cdd300bccc156581de5` | `856d4381923b0bd2b2739cdd300bccc156581de5` | ✅ |
+| `packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts` | tracked, modified | `18008fde46c4b097c18ccd0f10f981bce8238086` | `18008fde46c4b097c18ccd0f10f981bce8238086` | ✅ |
+| `packages/ivory-tower-infrastructure/src/postgres-execution-store.ts` | tracked, modified | `f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912` | `f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912` | ✅ |
+| `packages/ivory-tower-worker/src/package.spec.ts` | tracked, modified | `2230ac0c31c97984f163d44ae61620d642d0b9ed` | `2230ac0c31c97984f163d44ae61620d642d0b9ed` | ✅ |
+| `.claude/policy-brief.md` | untracked | `6035780def29fc574869d30a0b7a3054fe69b220` | `6035780def29fc574869d30a0b7a3054fe69b220` | ✅ |
+| `.claude/settings.json` | untracked | `7beeebbeafa504ea0ce55a79eff1493d4dc39c32` | `7beeebbeafa504ea0ce55a79eff1493d4dc39c32` | ✅ |
+| `.codex/environments/environment.toml` | untracked | `7e2a69e183fc29a871bb158059453d58788808c7` | `7e2a69e183fc29a871bb158059453d58788808c7` | ✅ |
+| `.pre-commit-config.yaml` | untracked | `fdd04e2edb6d06fc7165f4e114bd19b2157e89f5` | `fdd04e2edb6d06fc7165f4e114bd19b2157e89f5` | ✅ |
+| `scripts/hooks/*` (9 files) | untracked | see §3 | all 9 identical (`git-evidence-end.txt`) | ✅ |
+| stash stack (all worktrees) | — | empty | empty | ✅ |
+| `next-steps-74f966`, `pr-30` worktrees | — | clean | clean | ✅ |
+| primary worktree `dev` HEAD | — | `1e45afd51` | `1e45afd51` (Session 00 made no commit on `dev`) | ✅ |
 
 ## 5. Evidence-class taxonomy
 
@@ -172,7 +174,27 @@ never removed. `npm run verify:ivory-cutline` at session start:
 the four definitions re-added verbatim from `7309a7f83`, and the chain extended with
 `verify:ivory-reset-authority` and `test:ivory-reset-authority` (the IV1-1 fixtures).
 
-**Repaired-gate run result:** _<filled at session end from `gate-run.txt`>_.
+**Repaired-gate run result** (`npm run verify:ivory-tower` at `3a4ad1ab8`, Node 24.16.0, npm
+11.13.0 — full evidence in [`gate-run.txt`](gate-run.txt)):
+
+- Links 1–9 **PASS**: `check:ivory-toolchain`, `check:ivory-install`, `format:check:ivory-tower`,
+  `check:ivory-boundaries`, `verify:ivory-cutline`, `verify:ivory-phase-gates`,
+  `test:ivory-cutline`, `verify:ivory-reset-authority`, `test:ivory-reset-authority`. The
+  missing-scripts defect is **repaired**.
+- Link 10 `typecheck:ivory-tower` **fails on a pre-existing environmental condition**, not on any
+  Session 00 change: `lerna`/`nx` run from a linked git worktree resolves every package location
+  to the **primary checkout** (`npx lerna list` reports `C:\.dev\repos\ivory-tower\dev-packages\…`,
+  not this worktree), so `lerna run compile` writes build output into the primary worktree, which
+  the Codex sandbox denies → `TS5033 EPERM` on `@ivory-tower/domain/lib/execution.d.ts.map`. The
+  package compiles cleanly in this worktree with direct `npx tsc --project .` (exit 0) and with its
+  own `npm run compile` (exit 0). Session 00 modified zero TypeScript.
+- Links 11–14 (`lint:ivory-tower`, lerna `test`, `build:ivory-tower`, `test:ivory-browser`) share
+  that blocker and were not reached.
+- Links 15–18 verified on the clean post-commit tree: `dependency:policy` PASS, `secret:scan`
+  PASS, `git diff --check` exit 0, `git diff --exit-code` exit 0.
+
+CI parity for links 10–14 needs a PR to `dev` (`ivory-tower.yml` triggers on `stable`/`dev` only);
+not done this session.
 
 ## 8. Isolated-worktree recommendation for invasive sessions
 
@@ -189,6 +211,15 @@ git -C C:/.dev/repos/ivory-tower worktree add .claude/worktrees/<slug> -b cc/<sl
 Never do invasive work in the primary worktree while it holds ambient uncommitted changes. The
 four worktrees already present are the working precedent. Delete a worktree with
 `git worktree remove` once its branch is merged or abandoned.
+
+**Caveat discovered this session — `lerna`/`nx` gates do not run correctly from a linked
+worktree.** `lerna` resolves the monorepo root to the **primary checkout**, so `npm run
+verify:ivory-tower`, `typecheck:ivory-tower`, `lint:ivory-tower`, `test:ivory-tower`, and
+`build:ivory-tower` operate on the primary worktree's files (and are denied by the sandbox, or
+would silently build the wrong tree). Non-`lerna` checks (`check:ivory-*`, `verify:ivory-cutline`,
+`verify:ivory-phase-gates`, `verify:ivory-reset-authority`, `dependency:policy`, `secret:scan`,
+package-local `tsc`) work fine from a worktree. **Run the `lerna`-based gate and the full
+`verify:ivory-tower` from the primary checkout on a clean branch, or in CI via a PR to `dev`.**
 
 ## 9. Reproduction
 

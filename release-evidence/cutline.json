@@ -158,6 +158,7 @@
     "repositoryBaseline": {
       "branch": "cc/freeze-reset-authority-repository-e4d51a",
       "baseHeadAtSessionStart": "1e45afd5182a58f12205472e4f05f02c5086d44d",
+      "frozenCommit": "63bb20a564b61cea7ee49250de726f452506942e",
       "upstreamBase": {
         "project": "Eclipse Theia",
         "version": "1.74.0",

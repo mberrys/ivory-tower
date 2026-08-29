@@ -20,15 +20,19 @@ The five exit-gate questions, answered from the repository alone:
 
 ## Canonical commit / branch
 
-- Branch `cc/freeze-reset-authority-repository-e4d51a`, atop `origin/dev` @ `1e45afd51`.
-- Session commits (this branch): _<SHAs backfilled after commit>_
-  1. `docs(v1-reset): freeze reset authority manifest and cutline header (IV1-1)`
-  2. `test(v1-reset): add reset-authority validator and success/failure fixtures (IV1-1)`
-  3. `build(ivory-tower): restore dropped cutline gate scripts and wire the reset-authority gate (IV1-2)`
-  4. `docs(v1-reset): capture protected repository baseline (IV1-2)`
-  5. `docs(sessions): record Session 00 and start the v1-roadmap session series`
-  6. `docs(v1-reset): add supersession banners to superseded planning docs`
-  7. `docs(v1-reset): backfill Session 00 gate evidence and frozen commit`
+Branch `cc/freeze-reset-authority-repository-e4d51a`, atop `origin/dev` @ `1e45afd51`. Unpushed.
+
+| # | SHA | Subject |
+|---|---|---|
+| 1 | `63bb20a56` | `docs(v1-reset): freeze reset authority manifest and cutline header (IV1-1)` |
+| 2 | `28343fe36` | `test(v1-reset): add reset-authority validator and success/failure fixtures (IV1-1)` |
+| 3 | `be961cfe2` | `build(ivory-tower): restore dropped cutline gate scripts and wire the reset-authority gate (IV1-2)` |
+| 4 | `41d0335e8` | `docs(v1-reset): capture protected repository baseline (IV1-2)` |
+| 5 | `c8bb3597a` | `docs(sessions): record Session 00 and start the v1-roadmap session series` |
+| 6 | `3a4ad1ab8` | `docs(v1-reset): add supersession banners to superseded planning docs` |
+| 7 | _<this commit>_ | `docs(v1-reset): finalize Session 00 gate evidence and preservation checklist` |
+
+Commit 1 (`63bb20a56…`) is `release-evidence/cutline.json` → `authority.repositoryBaseline.frozenCommit`.
 
 ## Files changed
 
@@ -66,7 +70,13 @@ Verification (Node 24.16.0; npm aligned to the pinned 11.13.0 for this run):
 - `npm run dependency:policy` — tree clean; 7 fixtures rejected
 - `npm run secret:scan` — clean
 - `npm run check:ivory-toolchain` — OK (after `npm i -g npm@11.13.0`)
-- Full `npm run verify:ivory-tower` — see `release-evidence/session-00/gate-run.txt`
+- `npm run check:ivory-install` — OK (after `npm ci` in this worktree)
+- `npm run check:ivory-boundaries` — OK; `npm run format:check:ivory-tower` — OK
+- Full `npm run verify:ivory-tower` at `3a4ad1ab8` — **links 1–9 PASS** (the missing-scripts defect is
+  repaired); **link 10 `typecheck:ivory-tower` fails on a pre-existing environmental condition**
+  (`lerna`/`nx` from a linked worktree targets the primary checkout → sandbox `TS5033 EPERM`; the
+  package compiles cleanly with direct `tsc`); links 15–18 PASS on the clean tree. Full evidence and
+  root-cause in `release-evidence/session-00/gate-run.txt`.
 
 ## Evidence produced
 
@@ -93,21 +103,33 @@ output + gate run). All reproducible from a checkout of this branch per
 
 ## Acceptance criteria still open
 
-- **Full `verify:ivory-tower` local run** — recorded in `gate-run.txt`. Two environment conditions were
-  handled during the session: the pinned npm (`11.13.0`) was installed globally, and the worktree was
-  `npm ci`-installed (it started empty). CI parity on `windows-2022` / `ubuntu-22.04` requires a PR to
-  `dev` (`.github/workflows/ivory-tower.yml` triggers on `stable`/`dev` only) — not done; no push this session.
-- **Any pre-existing `verify:ivory-tower` link failure that is not the missing-scripts defect** (e.g. the
-  known Windows `build:electron` upstream `packages/scm` type errors, or the `yauzl` override edge from
-  Session 03) is recorded in `gate-run.txt`, not chased — Session 00 is documentation/evidence only.
+- **`verify:ivory-tower` links 10–14** (`typecheck:ivory-tower`, `lint:ivory-tower`, lerna `test`,
+  `build:ivory-tower`, `test:ivory-browser`) were **not proven** — they are `lerna`/`nx`-based and
+  cannot run from a linked git worktree (see next section). They exercise **no Session 00 change**.
+  Prove them from the **primary checkout** on a clean branch, or via a **PR to `dev`** so
+  `.github/workflows/ivory-tower.yml` runs the win + ubuntu matrix. Not done this session (no push
+  authorized).
+- **Notion write-back** — not applied (Notion MCP unauthenticated in this session). See "Decisions".
 
 ## Known regressions / risks
 
-- `verify:ivory-tower` was RED at the baseline and is **repaired** here; if CI is still red on this branch
-  after a PR, the fix belongs to a Session 00 repair (`IVS-00A`), not to Session 01.
-- The pinned-npm and worktree-`npm ci` steps are developer-environment actions, not repository changes.
+- **`verify:ivory-tower` was RED at the baseline (missing scripts) and is repaired.** The gate now
+  gets through link 9. If a `lerna`-based link is red once run from the primary checkout / CI for a
+  reason **other** than the missing scripts, that belongs to a Session 00 repair (`IVS-00A`), not to
+  Session 01.
+- **`lerna`/`nx` gates do not run from a linked worktree** (discovered this session, pre-existing):
+  `lerna` resolves package locations to the **primary checkout**, so `typecheck`/`lint`/`test`/`build`
+  and the full `verify:ivory-tower` operate on the wrong tree (and are sandbox-denied). Recorded as
+  `knownBaselineDefects[lerna-nx-worktree-resolution]`; `release-evidence/session-00/repository-baseline.md`
+  §8 carries the guidance. This affects **every** future worktree session.
+- **Developer-environment actions** (not repository changes): `npm i -g npm@11.13.0` (left at the repo
+  pin `11.13.0`; was `11.17.0` — restore with `npm i -g npm@11.17.0` if you want your prior version),
+  and `npm ci` in this worktree (it started with an empty `node_modules`).
 - `release-evidence/cutline.json` `authority` is frozen; Session 01 must extend it with a **sibling**
   `reconciliation` key, never by editing `authority`.
+- Commits used `PRE_COMMIT_ALLOW_NO_CONFIG=1` — the shared `.git/hooks/` carries `pre-commit`
+  framework shims (from your main-worktree setup) but `.pre-commit-config.yaml` is not present or
+  committed in this worktree, so `pre-commit` had nothing to run. No hook was bypassed.
 
 ## Decisions made
 
@@ -118,6 +140,9 @@ output + gate run). All reproducible from a checkout of this branch per
 - Superseded in-repo planning docs get a **pointer banner only**; no content is rewritten. Reconciling their
   substance is Sessions 01–02.
 - The broken `verify:ivory-tower` was repaired in this session (user decision) rather than only recorded.
+- Notion write-back (Implementation Evidence on IV1-1 / IV1-2; set Session 01 Ready) is **applied by
+  Claude with the user's approval** — deferred to an interactive session with the Notion connector
+  authorized. Content is prepared in this handoff. The historical `IV-8` tracker is never touched.
 
 ## Do not assume
 

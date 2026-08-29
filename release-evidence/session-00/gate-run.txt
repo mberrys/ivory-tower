@@ -1,16 +1,72 @@
-# Session 00 (IVS-1) — verify:ivory-tower repair evidence
-#
-# This file is finalized at session end with the verbatim output of the repaired gate run.
-# Until then, the individually verified links are:
-#
-#   node scripts/ivory/verify-reset-authority.mjs     -> PASS
-#   node --test scripts/ivory/reset-authority.spec.mjs -> 25/25 pass
-#   node scripts/ivory/verify-v1-cutline.mjs          -> PASS (130 legacy issues; generated block current)
-#   node --test scripts/ivory/v1-cutline.spec.mjs     -> 7/7 pass
-#   node scripts/ivory/evaluate-phase-gates.mjs       -> exit 0
-#   npm run check:ivory-toolchain                     -> OK (npm aligned to 11.13.0)
-#   npm run check:ivory-boundaries                    -> OK
-#   npm run dependency:policy                         -> tree clean; 7 fixtures rejected
-#   npm run secret:scan                               -> clean
-#
-# <full `npm run verify:ivory-tower` transcript appended at session end>
+# Session 00 (IVS-1) - verify:ivory-tower repair evidence
+# Branch cc/freeze-reset-authority-repository-e4d51a @ 3a4ad1ab8 (commits 1-6 of Session 00)
+# Node 24.16.0; npm aligned to the pinned 11.13.0 for this run.
+# Full transcript: npm run verify:ivory-tower
+
+## Result summary
+
+The missing-scripts defect (knownBaselineDefects[verify-ivory-tower-missing-scripts]) is REPAIRED:
+the four re-added scripts and the two new reset-authority scripts all resolve and pass. The chain
+then stops at typecheck:ivory-tower with a pre-existing ENVIRONMENTAL failure that is unrelated to
+Session 00 - see "Environmental blocker" below.
+
+## Links that ran green (verify:ivory-tower, in order)
+
+  1. check:ivory-toolchain          PASS  - Node 24.16.0, npm 11.13.0
+  2. check:ivory-install            PASS  - @theia/ext-scripts@1.74.0 with theia-ext.js available
+  3. format:check:ivory-tower       PASS  - "All matched files use Prettier code style!"
+  4. check:ivory-boundaries         PASS  - "Ivory Tower module boundaries: OK"
+  5. verify:ivory-cutline           PASS  - 130 legacy tracker issues validated; generated block current
+  6. verify:ivory-phase-gates       PASS  - exit 0; every evidence artifact present (phase FAIL rows
+                                            are informational - phases are not complete)
+  7. test:ivory-cutline             PASS  - 7/7
+  8. verify:ivory-reset-authority   PASS  - release-evidence/cutline.json + docs/v1-reset-manifest.md
+  9. test:ivory-reset-authority     PASS  - 25/25
+
+## Environmental blocker (NOT a Session 00 change, NOT a repository code defect)
+
+  10. typecheck:ivory-tower         FAIL  - @ivory-tower/domain:compile
+      error TS5033: Could not write file
+      'C:/.dev/repos/ivory-tower/packages/ivory-tower-domain/lib/execution.d.ts.map':
+      EPERM: operation not permitted
+
+  Root cause: lerna (v9 / nx) run from a LINKED GIT WORKTREE resolves every package location to
+  the PRIMARY checkout, not to this worktree:
+
+    $ npx lerna list --all --json
+      "@theia/application-manager"  "location": "C:\\.dev\\repos\\ivory-tower\\dev-packages\\application-manager"
+      (i.e. C:\.dev\repos\ivory-tower\..., NOT ...\.claude\worktrees\new-session-1dda69\...)
+
+  So `lerna run compile` tries to write build output into the PRIMARY worktree. Under the Codex
+  sandbox, a write outside this session's worktree is denied -> EPERM on the first .d.ts.map.
+  `nx reset` does not change the resolution; it is lerna's repo-root detection under git worktrees.
+
+  The package itself compiles cleanly IN THIS WORKTREE:
+
+    $ cd packages/ivory-tower-domain && npx tsc --project .        -> exit 0 (writes lib/execution.d.ts.map, 1482 bytes)
+    $ cd packages/ivory-tower-domain && npm run compile            -> exit 0 (ts-clean-dangling && tsc)
+
+  Session 00 modified zero TypeScript and zero package source. The same class of pre-existing,
+  environment-bound failure was recorded (not chased) by Session 03 for the Windows build:electron
+  step.
+
+## Links not reached (all lerna/nx-based, same blocker as #10)
+
+  11. lint:ivory-tower
+  12. test (lerna) for @ivory-tower/* and @theia/ivory-*
+  13. build:ivory-tower
+  14. test:ivory-browser (Playwright)
+
+## Trailing links (verified separately on the clean post-commit tree)
+
+  15. dependency:policy             PASS  - "tree clean; 7 adversarial fixtures still rejected"
+  16. secret:scan                   PASS  - "no sentinel value or credential pattern found"
+  17. git diff --check              exit 0
+  18. git diff --exit-code          exit 0
+
+## CI parity
+
+.github/workflows/ivory-tower.yml runs verify:ivory-tower on windows-2022 and ubuntu-22.04 on
+push / PR to stable or dev only. A PR to dev is required to exercise links 10-14 in a non-worktree,
+non-sandboxed environment. Not done this session (no push authorized). This is the recommended
+close-out for the repair.
