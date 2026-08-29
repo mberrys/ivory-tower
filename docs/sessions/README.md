@@ -5,16 +5,31 @@ V1. Each session is one bounded execution objective drawn from the V1 roadmap; t
 what each session actually did, so the repository — not a planning tool — remains the authoritative
 account of progress.
 
-## Governing sources
+> ⚠️ **V1 planning authority moved (2026-08-29).** The canonical plan is now the unified Notion
+> roadmap, **revision 4**, frozen in [`../v1-reset-manifest.md`](../v1-reset-manifest.md). The
+> operating rules and evidence discipline below still apply; the "Governing sources" and the
+> `0 → 3` gate ladder describe the superseded plan.
 
-- **Session plan (sequencing):** the "Ivory Tower — AI Agent Session Plan — V1 Roadmap" Notion
-  page splits the roadmap into sessions gated **0 → 1 → 2 → 3**.
-- **Critical path (priority):** `../v1-build-vs-open-source.md` (repository map + non-negotiable
-  release gates) and the audit-aligned critical path in the Notion tracker.
-- **Issue detail (requirements/acceptance):** the Notion `IV-#` issue bodies. This repo references
-  work by issue ID; it does not duplicate acceptance criteria.
+## Two session series
 
-The Notion tracker sequences and specifies work. It does **not** substitute for repository evidence.
+| Series | Location | Tracker | Status |
+|---|---|---|---|
+| Original Gate 0 sessions | `session-01-*.md` … `session-04-*.md` (flat) | historical `IV-#` tracker (`3af9cb07…`), `0 → 1 → 2 → 3` gate ladder | Superseded **as a plan**; retained as implementation evidence. |
+| Unified V1 roadmap sessions | `v1-roadmap/ivs-NN-*.md` | Ivory Tower V1 Sessions DB (`676cc270…`, `IVS-#`) + V1 Issues DB (`adde6f38…`, `IV1-#`); authority `../v1-reset-manifest.md` | Active. Start at `v1-roadmap/ivs-00-*`. |
+
+"Session 01" in the old flat files and "Session 01" in the new `v1-roadmap/` series are **different
+sessions** against different trackers. Cite the new ones as `IVS-NN` / `IV1-#` to avoid the collision.
+
+## Governing sources (unified V1 roadmap series)
+
+- **Roadmap + authority chain:** [`../v1-reset-manifest.md`](../v1-reset-manifest.md) §2 and
+  [`../../release-evidence/cutline.json`](../../release-evidence/cutline.json).
+- **Session sequencing:** the "Ivory Tower V1 Sessions" Notion database (`IVS-#`), lowest-numbered
+  Ready session first.
+- **Issue detail (requirements/acceptance):** the "Ivory Tower V1 Issues" Notion database
+  (`IV1-#`). This repo references work by issue ID; it does not duplicate acceptance criteria.
+
+The Notion databases sequence and specify work. They do **not** substitute for repository evidence.
 
 ## Operating rules (enforced here)
 
@@ -32,8 +47,10 @@ The Notion tracker sequences and specifies work. It does **not** substitute for 
 ## Files
 
 - `HANDOFF_TEMPLATE.md` — the required handoff skeleton; copy it per session.
-- `session-NN-*.md` — per-session report and/or handoff (e.g. `session-01-canonical-reconciliation.md`,
-  `session-01-handoff.md`).
+- `session-NN-*.md` — original Gate 0 series (historical `IV-#` tracker), e.g.
+  `session-01-canonical-reconciliation.md`, `session-01-handoff.md`.
+- `v1-roadmap/ivs-NN-*.md` — unified V1 roadmap series (`IVS-#`), e.g.
+  `v1-roadmap/ivs-00-freeze-reset-authority.md`, `v1-roadmap/ivs-00-handoff.md`.
 
 ## Numbering and repairs
 
