@@ -79,5 +79,28 @@ test:ivory-tower / build:ivory-tower / test:ivory-browser) is GREEN on both plat
 missing-scripts repair is proven end-to-end; the local link-10 TS5033 EPERM was confirmed as the
 linked-worktree + Codex-sandbox environmental condition, not a code or Session 00 defect.
 
-(The workflow's separate "Runtime and migration recovery (Session 04)" job - a Docker/Postgres/MinIO/
-Docling runtime proof, not part of verify:ivory-tower - is outside Session 00's scope.)
+## Unmasked pre-existing defect: "Runtime and migration recovery (Session 04)" CI job
+
+Not part of verify:ivory-tower. Added by 1e45afd51 (origin/dev HEAD; Session 04 / IV-21) together
+with scripts/verify-ivory-session-04.mjs. It had NEVER run because its `needs: verify` was red from
+the missing-scripts defect above. Repairing verify:ivory-tower let it run for the first time on
+PR #34, and it failed (CI run 33278502755, job 99170566113):
+
+    Error: Cannot find module '.../packages/ivory-tower-api/lib/start.js'
+    Error: Cannot find module '.../packages/ivory-tower-worker/lib/start.js'
+    Error: API readiness did not become ready. Last error: fetch failed
+    (secondary, teardown only) EACCES: permission denied, rmdir '.ivory-tower/minio'
+
+Root cause: the runtime job does `npm ci` then `verify:ivory-session-04` with no step that compiles
+@ivory-tower/api or @ivory-tower/worker (verify:ivory-session-04 -> migrate:ivory only compiles
+@ivory-tower/infrastructure --include-dependencies, which excludes the app packages).
+
+FIXED on this branch by an Auto-fix commit (not a Session 00 IV1-1/IV1-2 deliverable):
+  - package.json: new `compile:ivory-services` (lerna compile @ivory-tower/api + @ivory-tower/worker).
+  - scripts/verify-ivory-runtime.mjs: run `compile:ivory-services` after `migrate:ivory`, before start.
+  - scripts/verify-ivory-session-04.mjs: tear the checkout .ivory-tower/ state dir down through a
+    container (root-owned bind-mount files) instead of a host rm that hits EACCES on CI.
+Verified by the next CI run on PR #34.
+
+Session 00 changed zero code this job exercises; for everything it touches the branch tree was
+byte-identical to origin/dev @ 1e45afd51 before the Auto-fix commit.

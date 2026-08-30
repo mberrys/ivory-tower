@@ -20,7 +20,7 @@ The five exit-gate questions, answered from the repository alone:
 
 ## Canonical commit / branch
 
-Branch `cc/freeze-reset-authority-repository-e4d51a`, atop `origin/dev` @ `1e45afd51`. Unpushed.
+Branch `cc/freeze-reset-authority-repository-e4d51a`, atop `origin/dev` @ `1e45afd51`; pushed; PR #34 → `dev`.
 
 | # | SHA | Subject |
 |---|---|---|
@@ -30,9 +30,14 @@ Branch `cc/freeze-reset-authority-repository-e4d51a`, atop `origin/dev` @ `1e45a
 | 4 | `41d0335e8` | `docs(v1-reset): capture protected repository baseline (IV1-2)` |
 | 5 | `c8bb3597a` | `docs(sessions): record Session 00 and start the v1-roadmap session series` |
 | 6 | `3a4ad1ab8` | `docs(v1-reset): add supersession banners to superseded planning docs` |
-| 7 | _<this commit>_ | `docs(v1-reset): finalize Session 00 gate evidence and preservation checklist` |
+| 7 | `37ac8d0fc` | `docs(v1-reset): finalize Session 00 gate evidence and preservation checklist` |
+| 8 | `113ff5887` | `docs(v1-reset): record verify:ivory-tower green in CI (PR #34)` |
 
 Commit 1 (`63bb20a56…`) is `release-evidence/cutline.json` → `authority.repositoryBaseline.frozenCommit`.
+
+Two follow-up commits on the same branch are **Auto-fix**, not Session 00 IV1-1/IV1-2 deliverables:
+they repair the pre-existing `Runtime and migration recovery (Session 04)` CI job that this
+session's `verify:ivory-tower` fix unmasked, and correct this handoff.
 
 ## Files changed
 
@@ -108,10 +113,19 @@ output + gate run). All reproducible from a checkout of this branch per
 
 ## Acceptance criteria still open
 
-- None for Session 00. `verify:ivory-tower` links 10–14 (the `lerna`/`nx` links that can't run from a
-  linked worktree) are **proven green in CI** — PR #34, run 33277875398, both platforms SUCCESS.
-- Notion write-back **applied** (IV1-1 / IV1-2 → Done / Satisfied with Implementation Evidence;
-  Session 00 → Done / Complete; Session 01 → Ready).
+- **`verify:ivory-tower` is proven green in CI** — PR #34, run 33277875398, `Verify (windows-2022)`
+  + `Verify (ubuntu-22.04)` SUCCESS (all 18 links, including the `lerna`/`nx` links that cannot run
+  from a linked worktree).
+- **PR #34's `Runtime and migration recovery (Session 04)` job** — a Docker runtime job **not part
+  of `verify:ivory-tower`**, added by `1e45afd51` (Session 04 / IV-21) and never before executed
+  (its `needs: verify` was red from the missing-scripts defect). Session 00's repair unmasked it;
+  it failed because the job never compiled `@ivory-tower/api` / `@ivory-tower/worker` before
+  starting them. **Fixed on this branch by an Auto-fix commit** (`compile:ivory-services` +
+  Session 04 teardown hardening) — recorded here, verified by the next CI run.
+- **Notion write-back is not yet applied** — the Notion connector is unauthenticated in this
+  non-interactive session. Apply it (with per-item approval) from an interactive session:
+  Implementation Evidence on IV1-1 / IV1-2 → Done / Satisfied; Session 00 → Done; **only** Session
+  01 (IVS-2) → Ready; never touch the historical `IV-8` tracker.
 
 ## Known regressions / risks
 
@@ -119,6 +133,13 @@ output + gate run). All reproducible from a checkout of this branch per
   gets through link 9. If a `lerna`-based link is red once run from the primary checkout / CI for a
   reason **other** than the missing scripts, that belongs to a Session 00 repair (`IVS-00A`), not to
   Session 01.
+- **The `Runtime and migration recovery (Session 04)` CI job was broken as authored** (pre-existing
+  in `1e45afd51`; unmasked by this session's `verify:ivory-tower` repair). It ran
+  `verify:ivory-session-04` without ever compiling `@ivory-tower/api` / `@ivory-tower/worker`
+  (`Cannot find module .../lib/start.js`), and its teardown hit `EACCES` on root-owned
+  `.ivory-tower/minio`. Both are fixed on this branch by an Auto-fix commit (new
+  `compile:ivory-services` script wired into `verify-ivory-runtime.mjs`; `verify-ivory-session-04.mjs`
+  tears the state dir down through a container). Not a Session 00 IV1-1/IV1-2 deliverable.
 - **`lerna`/`nx` gates do not run from a linked worktree** (discovered this session, pre-existing):
   `lerna` resolves package locations to the **primary checkout**, so `typecheck`/`lint`/`test`/`build`
   and the full `verify:ivory-tower` operate on the wrong tree (and are sandbox-denied). Recorded as
