@@ -11,9 +11,10 @@ import {
     S3CompatibleObjectStore,
     SystemClockAdapter,
     SystemExecutionIdAdapter,
+    evaluateIvoryReadiness,
     flushIvorySentry,
     initIvorySentry,
-    isIvoryRuntimeReady,
+    logIvoryError,
     readIvoryTowerEnvironment,
     readSentryConfigFromEnvironment,
     validateIvoryTowerEnvironment,
@@ -52,14 +53,12 @@ export async function startApi(): Promise<void> {
         egress,
         ids: new SystemExecutionIdAdapter(),
         clock,
-        readiness: async () => {
-            try {
-                await pool.query('SELECT 1');
-                return await isIvoryRuntimeReady(pool);
-            } catch {
-                return false;
-            }
-        },
+        readiness: async () =>
+            evaluateIvoryReadiness({
+                query: (sql, params) => pool.query(sql, params as unknown[] | undefined),
+                probeObjectStore: () => objectStore.probe(),
+                includeDocling: false,
+            }),
     });
     const port = environment.port;
     await new Promise<void>((resolve, reject) => {
@@ -72,16 +71,16 @@ export async function startApi(): Promise<void> {
         await flushIvorySentry();
     };
     process.once('SIGTERM', () => {
-        shutdown().catch(error => console.error(error));
+        shutdown().catch(error => logIvoryError(error));
     });
     process.once('SIGINT', () => {
-        shutdown().catch(error => console.error(error));
+        shutdown().catch(error => logIvoryError(error));
     });
 }
 
 if (require.main === module) {
     startApi().catch(error => {
-        console.error(error);
+        logIvoryError(error);
         process.exitCode = 1;
     });
 }
