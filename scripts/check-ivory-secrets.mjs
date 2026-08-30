@@ -10,7 +10,8 @@
  *   - the remaining patterns are scanned over Ivory-owned paths only. Upstream Theia's own
  *     hygiene is not this gate's subject, and scanning it would only produce noise.
  *
- * Bundle, log, and telemetry redaction breadth belongs to IV-22 (Session 05), not here.
+ * Bundle, log, telemetry, and audit-shaped redaction is the IV-22 contract
+ * (docs/iv-22-deployment-secrets.md), not this repository scan.
  *
  * Flags:
  *   --root <dir>   scan a different tree (used by the adversarial fixtures)

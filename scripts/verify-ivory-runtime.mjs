@@ -26,12 +26,43 @@ const runtimeEnv = {
     PORT: '4100',
 };
 
+function quoteCommandArgument(value) {
+    return /[\s"]/u.test(value) ? `"${value.replaceAll('"', '\\"')}"` : value;
+}
+
+function npmInvocation(args) {
+    if (process.platform !== 'win32') {
+        return { command: 'npm', args };
+    }
+    return {
+        command: process.env.ComSpec ?? 'cmd.exe',
+        args: ['/d', '/s', '/c', `npm.cmd ${args.map(quoteCommandArgument).join(' ')}`],
+    };
+}
+
 function runDocker(args) {
     execFileSync(dockerCommand, args, { cwd: root, stdio: 'inherit' });
 }
 
 function runNpm(args) {
-    execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd: root, env: runtimeEnv, stdio: 'inherit' });
+    const invocation = npmInvocation(args);
+    execFileSync(invocation.command, invocation.args, { cwd: root, env: runtimeEnv, stdio: 'inherit' });
+}
+
+function startNpm(args) {
+    const invocation = npmInvocation(args);
+    return spawn(invocation.command, invocation.args, { cwd: root, env: runtimeEnv, stdio: 'inherit' });
+}
+
+function stopProcess(child) {
+    if (child.pid === undefined || child.exitCode !== null) {
+        return;
+    }
+    if (process.platform === 'win32') {
+        execFileSync('taskkill.exe', ['/pid', String(child.pid), '/t', '/f'], { stdio: 'ignore' });
+        return;
+    }
+    child.kill();
 }
 
 async function waitFor(label, check, timeoutMs = 180_000) {
@@ -60,10 +91,14 @@ async function getExecution(baseUrl, id) {
 
 async function waitForTerminal(baseUrl, id) {
     let latest;
-    await waitFor(`execution ${id}`, async () => {
-        latest = await getExecution(baseUrl, id);
-        return ['succeeded', 'failed', 'cancelled'].includes(latest.status);
-    }, 300_000);
+    await waitFor(
+        `execution ${id}`,
+        async () => {
+            latest = await getExecution(baseUrl, id);
+            return ['succeeded', 'failed', 'cancelled'].includes(latest.status);
+        },
+        300_000,
+    );
     return latest;
 }
 
@@ -83,11 +118,11 @@ async function main() {
     runNpm(['run', 'migrate:ivory']);
     runNpm(['run', 'compile:ivory-services']);
 
-    const api = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-api'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });
-    const worker = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'start:ivory-worker'], { cwd: root, env: runtimeEnv, stdio: 'inherit' });
+    const api = startNpm(['run', 'start:ivory-api']);
+    const worker = startNpm(['run', 'start:ivory-worker']);
     const stopProcesses = () => {
-        api.kill();
-        worker.kill();
+        stopProcess(api);
+        stopProcess(worker);
     };
     process.once('SIGINT', stopProcesses);
     process.once('SIGTERM', stopProcesses);
@@ -95,6 +130,17 @@ async function main() {
     try {
         const baseUrl = 'http://127.0.0.1:4100';
         await waitFor('API readiness', async () => (await fetch(`${baseUrl}/health/ready`)).ok);
+        const readyBody = await fetch(`${baseUrl}/health/ready`).then(response => response.json());
+        const requiredChecks = ['postgres', 'schema', 'queue', 'objectStore'];
+        for (const name of requiredChecks) {
+            const check = Array.isArray(readyBody.checks) ? readyBody.checks.find(entry => entry.name === name) : undefined;
+            if (check?.status !== 'ok') {
+                throw new Error(`Ready check ${name} was ${check?.status ?? 'missing'}: ${JSON.stringify(readyBody)}`);
+            }
+        }
+        if (readyBody.status !== 'ready' && readyBody.status !== 'degraded') {
+            throw new Error(`API readiness status was ${JSON.stringify(readyBody.status)}.`);
+        }
         const content = Buffer.from('# Ivory Tower runtime proof\n\nA public, reusable test source.');
         const upload = await fetch(`${baseUrl}/v1/sources`, {
             method: 'POST',
@@ -118,7 +164,12 @@ async function main() {
             headers: { 'content-type': 'application/json', 'idempotency-key': 'runtime-proof-1' },
             body: JSON.stringify({
                 kind: 'convert',
-                input: { contentHash: source.contentHash, filename: 'runtime-proof.md', contentType: 'text/markdown', parserVersion: 'docling-serve-v1.21.0' },
+                input: {
+                    contentHash: source.contentHash,
+                    filename: 'runtime-proof.md',
+                    contentType: 'text/markdown',
+                    parserVersion: 'docling-serve-v1.21.0',
+                },
             }),
         });
         if (command.status !== 202) {
@@ -139,18 +190,30 @@ async function main() {
             const interrupted = await fetch(`${baseUrl}/v1/executions`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json', 'idempotency-key': 'runtime-proof-interrupt' },
-                body: JSON.stringify({ kind: 'convert', input: { contentHash: source.contentHash, filename: 'runtime-proof.md', contentType: 'text/markdown' } }),
+                body: JSON.stringify({
+                    kind: 'convert',
+                    input: { contentHash: source.contentHash, filename: 'runtime-proof.md', contentType: 'text/markdown' },
+                }),
             }).then(response => response.json());
-            await waitFor(`execution ${interrupted.id} running`, async () => (await getExecution(baseUrl, interrupted.id)).status === 'running', 60_000);
+            await waitFor(
+                `execution ${interrupted.id} running`,
+                async () => (await getExecution(baseUrl, interrupted.id)).status === 'running',
+                60_000,
+            );
             runDocker([...compose, 'stop', 'docling']);
             const interruptedState = await waitForTerminal(baseUrl, interrupted.id);
             runDocker([...compose, 'start', 'docling']);
-            console.log(`IV-14 interruption observed: execution ${interrupted.id} ended ${interruptedState.status}; Docling restarted for recovery.`);
+            console.log(
+                `IV-14 interruption observed: execution ${interrupted.id} ended ${interruptedState.status}; Docling restarted for recovery.`,
+            );
 
             const cancelled = await fetch(`${baseUrl}/v1/executions`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json', 'idempotency-key': 'runtime-proof-cancel' },
-                body: JSON.stringify({ kind: 'convert', input: { contentHash: source.contentHash, filename: 'runtime-proof.md', contentType: 'text/markdown' } }),
+                body: JSON.stringify({
+                    kind: 'convert',
+                    input: { contentHash: source.contentHash, filename: 'runtime-proof.md', contentType: 'text/markdown' },
+                }),
             }).then(response => response.json());
             await fetch(`${baseUrl}/v1/executions/${cancelled.id}`, { method: 'DELETE' });
             const cancelledState = await waitForTerminal(baseUrl, cancelled.id);

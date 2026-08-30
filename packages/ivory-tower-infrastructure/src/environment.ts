@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0
 
 import { DeploymentTopology } from '@ivory-tower/contracts';
+import { validateIvoryDeploymentProfile } from './deployment-profiles';
 
 export type IvoryTowerRole = 'library' | 'api' | 'worker' | 'browser';
 export type IvoryTowerStorageMode = 'filesystem' | 's3';
@@ -131,6 +132,7 @@ export function validateIvoryTowerEnvironment(env: IvoryTowerEnvironment): void 
     if (env.storage.mode === 'filesystem' && env.ivoryTowerEnv !== 'local') {
         errors.push('Filesystem object storage is only allowed in the local profile.');
     }
+    validateIvoryDeploymentProfile(env, errors);
     if (env.storage.mode === 's3') {
         if (env.storage.bucket === undefined || env.storage.endpoint === undefined) {
             errors.push('S3 storage requires IVORY_S3_BUCKET and IVORY_S3_ENDPOINT.');

@@ -10,6 +10,7 @@ import {
     assertIvoryRuntimeReady,
     flushIvorySentry,
     initIvorySentry,
+    logIvoryError,
     readIvoryTowerEnvironment,
     readSentryConfigFromEnvironment,
     startGraphileWorker,
@@ -50,16 +51,16 @@ export async function startWorker(handlers: ExecutionHandlerRegistry = new Map()
         await flushIvorySentry();
     };
     process.once('SIGTERM', () => {
-        shutdown().catch(error => console.error(error));
+        shutdown().catch(error => logIvoryError(error));
     });
     process.once('SIGINT', () => {
-        shutdown().catch(error => console.error(error));
+        shutdown().catch(error => logIvoryError(error));
     });
 }
 
 if (require.main === module) {
     startWorker().catch(error => {
-        console.error(error);
+        logIvoryError(error);
         process.exitCode = 1;
     });
 }

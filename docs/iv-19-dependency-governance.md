@@ -100,10 +100,9 @@ Every image reference in `infra/docker-compose.yml`, `.env.example`,
   `nightly` fail unconditionally, in any environment.
 - **`environment: "runtime"`** requires an `@sha256:` digest. Docling is pinned this way, and
   environment validation rejects a mutable `DOCLING_IMAGE` at startup independently of this gate.
-- **`environment: "local"`** images may carry a tag only with a recorded `owner`, `reason`,
-  `expires`, and `compensatingControl`. An expired entry fails the gate. Session 04 (IV-21) pinned
-  the three local Compose images — `pgvector/pgvector:pg16`, MinIO server, and MinIO client — so
-  none of them currently use that exception path.
+- **`environment: "local"`** also requires an `@sha256:` digest. The Compose PostgreSQL/pgvector,
+  MinIO server, and MinIO client references are resolved manifest digests; the verification gate
+  therefore recreates the same local runtime rather than trusting a release tag to remain stable.
 
 Digest-pinning MinIO does **not** clear the unreviewed AGPL-3.0 licence question in §13. Those
 images remain local-dev/test infrastructure only.
@@ -147,8 +146,9 @@ The scan covers files that are **staged but not yet committed** (`git ls-files -
 Allowlist entries are exact paths with a reason, an owner, and the specific pattern ids they
 suppress — never a directory wildcard.
 
-**Boundary:** this is a repository and build-output scan. Redaction across bundles, logs,
-telemetry, and audit events is **IV-22 (Session 05)** and is not claimed here.
+**Boundary:** this is a repository and build-output scan. Redaction across process logs,
+HTTP error bodies, telemetry, and audit-shaped payloads is the **IV-22 contract**
+(`docs/iv-22-deployment-secrets.md`) and is not claimed here.
 
 ## 9. Adversarial fixtures
 

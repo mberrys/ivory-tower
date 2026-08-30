@@ -236,7 +236,7 @@
   "secretScan": {
     "sentinel": "IVORY_SENTINEL_SECRET_DO_NOT_COMMIT_4f2b8c1d9e",
     "localDevelopmentPasswords": ["ivory", "ivory-development-only", "postgres", "password"],
-    "note": "Critical patterns are scanned across the whole repository. The remaining patterns are scanned over the Ivory-owned surface only; upstream Theia hygiene is not this gate's subject. Bundle, log, and telemetry breadth is IV-22 (Session 05).",
+    "note": "Critical patterns are scanned across the whole repository. The remaining patterns are scanned over the Ivory-owned surface only; upstream Theia hygiene is not this gate's subject. Runtime log, telemetry, and audit-shaped redaction is the IV-22 contract in docs/iv-22-deployment-secrets.md.",
     "criticalPatterns": ["sentinel", "aws-access-key", "private-key", "github-token", "sentry-dsn"],
     "scanPaths": [
       "packages/ivory-*/**",
@@ -271,6 +271,12 @@
         "patterns": ["postgres-url"]
       },
       {
+        "path": "scripts/verify-ivory-session-04.mjs",
+        "reason": "Local Session 04 runtime and migration-recovery verifier using the same Compose development credentials.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
         "path": "packages/ivory-tower-infrastructure/src/sentry.spec.ts",
         "reason": "Fabricated connection string used to assert that Sentry scrubs database URLs out of event payloads; the test would be meaningless without a password-shaped value.",
         "owner": "Engineering",
@@ -279,6 +285,24 @@
       {
         "path": "packages/ivory-tower-infrastructure/src/package.spec.ts",
         "reason": "Environment validation test asserting that a fabricated connection string is rejected before startup.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
+        "path": "packages/ivory-tower-infrastructure/src/deployment-profiles.spec.ts",
+        "reason": "Profile-contract tests plant non-local postgres URLs to prove staging/production reject local defaults and accept injected secrets.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
+        "path": "packages/ivory-tower-infrastructure/src/redact.spec.ts",
+        "reason": "Adversarial redaction tests plant database URLs and Bearer tokens so the shared redactor is proven, not described.",
+        "owner": "Engineering",
+        "patterns": ["postgres-url"]
+      },
+      {
+        "path": "packages/ivory-tower-api/src/package.spec.ts",
+        "reason": "HTTP 500 test plants a database URL in an thrown Error to prove the generic internal_error body does not echo it.",
         "owner": "Engineering",
         "patterns": ["postgres-url"]
       },
@@ -368,6 +392,5 @@
       "compensatingControl": "Transitive dependency of engine.io-client via upstream Theia; recorded in the SBOM and flagged in the notices artifact as licence-unconfirmed."
     }
   ],
-
   "advisoryExceptions": []
 }

@@ -3,6 +3,7 @@
 import * as Sentry from '@sentry/node';
 import type { Breadcrumb, ErrorEvent, Event, EventHint } from '@sentry/node';
 import { readIvoryTowerEnvironment } from './environment';
+import { IVORY_REDACTED, containsSensitiveValue, redactSecrets, redactText } from './redact';
 
 export type IvorySentryService = 'ivory-api' | 'ivory-worker';
 
@@ -14,12 +15,6 @@ export interface IvorySentryConfig {
     readonly tracesSampleRate: number;
     readonly service: IvorySentryService;
 }
-
-const REDACTED = '[Filtered]';
-
-const SENSITIVE_KEY_PATTERN =
-    // eslint-disable-next-line max-len
-    /(?:pass(?:word)?|secret|token|api[_-]?key|authorization(?:evidence)?|credential|dsn|connection(?:string)?|access[_-]?key(?:id)?|secret[_-]?access[_-]?key|session|cookie|bearer|passage|content(?:hash)?|source(?:bytes|content)?|body|payload|prompt|license|evidence)$/i;
 
 let initialized = false;
 
@@ -78,7 +73,7 @@ export function captureIvoryException(error: unknown, context?: Readonly<Record<
     }
     Sentry.withScope(scope => {
         if (context !== undefined) {
-            const scrubbed = scrubValue(context);
+            const scrubbed = redactSecrets(context);
             // eslint-disable-next-line no-null/no-null
             if (scrubbed !== null && typeof scrubbed === 'object' && !Array.isArray(scrubbed)) {
                 scope.setContext('ivory', scrubbed as Record<string, unknown>);
@@ -90,10 +85,11 @@ export function captureIvoryException(error: unknown, context?: Readonly<Record<
             }
         }
         if (error instanceof Error) {
-            Sentry.captureException(error);
+            const redacted = redactSecrets(error);
+            Sentry.captureException(redacted instanceof Error ? redacted : new Error(IVORY_REDACTED));
             return;
         }
-        Sentry.captureException(new Error(typeof error === 'string' ? error : 'Unknown Ivory Tower error'));
+        Sentry.captureException(new Error(typeof error === 'string' ? redactText(error) : 'Unknown Ivory Tower error'));
     });
 }
 
@@ -123,13 +119,19 @@ function scrubEventPayload(event: Event, _hint?: EventHint): Event | null {
             .filter((breadcrumb): breadcrumb is Breadcrumb => breadcrumb !== null);
     }
     if (event.extra !== undefined) {
-        event.extra = scrubValue(event.extra) as Record<string, unknown>;
+        event.extra = redactSecrets(event.extra) as Record<string, unknown>;
     }
     if (event.contexts !== undefined) {
-        event.contexts = scrubValue(event.contexts) as Record<string, Record<string, unknown>>;
+        event.contexts = redactSecrets(event.contexts) as Record<string, Record<string, unknown>>;
     }
     if (event.user !== undefined) {
-        event.user = scrubValue(event.user) as Event['user'];
+        event.user = redactSecrets(event.user) as Event['user'];
+    }
+    if (event.exception?.values !== undefined) {
+        event.exception.values = event.exception.values.map(value => ({
+            ...value,
+            value: typeof value.value === 'string' ? redactText(value.value) : value.value,
+        }));
     }
     return event;
 }
@@ -137,10 +139,10 @@ function scrubEventPayload(event: Event, _hint?: EventHint): Event | null {
 export function scrubSentryBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
     const scrubbed: Breadcrumb = { ...breadcrumb };
     if (scrubbed.data !== undefined) {
-        scrubbed.data = scrubValue(scrubbed.data) as Record<string, unknown>;
+        scrubbed.data = redactSecrets(scrubbed.data) as Record<string, unknown>;
     }
     if (typeof scrubbed.message === 'string' && containsSensitiveValue(scrubbed.message)) {
-        scrubbed.message = REDACTED;
+        scrubbed.message = IVORY_REDACTED;
     }
     return scrubbed;
 }
@@ -183,63 +185,16 @@ function parseSampleRate(value: string | undefined): number {
 function scrubRequest(request: NonNullable<Event['request']>): NonNullable<Event['request']> {
     const scrubbed = { ...request };
     if (scrubbed.headers !== undefined) {
-        scrubbed.headers = scrubValue(scrubbed.headers) as Record<string, string>;
+        scrubbed.headers = redactSecrets(scrubbed.headers) as Record<string, string>;
     }
     if (scrubbed.cookies !== undefined) {
-        scrubbed.cookies = Object.fromEntries(Object.keys(scrubbed.cookies).map(key => [key, REDACTED]));
+        scrubbed.cookies = Object.fromEntries(Object.keys(scrubbed.cookies).map(key => [key, IVORY_REDACTED]));
     }
     if (scrubbed.data !== undefined) {
-        scrubbed.data = REDACTED;
+        scrubbed.data = IVORY_REDACTED;
     }
     if (scrubbed.query_string !== undefined) {
-        scrubbed.query_string = REDACTED;
+        scrubbed.query_string = IVORY_REDACTED;
     }
     return scrubbed;
-}
-
-function scrubValue(value: unknown, depth = 0): unknown {
-    if (depth > 8) {
-        return REDACTED;
-    }
-    // eslint-disable-next-line no-null/no-null
-    if (value === null || value === undefined) {
-        return value;
-    }
-    if (typeof value === 'string') {
-        return containsSensitiveValue(value) ? REDACTED : value;
-    }
-    if (typeof value !== 'object') {
-        return value;
-    }
-    if (Array.isArray(value)) {
-        return value.map(entry => scrubValue(entry, depth + 1));
-    }
-    const record = value as Record<string, unknown>;
-    const scrubbed: Record<string, unknown> = {};
-    for (const [key, entry] of Object.entries(record)) {
-        if (isSensitiveKey(key)) {
-            scrubbed[key] = REDACTED;
-            continue;
-        }
-        scrubbed[key] = scrubValue(entry, depth + 1);
-    }
-    return scrubbed;
-}
-
-function isSensitiveKey(key: string): boolean {
-    const normalized = key.replace(/[-\s]/g, '_');
-    return SENSITIVE_KEY_PATTERN.test(normalized) || normalized.startsWith('x_source_');
-}
-
-function containsSensitiveValue(value: string): boolean {
-    if (/postgres(?:ql)?:\/\//i.test(value)) {
-        return true;
-    }
-    if (/https?:\/\/[^:@\s]{1,256}:[^@\s]{1,256}@/i.test(value)) {
-        return true;
-    }
-    if (/^Bearer\s+/i.test(value)) {
-        return true;
-    }
-    return false;
 }

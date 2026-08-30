@@ -46,7 +46,6 @@ services:
     environment:
       DOCLING_SERVE_HOST: 0.0.0.0
       DOCLING_SERVE_PORT: 5001
-
 # The API and worker run from the workspace so package tests and source maps
 # remain available. Start them after `npm run migrate:ivory` with the root
 # `start:ivory-api` and `start:ivory-worker` scripts.
