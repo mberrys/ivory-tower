@@ -23,7 +23,7 @@ import {
     toExecutionResponse,
 } from '@ivory-tower/contracts';
 import { isTerminalExecutionStatus } from '@ivory-tower/domain';
-import { captureIvoryException } from '@ivory-tower/infrastructure';
+import { captureIvoryException, IvoryReadyReport, isIvoryReadyHttpOk } from '@ivory-tower/infrastructure';
 
 export interface ApiServerDependencies {
     readonly executionService: ExecutionService;
@@ -34,7 +34,7 @@ export interface ApiServerDependencies {
     readonly egress?: EgressPolicyPort;
     readonly ids?: ExecutionIdPort;
     readonly clock?: ClockPort;
-    readonly readiness?: () => Promise<boolean>;
+    readonly readiness?: () => Promise<IvoryReadyReport>;
     readonly maxBodyBytes?: number;
 }
 
@@ -197,8 +197,9 @@ export function createApiServer(dependencies: ApiServerDependencies): Server {
                 return;
             }
             if (method === 'GET' && url.pathname === '/health/ready') {
-                const ready = dependencies.readiness === undefined ? true : await dependencies.readiness();
-                sendJson(response, ready ? 200 : 503, { status: ready ? 'ready' : 'unavailable' });
+                const report: IvoryReadyReport =
+                    dependencies.readiness === undefined ? { status: 'ready', checks: [] } : await dependencies.readiness();
+                sendJson(response, isIvoryReadyHttpOk(report) ? 200 : 503, report);
                 return;
             }
             if (method === 'POST' && url.pathname === '/v1/executions') {
