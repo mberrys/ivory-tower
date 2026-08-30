@@ -3,7 +3,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -119,10 +119,51 @@ function assertSessionStateDirectory() {
     }
 }
 
+async function pinnedPostgresImage() {
+    const composeText = await readFile(composeFile, 'utf8');
+    const match = composeText.match(/^ {4}image: (pgvector\/pgvector:pg16@sha256:[a-f0-9]{64})$/m);
+    if (match?.[1] === undefined) {
+        throw new Error('Unable to read the digest-pinned Postgres image from infra/docker-compose.yml.');
+    }
+    return match[1];
+}
+
+async function directoryExists(directory) {
+    try {
+        return (await stat(directory)).isDirectory();
+    } catch (error) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+            return false;
+        }
+        throw error;
+    }
+}
+
+async function removeCheckoutLocalStateDirectory() {
+    assertSessionStateDirectory();
+    if (!(await directoryExists(stateDirectory))) {
+        return;
+    }
+    // Postgres and MinIO write bind-mount files as root. Delete those children
+    // through the already digest-pinned Postgres image so teardown never runs
+    // host `rm` against another path and does not require sudo.
+    runDocker([
+        'run',
+        '--rm',
+        '--volume',
+        `${stateDirectory}:/ivory-tower-state`,
+        await pinnedPostgresImage(),
+        'bash',
+        '-lc',
+        'find /ivory-tower-state -mindepth 1 -maxdepth 1 -exec rm -rf {} +',
+    ]);
+    await rm(stateDirectory, { recursive: true, force: true });
+}
+
 async function cleanLocalState() {
     assertSessionStateDirectory();
     runDocker([...compose, 'down', '--remove-orphans']);
-    await rm(stateDirectory, { recursive: true, force: true });
+    await removeCheckoutLocalStateDirectory();
 }
 
 async function writeEvidence(name, value) {
@@ -265,6 +306,7 @@ async function main() {
     await rm(artifactDirectory, { recursive: true, force: true });
     await cleanLocalState();
     localRuntimePrepared = true;
+    await mkdir(stateDirectory, { recursive: true });
     runDocker([...compose, 'up', '-d', '--wait', 'postgres', 'object-store', 'docling']);
     runDocker([...compose, 'up', '-d', 'object-store-init']);
 

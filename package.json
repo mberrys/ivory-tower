@@ -84,6 +84,7 @@
     "start:ivory-worker": "npm --workspace @ivory-tower/worker run start",
     "verify:ivory-runtime": "node scripts/verify-ivory-runtime.mjs",
     "verify:ivory-session-04": "node scripts/verify-ivory-session-04.mjs",
+    "compile:ivory-services": "npx lerna run compile --scope @ivory-tower/api --scope @ivory-tower/worker --include-dependencies",
     "migrate:ivory": "npx lerna run compile --scope @ivory-tower/infrastructure --include-dependencies && npm --workspace @ivory-tower/infrastructure run migrate",
     "build:browser-only": "cd examples/browser-only && npm run build",
     "build:electron": "cd examples/electron && npm run build",

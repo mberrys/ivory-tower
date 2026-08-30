@@ -116,6 +116,7 @@ async function main() {
     }
     runDocker([...compose, 'up', '-d', 'postgres', 'object-store', 'object-store-init', 'docling']);
     runNpm(['run', 'migrate:ivory']);
+    runNpm(['run', 'compile:ivory-services']);
 
     const api = startNpm(['run', 'start:ivory-api']);
     const worker = startNpm(['run', 'start:ivory-worker']);
