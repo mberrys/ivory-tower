@@ -1,113 +1,80 @@
-# Session 02 Handoff — reconstruction
+# Session 02 Handoff
 
-> **This is a reconstruction, not a first-hand record.** Session 02's objective (IV-15) was
-> satisfied by work that landed **before** the session plan and this handoff convention existed, so
-> no agent wrote a handoff at the time. Session 03 reconstructed this from repository evidence at
-> `40d48b0` because operating rule 5 requires a handoff per session and Session 03 needed a stated
-> prerequisite to build on.
->
-> **What this document is:** an inventory of what the repository demonstrably contains.
-> **What it is not:** evidence that IV-15's acceptance criteria were reviewed, that the
-> verification sequence was executed from a clean checkout, or that anyone signed off. Read every
-> "delivered" below as "present in the tree", never as "accepted".
+> Session 03 later wrote a [reconstruction](./session-02-handoff-reconstruction.md) of IV-15 scaffold
+> inventory at `40d48b0` because this first-hand handoff had not yet merged. That reconstruction
+> remains useful as an IV-15 inventory; this document is the contemporaneous record of what Session
+> 02 actually did.
 
 ## Objective completed
 
-Deterministic scaffold and quality gates (IV-15, Gate 0): Ivory-owned packages, module-boundary
-enforcement, a pinned toolchain, and one aggregate verification entry point for the browser-first
-Theia product scaffold.
+Reconciled the merged parallel Ivory Tower foundation (PR #13) against the roadmap and **root-caused a
+regression that had turned the canonical `stable` gate red**. IV-15 was found already implemented
+and CI-green via PR #13; this session did not rebuild it. Instead it diagnosed the dependabot #15
+breakage of the inherited Theia Electron build and recorded the reconciliation gaps.
 
 ## Canonical commit / branch
 
-Reconstructed at `stable` @ `40d48b0`. The work was not a single session commit. It arrived across
-`stable` between 2026-08-02 and 2026-08-14, principally:
-
-- `95e7f86` (2026-08-02) — `feat(ivory-tower): scaffold browser assembly and quality gates for IV-15`
-- `160ee5a` (2026-08-03) — `Complete Ivory Tower V1 foundations` (66 files, +2504/-279): boundary
-  checker, toolchain verifier, Prettier config, Compose profile, Ivory CI workflow, runtime
-  verifier, development contract
-- `f312f02` (2026-08-04) — Cursor Cloud bootstrap and Sentry observability; `.env.example`
-- `cc6db16`, `4bfda35`, `0b19d53` (2026-08-14) — ReDoS regex, ESLint, formatting/line-ending, and
-  dependency-policy repairs
-
-All are ancestors of `HEAD`.
+- Anchor: `stable` @ `40d48b06b579c5301b97401a3ba11067a28ffbd6`.
+- Work branch: `claude/ivory-tower-next-steps-my1bt8` (re-cut from `stable`; Session 01 is merged).
 
 ## Files changed
 
-Reconstructed inventory rather than a diff list:
+- `docs/sessions/session-02-reconciliation.md` — the reconciliation + repair report.
+- `docs/sessions/session-02-handoff.md` — this handoff.
 
-- **Ten Ivory workspaces** under `packages/`: `ivory-identity` (`@theia/ivory-identity`) plus
-  `ivory-tower-{contracts,domain,adapters,application,content-policy,infrastructure,health,api,worker}`.
-- **Browser assembly**: `examples/ivory-tower-browser` (`@ivory-tower/example-browser`), with no
-  `@theia/plugin-ext` dependency — ADR-001's plugin-host constraint.
-- **Gates**: `scripts/check-ivory-boundaries.mjs` + `scripts/ivory-boundary-fixtures.json`,
-  `scripts/verify-ivory-toolchain.mjs`, `configs/ivory-toolchain.json`,
-  `configs/ivory-prettier.json`, `configs/ivory-dependency-policy.json`,
-  `scripts/check-ivory-dependency-policy.mjs`.
-- **Runtime**: `infra/docker-compose.yml`, `scripts/verify-ivory-runtime.mjs`, `.env.example`,
-  `packages/ivory-tower-infrastructure/migrations/{001_runtime_topology,002_source_rights}.sql`.
-- **CI**: `.github/workflows/ivory-tower.yml` (Windows + Ubuntu matrix).
-- **Docs**: `docs/ivory-tower-development.md`, `AGENTS.md`.
+This PR originally proposed reverting `diff` in `packages/scm/package.json` (`^8.0.3` → `^5.2.2`).
+That approach was **superseded on `stable` by PR #21**, which updated `diff-computer.ts` to satisfy
+`diff@8`'s generic `Diff` base class while keeping the dependabot bump. The regression repair is
+therefore already on `stable`; this PR now lands only the Session 02 documentation.
 
 ## Tests and commands run
 
-**Unknown.** No contemporaneous record exists. What can be established from the tree is only that
-the commands *exist* and are wired into `verify:ivory-tower`: toolchain check, format check,
-boundary check, typecheck, lint, package tests, browser build, browser Playwright test, dependency
-policy, `git diff --check`, and a clean-tree assertion.
-
-Session 03 independently re-ran `node scripts/check-ivory-boundaries.mjs` at `40d48b0`: it passes.
+- `mcp github actions_list / get_job_logs` — CI evidence: `ivory-tower.yml` run #9 (`2ee6a44`)
+  **success**; run #11 (`40d48b0`) **failure**, isolated to the Windows Electron compatibility step
+  compiling `@theia/scm/.../diff-computer.ts` against `diff@8` (TS2707/TS4112/TS2351).
+- `node scripts/verify-lockfile-platforms.js` → libc coverage OK; allowScripts in sync.
+- Local `verify:ivory-tower` could not complete: `npm ci` fails building `native-keymap` (node-gyp)
+  in this container, leaving `@theia/*` unlinked. Non-native gates that ran passed (toolchain,
+  Prettier, boundaries, dependency policy).
 
 ## Evidence produced
 
-The gate scripts and CI workflow themselves. No evidence bundle, no recorded clean-checkout run,
-and no recorded environment — which is the substantive gap this reconstruction exposes.
+`docs/sessions/session-02-reconciliation.md`, with the CI run IDs and the exact failing step/error.
 
 ## Acceptance criteria passed
 
-Not determinable from the repository. The following are **present**, which is a weaker claim:
-
-- An Ivory-owned browser entry point that does not load a runtime plugin host.
-- Layered boundary enforcement barring browser and domain code from DB, queue, parser, provider,
-  and storage internals, with declarative negative fixtures.
-- A pinned toolchain (Node 24.16.0 / npm 11.13.0) asserted before the gate runs.
-- `.gitignore` rules covering `.env`, `*.db`, `data/`, and `.ivory-tower/`.
+- Regression root-caused to a single dependency bump and its type-API mismatch in `@theia/scm`.
+- IV-15 confirmed satisfied by PR #13's green CI run (not by prose).
+- Repair landed on `stable` via PR #21 (code fix for `diff@8`, not the revert proposed here).
 
 ## Acceptance criteria still open
 
-- **No recorded clean-checkout verification run.** IV-15's central acceptance criterion is that the
-  sequence runs from a clean checkout with the environment and commit recorded. No such record
-  exists in the repository.
-- The Docker-dependent integration path (`verify-ivory-runtime.mjs`) has no recorded successful
-  execution; `docs/ivory-tower-development.md` states IV-14 must stay open until it does.
+- Gate 0 not closed: the Docker/PostgreSQL/MinIO/Docling integration gate remains open per the dev
+  doc ("IV-14 must remain open").
 
 ## Known regressions / risks
 
-Three repair commits on 2026-08-14 (`cc6db16`, `4bfda35`, `0b19d53`) fixed a ReDoS-prone regex,
-ESLint errors in `sentry.ts`, formatting drift, Windows CI line endings, and a dependency-policy
-rejection of `@sentry/node`. That sequence suggests the gate was not green when the scaffold
-first landed.
+- None outstanding from the dependabot #15 `diff` bump after PR #21 merged.
 
 ## Decisions made
 
-Not recoverable from the repository. The decisions **visible** in the tree are ADR-002's:
-Graphile Worker, PostgreSQL + pgvector, S3-compatible object storage, forward-only `ivory-migrate`,
-no application plugin host.
+- Session 02 chose a `diff` revert; PR #21 chose a `diff-computer.ts` fix instead (keeps the
+  security-related dependency bump path open). Both are valid; `stable` took the code-fix route.
+- Do not rename/relocate the `@ivory-tower/*` scaffold or the orphaned `@theia/ivory-identity`, and
+  do not change the Node-24 toolchain pin — these are owner/architectural decisions, surfaced in the
+  reconciliation report as gaps.
 
 ## Do not assume
 
-- Do **not** read this reconstruction as sign-off on IV-15.
-- Do **not** assume the aggregate gate has ever passed from a clean checkout on the pinned
-  toolchain. Treat CI as the first authoritative run.
-- Do **not** assume the Compose/Docling integration path has been exercised.
+- A green `verify:ivory-tower` does **not** mean Gate 0 is closed (integration gate still open).
+- `@theia/ivory-identity` (IV‑17) is **not** wired into the `@ivory-tower/*` product runtime yet.
+- Lockfile edits must be made on Node 22 (npm 10); the container cannot run the full native install.
 
 ## Exact prerequisite for next session
 
-Session 03 required Ivory-owned packages, a boundary checker, and a dependency-policy entry point
-to extend. All three are present at `40d48b0`.
+`ivory-tower.yml` green on `stable`. Session 03 (IV‑19) proceeded on that basis after PR #21.
 
 ## Recommended next session
 
-**Session 03 — Dependency, licensing, SBOM, and pinning gate (IV-19)**, executed on branch
-`claude/session-3-q9tc4o`. Session 03 should record the missing clean-checkout evidence as an open
-Gate 0 item rather than closing it, since IV-15 is not its objective.
+Session 03 — IV‑19 (dependency policy, licensing, SBOM, pinning), plus explicit owner decisions on
+the toolchain pin and the IV‑17 ↔ `@ivory-tower/*` identity reconciliation.

@@ -93,6 +93,7 @@ disagree, the specification is the contract and the implementation is the defect
 | [`docs/iv-102-landscape-review.md`](docs/iv-102-landscape-review.md) | IV-102 | Landscape review protocol, classified source register, findings, and the decision ledger that binds product claims |
 | [`docs/iv-128-content-rights.md`](docs/iv-128-content-rights.md) | IV-128 *(issue pending)* | Content licensing, TDM rights, provider transfer, the content-rights matrix, and the recommended V1 admission policy. **Not legal advice** |
 | [`docs/iv-17-identifiers.md`](docs/iv-17-identifiers.md) | IV-17 | Stable source, passage, and derived-artifact identifiers |
+| [`docs/iv-21-local-runtime.md`](docs/iv-21-local-runtime.md) | IV-21 | Reproducible local Compose runtime, clean-install bootstrap, and N-1 migration recovery proof |
 
 ### Packages in this repository
 

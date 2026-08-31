@@ -7,7 +7,27 @@ import { runMigrations as runGraphileMigrations } from 'graphile-worker';
 
 const packageRoot = join(dirname(__dirname), '..');
 
-export async function runIvoryMigrations(connectionString: string, migrationsDirectory = join(packageRoot, 'migrations')): Promise<void> {
+export interface IvoryMigrationOptions {
+    /** Apply migrations through this filename, inclusive. Intended for migration verification only. */
+    upToMigration?: string;
+}
+
+export function resolveIvoryMigrationBatch(availableMigrations: readonly string[], upToMigration?: string): string[] {
+    const migrations = [...availableMigrations].filter(file => file.endsWith('.sql')).sort();
+    if (upToMigration === undefined) {
+        return migrations;
+    }
+    if (!migrations.includes(upToMigration)) {
+        throw new Error(`Unknown Ivory migration upper boundary: ${upToMigration}.`);
+    }
+    return migrations.filter(migration => migration <= upToMigration);
+}
+
+export async function runIvoryMigrations(
+    connectionString: string,
+    migrationsDirectory = join(packageRoot, 'migrations'),
+    options: IvoryMigrationOptions = {},
+): Promise<void> {
     const pool = new Pool({ connectionString });
     const client = await pool.connect();
     try {
@@ -19,7 +39,8 @@ export async function runIvoryMigrations(connectionString: string, migrationsDir
         const applied = new Set(
             (await client.query<{ version: string }>('SELECT version FROM ivory_schema_migrations')).rows.map(row => row.version),
         );
-        const migrations = (await readdir(migrationsDirectory)).filter(file => file.endsWith('.sql')).sort();
+        const availableMigrations = (await readdir(migrationsDirectory)).filter(file => file.endsWith('.sql'));
+        const migrations = resolveIvoryMigrationBatch(availableMigrations, options.upToMigration);
         for (const migration of migrations) {
             if (applied.has(migration)) {
                 continue;
@@ -43,7 +64,10 @@ if (process.argv[1] && process.argv[1].endsWith('migrate.js')) {
     if (connectionString === undefined || connectionString.length === 0) {
         throw new Error('DATABASE_URL is required for ivory-migrate.');
     }
-    runIvoryMigrations(connectionString).catch(error => {
+    const upToMigration = process.env.IVORY_MIGRATIONS_UP_TO;
+    runIvoryMigrations(connectionString, join(packageRoot, 'migrations'), {
+        upToMigration: upToMigration === undefined || upToMigration.length === 0 ? undefined : upToMigration,
+    }).catch(error => {
         console.error(error);
         process.exitCode = 1;
     });

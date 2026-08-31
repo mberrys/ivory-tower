@@ -93,20 +93,19 @@ Adding a package under an Ivory name but outside those scopes is now itself a ga
 ## 6. Image pinning
 
 Every image reference in `infra/docker-compose.yml`, `.env.example`,
-`scripts/verify-ivory-runtime.mjs`, and `packages/ivory-tower-infrastructure/src/environment.ts`
-must be registered in `images`.
+`scripts/verify-ivory-runtime.mjs`, `scripts/verify-ivory-session-04.mjs`, and
+`packages/ivory-tower-infrastructure/src/environment.ts` must be registered in `images`.
 
 - **Mutable tags are never admissible.** `latest`, `main`, `master`, `edge`, `stable`, `dev`, and
   `nightly` fail unconditionally, in any environment.
 - **`environment: "runtime"`** requires an `@sha256:` digest. Docling is pinned this way, and
   environment validation rejects a mutable `DOCLING_IMAGE` at startup independently of this gate.
-- **`environment: "local"`** images may carry a tag, but only with a recorded `owner`, `reason`,
-  `expires`, and `compensatingControl`. An expired entry fails the gate.
+- **`environment: "local"`** also requires an `@sha256:` digest. The Compose PostgreSQL/pgvector,
+  MinIO server, and MinIO client references are resolved manifest digests; the verification gate
+  therefore recreates the same local runtime rather than trusting a release tag to remain stable.
 
-Three local Compose images currently sit in that second category. `pgvector/pgvector:pg16` is the
-weakest of them — `pg16` is a rebuilt floating tag, not an immutable one. It is recorded rather
-than pinned because the local environment is owned by **IV-21 (Session 04)**, which will pin it by
-digest alongside the fixture and restore work. The expiry exists so this cannot be forgotten.
+Digest-pinning MinIO does **not** clear the unreviewed AGPL-3.0 licence question in §13. Those
+images remain local-dev/test infrastructure only.
 
 ## 7. Exceptions
 
@@ -147,8 +146,9 @@ The scan covers files that are **staged but not yet committed** (`git ls-files -
 Allowlist entries are exact paths with a reason, an owner, and the specific pattern ids they
 suppress — never a directory wildcard.
 
-**Boundary:** this is a repository and build-output scan. Redaction across bundles, logs,
-telemetry, and audit events is **IV-22 (Session 05)** and is not claimed here.
+**Boundary:** this is a repository and build-output scan. Redaction across process logs,
+HTTP error bodies, telemetry, and audit-shaped payloads is the **IV-22 contract**
+(`docs/iv-22-deployment-secrets.md`) and is not claimed here.
 
 ## 9. Adversarial fixtures
 
@@ -227,3 +227,80 @@ Per the IV-19 V1 governance addendum (2026-08-03):
 - Vulnerability disposition (`npm audit` findings and their recorded resolution) is **not**
   implemented here. `advisoryExceptions` exists and is validated, but no advisory feed is wired to
   it; that belongs with the release-drill work in Session 38.
+
+## 13. Session 03 addendum — two findings not otherwise recorded
+
+A second, independent execution of Session 03 ran concurrently with the one that produced this
+document and PR #20. By the time it reached verification, PR #20 had already merged, and its
+gate mechanism (this file, `configs/ivory-dependency-policy.json`,
+`scripts/check-ivory-dependency-policy.mjs`, `scripts/generate-ivory-sbom.mjs`,
+`scripts/generate-ivory-notices.mjs`, the fixture suite, and the `governance` CI job) was
+materially more complete than the duplicate implementation the second execution had built. That
+duplicate work was discarded rather than merged or rebased on top of this file's mechanism — see
+`docs/sessions/session-03-addendum.md` for the full account. Two findings from that discarded work
+survive here because they are not otherwise recorded:
+
+- **`quay.io/minio/minio` and `quay.io/minio/mc` (§6) have an unreviewed licence, not just an
+  unpinned digest.** Session 04 (IV-21) pinned both images by digest for local reproducibility.
+  That does not resolve the licence. MinIO Server is believed to have moved to AGPL-3.0 in 2021
+  (from Apache-2.0); neither this document's `exceptions` (§7, npm-package-scoped) nor `images`
+  (§6, digest-pinning-scoped) records that licence. Running the unmodified image as local
+  dev/test infrastructure — its only current use — is unlikely to trigger AGPL's network-copyleft
+  clause, but that is an observation, not a ruling. If either image is ever used as more than
+  local dev/test infrastructure — e.g. a self-hosted production object store instead of the hosted
+  S3-compatible storage ADR-002 calls for — this needs counsel review before that decision is
+  made, the same way `docs/iv-128-content-rights.md` routes open content-rights questions to
+  counsel rather than resolving them here.
+- **Dependencies ADR-001/ADR-002 name but that are not installed yet have no recorded owner.**
+  `liquidify-react` (peers: `react`/`react-dom` ^18 or ^19, `@ark-ui/react`, `framer-motion`,
+  `lucide-react`), `pdfjs-dist`, and an Ivory-owned AI SDK provider adapter for ADR-002's provider
+  registry are absent from `package-lock.json` today, so `packages` (§4) correctly does not list
+  them — an uninstalled dependency isn't yet a dependency. But recording *nothing* about them risks
+  two failure modes when they do land: the add slips in without a `packages` entry, or someone
+  mistakes an unrelated existing package for the real thing. On that second risk: `package-lock.json`
+  already contains `@ai-sdk/anthropic`, `@ai-sdk/gateway`, and related packages, and `cytoscape` —
+  but tracing `package-lock.json`'s dependency graph shows both are pulled in solely by upstream
+  Theia's own `packages/ai-vercel-ai` (its built-in AI Chat feature) and by `mermaid` respectively,
+  not by any `@ivory-tower/*` package. Neither is evidence that Ivory Tower's own ADR-002 provider
+  registry or a future claim-evidence graph view has started. Whoever adds the real, Ivory-owned
+  dependency should add its `packages` (§4) entry at the same time, not after.
+
+## 14. Session 03 addendum 2 — the module-boundary gate had the same gap this document closed elsewhere
+
+A **third** execution against this branch's Session 03 objective hit the same collision described
+in §13, one step later: it fetched `stable`/`claude/session-3-q9tc4o` before starting, found the
+branch apparently unmodified from a stale local checkout, and built a second, independent
+implementation of the entire IV-19 mechanism before discovering — mid-task, on `git push` — that
+this document's mechanism (plus the §13 addendum) was already merged and CI-green. Per the §13
+precedent, the duplicate mechanism was discarded rather than reconciled file-by-file: a real merge
+(`git merge origin/claude/session-3-q9tc4o -X theirs`) took this branch's version of every
+conflicting file, so nothing here changed as a result. `git reset --hard` was not available (blocked
+by this environment's permission policy for destructive git operations), which is why a merge
+commit records this rather than a clean rebase — the effect is the same: no content from the
+discarded duplicate survives except the two findings below.
+
+Both are narrow, previously-unrecorded, and fixed directly (not just recorded) as part of this
+addendum:
+
+- **`scripts/check-ivory-boundaries.mjs` (the IV-15 module-boundary gate) never gained a layer for
+  `@theia/ivory-identity`.** Every other IV-19 gate in this document was widened to include
+  `@theia/ivory-identity` — format, typecheck, lint, dependency policy — but the boundary checker
+  is an IV-15 mechanism this document doesn't own, and it was missed. `packages/ivory-identity/src`
+  imports only its own relative modules and Node's built-in `crypto` (verified by inspection: zero
+  `@theia/`, `@ivory-tower/`, `pg`, `@aws-sdk/`, `graphile-worker`, or `docling` imports), so a
+  layer forbidding all of those was added, along with two negative fixtures in
+  `scripts/ivory-boundary-fixtures.json`. `npm run check:ivory-boundaries` was green both before and
+  after.
+- **`verify:ivory-tower`'s inline `lerna run test` step never picked up the widened
+  `@theia/ivory-*` scope.** `typecheck:ivory-tower`, `lint:ivory-tower`, and the standalone
+  `test:ivory-tower` script all run `--scope "@ivory-tower/*" --scope "@theia/ivory-*"`, but the
+  test step embedded directly inside the `verify:ivory-tower` chain in `package.json` still read
+  `--scope "@ivory-tower/*"` alone — so `@theia/ivory-identity`'s tests were exercised by `npm run
+  test:ivory-tower` in isolation, but silently skipped by the actual CI gate
+  (`.github/workflows/ivory-tower.yml`'s `verify` job, which calls `verify:ivory-tower`). Fixed by
+  widening that one inline scope to match its siblings.
+
+Nothing under `configs/`, `scripts/generate-ivory-*`, `scripts/check-ivory-dependency-policy.mjs`,
+`scripts/check-ivory-secrets.mjs`, `scripts/ivory-lockfile.mjs`, or the `governance` CI job changed
+— the discarded duplicate's version of each was strictly inferior to what's already here, per the
+same reasoning as §13. See `docs/sessions/session-03-addendum-2.md` for the full account.
