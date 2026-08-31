@@ -2,6 +2,11 @@ dev-packages/*/bin/*.js text eol=lf
 
 docs/**/*.md text eol=lf
 
+release-evidence/**/*.json text eol=lf
+release-evidence/**/*.md text eol=lf
+release-evidence/**/*.txt text eol=lf
+scripts/ivory/fixtures/**/*.json text eol=lf
+
 packages/ivory-tower-*/src/**/*.ts text eol=lf
 packages/ivory-tower-*/src/**/*.tsx text eol=lf
 packages/ivory-identity/src/**/*.ts text eol=lf

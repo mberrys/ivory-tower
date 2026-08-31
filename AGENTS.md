@@ -3,6 +3,13 @@
 Guidance for AI coding agents working in this repository. Human-oriented docs live in
 [`CLAUDE.md`](CLAUDE.md), [`README.md`](README.md), and [`doc/THEIA-CLAUDE.md`](doc/THEIA-CLAUDE.md).
 
+> ⚠️ **V1 planning authority moved (2026-08-29).** The canonical V1 plan is now the unified Notion
+> roadmap, **revision 4**, frozen in [`docs/v1-reset-manifest.md`](docs/v1-reset-manifest.md) and
+> [`release-evidence/cutline.json`](release-evidence/cutline.json). The repository map and
+> verification commands below remain accurate; roadmap and `IV-#` tracker references predate the
+> reset and are historical until reconciled (Session 01 onward). This banner is the only change
+> Session 00 made here.
+
 ## Repository map
 
 - **`docs/`** — Ivory Tower normative specifications (`iv-<n>-*.md`).

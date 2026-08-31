@@ -1,0 +1,106 @@
+# Session 00 (IVS-1) - verify:ivory-tower repair evidence
+# Branch cc/freeze-reset-authority-repository-e4d51a @ 3a4ad1ab8 (commits 1-6 of Session 00)
+# Node 24.16.0; npm aligned to the pinned 11.13.0 for this run.
+# Full transcript: npm run verify:ivory-tower
+
+## Result summary
+
+The missing-scripts defect (knownBaselineDefects[verify-ivory-tower-missing-scripts]) is REPAIRED:
+the four re-added scripts and the two new reset-authority scripts all resolve and pass. The chain
+then stops at typecheck:ivory-tower with a pre-existing ENVIRONMENTAL failure that is unrelated to
+Session 00 - see "Environmental blocker" below.
+
+## Links that ran green (verify:ivory-tower, in order)
+
+  1. check:ivory-toolchain          PASS  - Node 24.16.0, npm 11.13.0
+  2. check:ivory-install            PASS  - @theia/ext-scripts@1.74.0 with theia-ext.js available
+  3. format:check:ivory-tower       PASS  - "All matched files use Prettier code style!"
+  4. check:ivory-boundaries         PASS  - "Ivory Tower module boundaries: OK"
+  5. verify:ivory-cutline           PASS  - 130 legacy tracker issues validated; generated block current
+  6. verify:ivory-phase-gates       PASS  - exit 0; every evidence artifact present (phase FAIL rows
+                                            are informational - phases are not complete)
+  7. test:ivory-cutline             PASS  - 7/7
+  8. verify:ivory-reset-authority   PASS  - release-evidence/cutline.json + docs/v1-reset-manifest.md
+  9. test:ivory-reset-authority     PASS  - 25/25
+
+## Environmental blocker (NOT a Session 00 change, NOT a repository code defect)
+
+  10. typecheck:ivory-tower         FAIL  - @ivory-tower/domain:compile
+      error TS5033: Could not write file
+      'C:/.dev/repos/ivory-tower/packages/ivory-tower-domain/lib/execution.d.ts.map':
+      EPERM: operation not permitted
+
+  Root cause: lerna (v9 / nx) run from a LINKED GIT WORKTREE resolves every package location to
+  the PRIMARY checkout, not to this worktree:
+
+    $ npx lerna list --all --json
+      "@theia/application-manager"  "location": "C:\\.dev\\repos\\ivory-tower\\dev-packages\\application-manager"
+      (i.e. C:\.dev\repos\ivory-tower\..., NOT ...\.claude\worktrees\new-session-1dda69\...)
+
+  So `lerna run compile` tries to write build output into the PRIMARY worktree. Under the Codex
+  sandbox, a write outside this session's worktree is denied -> EPERM on the first .d.ts.map.
+  `nx reset` does not change the resolution; it is lerna's repo-root detection under git worktrees.
+
+  The package itself compiles cleanly IN THIS WORKTREE:
+
+    $ cd packages/ivory-tower-domain && npx tsc --project .        -> exit 0 (writes lib/execution.d.ts.map, 1482 bytes)
+    $ cd packages/ivory-tower-domain && npm run compile            -> exit 0 (ts-clean-dangling && tsc)
+
+  Session 00 modified zero TypeScript and zero package source. The same class of pre-existing,
+  environment-bound failure was recorded (not chased) by Session 03 for the Windows build:electron
+  step.
+
+## Links not reached (all lerna/nx-based, same blocker as #10)
+
+  11. lint:ivory-tower
+  12. test (lerna) for @ivory-tower/* and @theia/ivory-*
+  13. build:ivory-tower
+  14. test:ivory-browser (Playwright)
+
+## Trailing links (verified separately on the clean post-commit tree)
+
+  15. dependency:policy             PASS  - "tree clean; 7 adversarial fixtures still rejected"
+  16. secret:scan                   PASS  - "no sentinel value or credential pattern found"
+  17. git diff --check              exit 0
+  18. git diff --exit-code          exit 0
+
+## CI parity - RESOLVED
+
+PR https://github.com/mberrys/ivory-tower/pull/34 (branch cc/freeze-reset-authority-repository-e4d51a
+-> dev) ran .github/workflows/ivory-tower.yml:
+https://github.com/mberrys/ivory-tower/actions/runs/33277875398
+
+  Verify (windows-2022)                 SUCCESS
+  Verify (ubuntu-22.04)                 SUCCESS
+  Dependency governance evidence (IV-19) SUCCESS
+
+Full `verify:ivory-tower` (all 18 links, including typecheck:ivory-tower / lint:ivory-tower /
+test:ivory-tower / build:ivory-tower / test:ivory-browser) is GREEN on both platforms. The
+missing-scripts repair is proven end-to-end; the local link-10 TS5033 EPERM was confirmed as the
+linked-worktree + Codex-sandbox environmental condition, not a code or Session 00 defect.
+
+## Unmasked pre-existing defect: "Runtime and migration recovery (Session 04)" CI job
+
+Not part of verify:ivory-tower. Added by 1e45afd51 (origin/dev HEAD; Session 04 / IV-21) together
+with scripts/verify-ivory-session-04.mjs. It had NEVER run because its `needs: verify` was red from
+the missing-scripts defect above. Repairing verify:ivory-tower let it run for the first time on
+PR #34, and it failed (CI run 33278502755, job 99170566113):
+
+    Error: Cannot find module '.../packages/ivory-tower-api/lib/start.js'
+    Error: Cannot find module '.../packages/ivory-tower-worker/lib/start.js'
+    Error: API readiness did not become ready. Last error: fetch failed
+    (secondary, teardown only) EACCES: permission denied, rmdir '.ivory-tower/minio'
+
+Root cause: the runtime job does `npm ci` then `verify:ivory-session-04` with no step that compiles
+@ivory-tower/api or @ivory-tower/worker (verify:ivory-session-04 -> migrate:ivory only compiles
+@ivory-tower/infrastructure --include-dependencies, which excludes the app packages).
+
+FIXED on this branch by an Auto-fix commit (not a Session 00 IV1-1/IV1-2 deliverable):
+  - package.json: new `compile:ivory-services` (lerna compile @ivory-tower/api + @ivory-tower/worker).
+  - scripts/verify-ivory-runtime.mjs: run `compile:ivory-services` after `migrate:ivory`, before start.
+  - scripts/verify-ivory-session-04.mjs: tear the checkout .ivory-tower/ state dir down through a
+    container (root-owned bind-mount files) instead of a host rm that hits EACCES on CI.
+Verified by the next CI run on PR #34.
+
+Session 00 changed zero code this job exercises; for everything it touches the branch tree was
+byte-identical to origin/dev @ 1e45afd51 before the Auto-fix commit.

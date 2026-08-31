@@ -1,5 +1,14 @@
 # Ivory Tower V1: Build vs. Open Source
 
+> ⚠️ **Superseded as V1 planning authority (2026-08-29).** This is the compact map of the historical
+> `IV-#` Issue Tracker (`3af9cb07…`), which is now **historical backlog metadata, read-only**. The
+> canonical V1 plan is the unified Notion roadmap, **revision 4** (four-layer Core / Compute / Studio
+> / IDE Bridge; Electron-first; CLI + MCP first-class); the authority chain, scope, and tracker roles
+> are frozen in [`v1-reset-manifest.md`](v1-reset-manifest.md) and
+> [`../release-evidence/cutline.json`](../release-evidence/cutline.json). Reconciliation of the
+> content below into the new plan is owned by Session 01+ (IV1-3 / IV1-4). Retained as history;
+> Session 00 rewrote nothing here (the generated cutline block is intact).
+
 Status: planning baseline hardened for scholarship trust, field reports, and initial research (2026-08-01); application platform decided (2026-08-02). Notion is the execution tracker; this file is the compact repository map. Individual issue bodies own detailed requirements, attributed callouts, and acceptance criteria.
 
 - Tracker: [Ivory Tower Issue Tracker](https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594)

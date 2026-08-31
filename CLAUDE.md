@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> ⚠️ **V1 planning authority moved (2026-08-29).** The canonical V1 plan is now the unified Notion
+> roadmap, **revision 4**; the authority chain, scope, exclusions, evidence rule, and tracker roles
+> are frozen in [`docs/v1-reset-manifest.md`](docs/v1-reset-manifest.md) and
+> [`release-evidence/cutline.json`](release-evidence/cutline.json). Sections below that reference the
+> `IV-#` Issue Tracker, the "Phases 1–6" scope, or a web-first platform predate the reset and are
+> **historical until reconciled** (Session 01 onward). Build, test, and tooling guidance in this file
+> remains in force. This banner is the only change Session 00 made here.
+
 ## Repository state
 
 This repository **is a fork of Eclipse Theia** (`mberrys/ivory-tower`, branch `stable`, upstream v1.74.0). Ivory Tower is being built as a Theia product inside it.

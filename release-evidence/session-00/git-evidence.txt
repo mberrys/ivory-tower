@@ -1,0 +1,326 @@
+# Session 00 (IVS-1) repository baseline — SESSION START capture
+# generated 2026-08-29T21:36:55Z UTC
+# working worktree: C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69
+
+==================================================================
+IDENTITY / ANCHOR (worktree: new-session-1dda69)
+==================================================================
+$ git rev-parse HEAD
+1e45afd5182a58f12205472e4f05f02c5086d44d
+
+$ git rev-parse --abbrev-ref HEAD
+cc/freeze-reset-authority-repository-e4d51a
+
+$ git describe --tags --always --dirty
+1e45afd51
+
+$ git log -1 --format='%H%n%cI%n%s'
+1e45afd5182a58f12205472e4f05f02c5086d44d
+2026-08-20T12:01:54-07:00
+feat(ivory-tower): verify reproducible local runtime
+
+$ git merge-base --is-ancestor v1.74.0 HEAD; echo ancestor-exit=$?
+fatal: Not a valid object name v1.74.0
+ancestor-exit=128
+
+$ git status --porcelain=v2 --branch
+# branch.oid 1e45afd5182a58f12205472e4f05f02c5086d44d
+# branch.head cc/freeze-reset-authority-repository-e4d51a
+
+$ git branch -vv
+* cc/freeze-reset-authority-repository-e4d51a 1e45afd51 feat(ivory-tower): verify reproducible local runtime
+  cc/new-session-1dda69                       1a77a15a5 [origin/cc/new-session-1dda69: gone] fix(scm): remove stale packages/scm/node_modules/diff lockfile entry
+  cc/next-steps-74f966                        f312f02a0 feat(ivory): add Cursor Cloud bootstrap and Sentry observability
+  cdx/session-02-iv15                         5e2f3ccd8 [origin/stable: ahead 9, behind 15] docs(ivory): freeze final session 02 evidence
++ dev                                         1e45afd51 (C:/.dev/repos/ivory-tower) [origin/dev] feat(ivory-tower): verify reproducible local runtime
+  gh-128                                      cc1baa440 [origin/gh-128: gone] Implement IV-128 V1 cutline verification
+  stable                                      efec71ed8 [origin/stable: behind 103] docs(ivory-tower): add planning baseline and platform decision
+
+$ git remote -v
+origin	https://github.com/mberrys/ivory-tower.git (fetch)
+origin	https://github.com/mberrys/ivory-tower.git (push)
+
+$ git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' || echo 'no upstream on this branch (expected)'
+fatal: no upstream configured for branch 'cc/freeze-reset-authority-repository-e4d51a'
+no upstream on this branch (expected)
+
+==================================================================
+WORKTREES
+==================================================================
+$ git worktree list --porcelain
+worktree C:/.dev/repos/ivory-tower
+HEAD 1e45afd5182a58f12205472e4f05f02c5086d44d
+branch refs/heads/dev
+
+worktree C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69
+HEAD 1e45afd5182a58f12205472e4f05f02c5086d44d
+branch refs/heads/cc/freeze-reset-authority-repository-e4d51a
+
+worktree C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966
+HEAD f312f02a02e9b080b4b05b640f3b3f39b39112cd
+detached
+
+worktree C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30
+HEAD fe9b619cdf32e6cea45effd78099287b245e66a6
+detached
+
+
+==================================================================
+PER-WORKTREE STATUS
+==================================================================
+$ git -C 'C:/.dev/repos/ivory-tower' status --porcelain=v2 --branch --untracked-files=all
+# branch.oid 1e45afd5182a58f12205472e4f05f02c5086d44d
+# branch.head dev
+# branch.upstream origin/dev
+# branch.ab +0 -0
+1 .M N... 100644 100644 100644 6ceadccf31dc863c001acb31cb36eef716668041 6ceadccf31dc863c001acb31cb36eef716668041 .gitignore
+1 .M N... 100644 100644 100644 73146a16691818b5f0326fef41b511a7deab4be7 73146a16691818b5f0326fef41b511a7deab4be7 packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts
+1 .M N... 100644 100644 100644 8d8111e316795c23451764cfdc6d5086f9226b13 8d8111e316795c23451764cfdc6d5086f9226b13 packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts
+1 .M N... 100644 100644 100644 5ae5a9c555f0e845c670ec17e85d8d2086cc3f2c 5ae5a9c555f0e845c670ec17e85d8d2086cc3f2c packages/ivory-tower-infrastructure/src/postgres-execution-store.ts
+1 .M N... 100644 100644 100644 cd910bc5a3dad5f07cd37531a1967155c515d080 cd910bc5a3dad5f07cd37531a1967155c515d080 packages/ivory-tower-worker/src/package.spec.ts
+? .claude/policy-brief.md
+? .claude/settings.json
+? .codex/environments/environment.toml
+? .pre-commit-config.yaml
+? scripts/hooks/cc-guard-bash.sh
+? scripts/hooks/cc-guard-write.sh
+? scripts/hooks/cc-stop-self-review.sh
+? scripts/hooks/cmake-discipline.sh
+? scripts/hooks/commit-msg-conventional.sh
+? scripts/hooks/forbid-secret-files.sh
+? scripts/hooks/pre-push.sh
+? scripts/hooks/prod-data-guard.sh
+? scripts/hooks/run-bash.py
+
+$ git -C 'C:/.dev/repos/ivory-tower' stash list
+
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69' status --porcelain=v2 --branch --untracked-files=all
+# branch.oid 1e45afd5182a58f12205472e4f05f02c5086d44d
+# branch.head cc/freeze-reset-authority-repository-e4d51a
+
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69' stash list
+
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966' status --porcelain=v2 --branch
+# branch.oid f312f02a02e9b080b4b05b640f3b3f39b39112cd
+# branch.head (detached)
+
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30' status --porcelain=v2 --branch
+# branch.oid fe9b619cdf32e6cea45effd78099287b245e66a6
+# branch.head (detached)
+
+==================================================================
+PRESERVATION PROOF — primary worktree (C:/.dev/repos/ivory-tower)
+==================================================================
+$ git -C 'C:/.dev/repos/ivory-tower' status --porcelain --untracked-files=all
+ M .gitignore
+ M packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts
+ M packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts
+ M packages/ivory-tower-infrastructure/src/postgres-execution-store.ts
+ M packages/ivory-tower-worker/src/package.spec.ts
+?? .claude/policy-brief.md
+?? .claude/settings.json
+?? .codex/environments/environment.toml
+?? .pre-commit-config.yaml
+?? scripts/hooks/cc-guard-bash.sh
+?? scripts/hooks/cc-guard-write.sh
+?? scripts/hooks/cc-stop-self-review.sh
+?? scripts/hooks/cmake-discipline.sh
+?? scripts/hooks/commit-msg-conventional.sh
+?? scripts/hooks/forbid-secret-files.sh
+?? scripts/hooks/pre-push.sh
+?? scripts/hooks/prod-data-guard.sh
+?? scripts/hooks/run-bash.py
+
+$ git -C 'C:/.dev/repos/ivory-tower' diff --stat
+ .gitignore                                         |  4 +-
+ .../src/in-memory-execution-store.spec.ts          | 22 ++++++++++
+ .../src/in-memory-execution-store.ts               | 17 ++++++--
+ .../src/postgres-execution-store.ts                |  6 ++-
+ packages/ivory-tower-worker/src/package.spec.ts    | 49 ++++++++++++++++++++++
+ 5 files changed, 93 insertions(+), 5 deletions(-)
+
+$ git -C 'C:/.dev/repos/ivory-tower' diff --staged --stat; echo '(empty = nothing staged)'
+(empty = nothing staged)
+
+$ git -C 'C:/.dev/repos/ivory-tower' reflog -n 25
+1e45afd51 HEAD@{0}: commit: feat(ivory-tower): verify reproducible local runtime
+ecda63ed1 HEAD@{1}: commit (merge): Merge remote-tracking branch 'origin/dev' into dev
+2eb9f656e HEAD@{2}: commit: fix(ivory): pin Sentry dependency for IV-19 policy
+91fff2e5a HEAD@{3}: cherry-pick: docs(sessions): record the CI evidence for Session 03
+78d1fbcd1 HEAD@{4}: cherry-pick: fix(ivory-tower): build SBOMs from the lockfile and correct alias classification
+706c4198f HEAD@{5}: commit (cherry-pick): fix(ivory-tower): repair Windows formatting gate and SBOM tree-defect handling
+abd93ed7a HEAD@{6}: cherry-pick: docs(sessions): record Session 03 and reconstruct the Session 02 handoff
+c757acfee HEAD@{7}: cherry-pick: docs(ivory-tower): document IV-19 dependency governance
+90e5dbc33 HEAD@{8}: commit (cherry-pick): feat(ivory-tower): enforce dependency, licence, and pinning governance (IV-19)
+f6b83b870 HEAD@{9}: cherry-pick: style(ivory-identity): apply the pinned Ivory Prettier configuration
+f312f02a0 HEAD@{10}: commit (merge): feat(ivory): add Cursor Cloud bootstrap and Sentry observability
+160ee5a91 HEAD@{11}: commit: Complete Ivory Tower V1 foundations
+5a0bd9af4 HEAD@{12}: checkout: moving from stable to dev
+efec71ed8 HEAD@{13}: rebase (finish): returning to refs/heads/stable
+efec71ed8 HEAD@{14}: rebase (pick): docs(ivory-tower): add planning baseline and platform decision
+32ed1ae89 HEAD@{15}: rebase (start): checkout origin/stable
+45161bba9 HEAD@{16}: checkout: moving from dev to stable
+5a0bd9af4 HEAD@{17}: commit: feat: enforce dual-gate admission and content-aware egress on the live path
+470ce9cd6 HEAD@{18}: commit: refactor(content-policy): relocate package to ivory-tower layer
+a9abb9924 HEAD@{19}: merge origin/dev: Merge made by the 'ort' strategy.
+68e253227 HEAD@{20}: commit: feat: update Ivory Tower execution pipeline
+4107007c9 HEAD@{21}: commit: Implement Phase 2 issue tracker foundation
+95e7f8655 HEAD@{22}: rebase (finish): returning to refs/heads/dev
+95e7f8655 HEAD@{23}: rebase (continue): feat(ivory-tower): scaffold browser assembly and quality gates for IV-15
+0f651621b HEAD@{24}: rebase (continue): docs(ivory-tower): add planning baseline and platform decision
+
+$ git -C 'C:/.dev/repos/ivory-tower' ls-files --others --exclude-standard
+.claude/policy-brief.md
+.claude/settings.json
+.codex/environments/environment.toml
+.pre-commit-config.yaml
+scripts/hooks/cc-guard-bash.sh
+scripts/hooks/cc-guard-write.sh
+scripts/hooks/cc-stop-self-review.sh
+scripts/hooks/cmake-discipline.sh
+scripts/hooks/commit-msg-conventional.sh
+scripts/hooks/forbid-secret-files.sh
+scripts/hooks/pre-push.sh
+scripts/hooks/prod-data-guard.sh
+scripts/hooks/run-bash.py
+
+------------------------------------------------------------------
+BLOB HASHES — pre-existing modified tracked files (session start)
+------------------------------------------------------------------
+$ git -C MAIN hash-object .gitignore
+583f7805cba977897d6c19b670365a30c028906f
+$ git -C MAIN hash-object packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts
+856d4381923b0bd2b2739cdd300bccc156581de5
+$ git -C MAIN hash-object packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts
+18008fde46c4b097c18ccd0f10f981bce8238086
+$ git -C MAIN hash-object packages/ivory-tower-infrastructure/src/postgres-execution-store.ts
+f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912
+$ git -C MAIN hash-object packages/ivory-tower-worker/src/package.spec.ts
+2230ac0c31c97984f163d44ae61620d642d0b9ed
+
+------------------------------------------------------------------
+BLOB HASHES — untracked files in primary worktree (session start)
+------------------------------------------------------------------
+$ git -C MAIN hash-object .claude/policy-brief.md
+6035780def29fc574869d30a0b7a3054fe69b220
+$ git -C MAIN hash-object .claude/settings.json
+7beeebbeafa504ea0ce55a79eff1493d4dc39c32
+$ git -C MAIN hash-object .codex/environments/environment.toml
+7e2a69e183fc29a871bb158059453d58788808c7
+$ git -C MAIN hash-object .pre-commit-config.yaml
+fdd04e2edb6d06fc7165f4e114bd19b2157e89f5
+$ git -C MAIN hash-object scripts/hooks/cc-guard-bash.sh
+0fe3837a84050133c370fe4717c12edb58f391ec
+$ git -C MAIN hash-object scripts/hooks/cc-guard-write.sh
+71ee1ee17f25ce07d82c20e319f664d5403f0a8a
+$ git -C MAIN hash-object scripts/hooks/cc-stop-self-review.sh
+ac4c034f9bc22f445cbdf0ccc45ceffddece3343
+$ git -C MAIN hash-object scripts/hooks/cmake-discipline.sh
+50f0b11099e53204746ef0cd3b3c6fa8ab639374
+$ git -C MAIN hash-object scripts/hooks/commit-msg-conventional.sh
+b5ef04fecf4bec6d09126ee301747aa6ceef6475
+$ git -C MAIN hash-object scripts/hooks/forbid-secret-files.sh
+98001b5e1b0efb581165d0692fb19f5e7237b122
+$ git -C MAIN hash-object scripts/hooks/pre-push.sh
+9df9d1575b170de569ead45b1617dad7621f06db
+$ git -C MAIN hash-object scripts/hooks/prod-data-guard.sh
+4acd25d7d1338078c5d75a36e9adae468f69d4df
+$ git -C MAIN hash-object scripts/hooks/run-bash.py
+8134ee5f10b8179a1d588e5d1489fa5f1a207c5b
+
+==================================================================
+DEPENDENCY / GATE INVENTORY
+==================================================================
+$ node --version
+v24.16.0
+
+$ npm --version
+11.17.0
+
+$ cat 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/.nvmrc'
+24.16.0
+
+$ cat 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/configs/ivory-toolchain.json'
+{
+  "node": "24.16.0",
+  "npm": "11.13.0",
+  "upstreamEngineDeclaration": ">=22"
+}
+
+$ node -p "Object.entries(require('C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/package.json').scripts).filter(function(e){return /ivory/.test(e[0])}).map(function(e){return e[0]+' = '+e[1]}).join(String.fromCharCode(10))"
+build:ivory-tower = cd examples/ivory-tower-browser && npm run build
+start:ivory-api = npm --workspace @ivory-tower/api run start
+start:ivory-worker = npm --workspace @ivory-tower/worker run start
+verify:ivory-runtime = node scripts/verify-ivory-runtime.mjs
+verify:ivory-session-04 = node scripts/verify-ivory-session-04.mjs
+migrate:ivory = npx lerna run compile --scope @ivory-tower/infrastructure --include-dependencies && npm --workspace @ivory-tower/infrastructure run migrate
+check:ivory-boundaries = node scripts/check-ivory-boundaries.mjs
+check:ivory-install = node scripts/check-ivory-install.mjs
+check:ivory-toolchain = node scripts/verify-ivory-toolchain.mjs
+format:check:ivory-tower = prettier --config configs/ivory-prettier.json --check "packages/ivory-tower-*/src/**/*.{ts,tsx}" "packages/ivory-identity/src/**/*.{ts,tsx}" "examples/ivory-tower-browser/**/*.{ts,tsx,mjs}"
+format:write:ivory-tower = prettier --config configs/ivory-prettier.json --write "packages/ivory-tower-*/src/**/*.{ts,tsx}" "packages/ivory-identity/src/**/*.{ts,tsx}" "examples/ivory-tower-browser/**/*.{ts,tsx,mjs}"
+typecheck:ivory-tower = npx lerna run compile --scope "@ivory-tower/*" --scope "@theia/ivory-*" --include-dependencies --stream
+lint:ivory-tower = lerna run lint --scope "@ivory-tower/*" --scope "@theia/ivory-*" --stream
+start:ivory-tower = cd examples/ivory-tower-browser && npm run start
+test:ivory-tower = lerna run test --scope "@ivory-tower/*" --scope "@theia/ivory-*" --stream
+test:ivory-runtime = lerna run test --scope @ivory-tower/contracts --scope @ivory-tower/api --scope @ivory-tower/worker --stream
+test:ivory-browser = npm --workspace @ivory-tower/example-browser run test:playwright
+verify:ivory-tower = npm run -s check:ivory-toolchain && npm run -s check:ivory-install && npm run -s format:check:ivory-tower && npm run -s check:ivory-boundaries && npm run -s verify:ivory-cutline && npm run -s verify:ivory-phase-gates && npm run -s test:ivory-cutline && npm run -s typecheck:ivory-tower && npm run -s lint:ivory-tower && lerna run test --scope "@ivory-tower/*" --scope "@theia/ivory-*" --stream && npm run -s build:ivory-tower && npm run -s test:ivory-browser && npm run -s dependency:policy && npm run -s secret:scan && git diff --check && git diff --exit-code
+
+$ cd 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69' && git grep -n 'verify:ivory-cutline' -- package.json
+package.json:132:    "verify:ivory-tower": "npm run -s check:ivory-toolchain && npm run -s check:ivory-install && npm run -s format:check:ivory-tower && npm run -s check:ivory-boundaries && npm run -s verify:ivory-cutline && npm run -s verify:ivory-phase-gates && npm run -s test:ivory-cutline && npm run -s typecheck:ivory-tower && npm run -s lint:ivory-tower && lerna run test --scope \"@ivory-tower/*\" --scope \"@theia/ivory-*\" --stream && npm run -s build:ivory-tower && npm run -s test:ivory-browser && npm run -s dependency:policy && npm run -s secret:scan && git diff --check && git diff --exit-code",
+
+$ node -e "var s=require('C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/package.json').scripts; ['verify:ivory-cutline','generate:ivory-cutline','verify:ivory-phase-gates','test:ivory-cutline'].forEach(function(k){console.log(k, '=>', s[k]||'(MISSING)')})"
+verify:ivory-cutline => (MISSING)
+generate:ivory-cutline => (MISSING)
+verify:ivory-phase-gates => (MISSING)
+test:ivory-cutline => (MISSING)
+
+$ ls 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/.github/workflows'
+check-new-package.yml
+ci-cd.yml
+discussion-welcome.yml
+generate-sbom.yml
+ivory-tower.yml
+license-check.yml
+native-dependencies.yml
+performance-tests.yml
+playwright.yml
+production-smoke-test.yml
+publish-api-doc-gh-pages.yml
+publish-ci.yml
+set-milestone-on-pr.yml
+translation.yml
+
+$ ls 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69/scripts/ivory'
+build-v1-cutline.mjs
+cutline-model.mjs
+evaluate-phase-gates.mjs
+v1-cutline.spec.mjs
+verify-v1-cutline.mjs
+
+
+==================================================================
+UPSTREAM BASE (v1.74.0 tag is not imported into the fork)
+==================================================================
+$ git tag -l 'v1.7*'; echo '(empty = no upstream version tags in the fork)'
+(empty = no upstream version tags in the fork)
+
+$ git log --oneline -1 origin/master
+172494ea2 v1.74.0
+
+$ git log --oneline -1 origin/original-cb
+172494ea2 v1.74.0
+
+$ git merge-base HEAD origin/master
+172494ea2564ca07690e230805861146007fae79
+
+$ git merge-base --is-ancestor origin/master HEAD; echo is-ancestor-exit=$?
+is-ancestor-exit=0
+
+$ node -p "require('./packages/core/package.json').version"
+1.74.0
+
+$ git rev-list --count 172494ea2564ca07690e230805861146007fae79..HEAD
+104
+

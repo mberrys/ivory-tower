@@ -1,0 +1,193 @@
+{
+  "artifact": "v1-reset-cutline",
+  "artifactVersion": 1,
+  "$comment": "Session 00 (IVS-1) / IV1-1 freezes the `authority` block below. Session 01 (IVS-2) / IV1-3 + IV1-4 adds a sibling `reconciliation` block with per-row legacy-tracker dispositions; that is an additive change and does not alter `authority`. This file is NOT docs/generated/v1-cutline.json (schemaVersion 1, historical) and does not share its validator.",
+  "authority": {
+    "frozenAt": "2026-08-29",
+    "decisionDate": "2026-08-29",
+    "frozenBy": {
+      "session": "IVS-1",
+      "sessionName": "Session 00 - Freeze reset authority and repository truth",
+      "issue": "IV1-1",
+      "branch": "cc/freeze-reset-authority-repository-e4d51a"
+    },
+    "roadmap": {
+      "title": "Ivory Tower V1 - Unified Theia Research System Roadmap & Architecture",
+      "revision": 4,
+      "revisionDate": "2026-08-29",
+      "releasePosture": "NO-GO",
+      "url": "https://app.notion.com/p/3cb9cb079ddb811eb7c1e43a4ca80439"
+    },
+    "authorityChain": [
+      {
+        "rank": 1,
+        "name": "Unified V1 roadmap (revision 4)",
+        "url": "https://app.notion.com/p/3cb9cb079ddb811eb7c1e43a4ca80439",
+        "role": "Supreme authority for V1 product form, layer boundaries, scope, increments, and release obligations. Where any in-repo document disagrees, the roadmap wins."
+      },
+      {
+        "rank": 2,
+        "name": "Ivory Tower V1 - Execution Contract & Tracker Architecture",
+        "url": "https://app.notion.com/p/3cb9cb079ddb8135adf9db1d07786ed3",
+        "role": "Evidence rule, tracker ownership boundaries, architect gate, granularity contract, historical-tracker policy, and session gating."
+      },
+      {
+        "rank": 3,
+        "name": "Ivory Tower V1 Issues (database)",
+        "url": "https://app.notion.com/p/adde6f38aea34caab3117f50c7ec67ff",
+        "role": "Authoritative active issue ledger (IV1-#): problem, objective, scope, implementation sequence, acceptance, validation, constraints."
+      },
+      {
+        "rank": 4,
+        "name": "Ivory Tower V1 Sessions (database)",
+        "url": "https://app.notion.com/p/676cc270f3154536be0ee00a5ba93129",
+        "role": "Authoritative active session ledger (IVS-#): entry criteria, issue ordering, architect phase, context budget, exit gate, evidence, handoff."
+      },
+      {
+        "rank": 5,
+        "name": "Session 00 - Freeze reset authority and repository truth (IVS-1)",
+        "url": "https://app.notion.com/p/3cb9cb079ddb814ca0f1d663e2fdb3e7",
+        "role": "The specification for this session; the reset authorization named by its entry criteria."
+      }
+    ],
+    "architectureSubpages": [
+      {
+        "name": "Architecture 1 - Four-Layer Boundary, Runtime Topology & Dependency Law",
+        "url": "https://app.notion.com/p/3cb9cb079ddb81b3b232e7e043465ee8"
+      },
+      {
+        "name": "Architecture 2 - Ivory Core: Research Objects, Provenance, Temporal Semantics & Storage",
+        "url": "https://app.notion.com/p/3cb9cb079ddb81c887f4f16ba9de07b2"
+      },
+      {
+        "name": "Architecture 3 - Ivory Compute: Governed R/Python/Quarto, Environments, Jobs & Reproducibility",
+        "url": "https://app.notion.com/p/3cb9cb079ddb817c8498df1ac55458c1"
+      },
+      {
+        "name": "Architecture 4 - Ivory Studio: Theia Composition, Visual Research UX & Code Workbench",
+        "url": "https://app.notion.com/p/3cb9cb079ddb816b87c3fedc88fa1e04"
+      },
+      {
+        "name": "Architecture 5 - IDE Bridge: Project Files, CLI, MCP & External IDE Interoperability",
+        "url": "https://app.notion.com/p/3cb9cb079ddb8147a79cf2a78bb610a5"
+      },
+      {
+        "name": "Architecture 6 - Ingestion, AI, Security, Measurement, Recovery & Release Evidence",
+        "url": "https://app.notion.com/p/3cb9cb079ddb81f4be8df02e16e23a0d"
+      }
+    ],
+    "layers": ["Core", "Compute", "Studio", "IDE Bridge"],
+    "v1Scope": {
+      "authoritativeSource": "authorityChain[0]",
+      "included": [
+        "Ivory Core - research semantics, citations, protocols, lenses, claims, temporal and identity objects, protected records, manifests and provenance; imports zero Theia and zero Compute/Studio adapters.",
+        "Ivory Compute - governed R / Python / Quarto execution over frozen corpus snapshots with exact execution provenance; imports zero Studio.",
+        "Ivory Studio - a single custom Eclipse Theia application (Electron-first) exposing one guided visual workflow and one code-capable workbench over the same Core/Compute contract.",
+        "IDE Bridge - a documented portable project root, a stable Ivory CLI, and a local MCP server; RStudio / Positron / VS Code / Cursor / Codex are first-class V1 clients.",
+        "Local, single-researcher deployment only.",
+        "Lexical (PostgreSQL) retrieval baseline; content-addressed source admission; Docling normalization.",
+        "A governed code lane for quantitative / survey analysis.",
+        "Complete no-model and no-AI-code paths.",
+        "Executable release-evidence gates for architecture separation, compute, identity/citations, retrieval, research semantics, AI safety, protected authorship, recovery, reproducibility, usability, and accessibility."
+      ],
+      "excluded": [
+        "The browser build as a shipped or hosted production surface - it exists for development and automated testing only.",
+        "Hosted, remote, team, role-based, or multi-tenant deployment.",
+        "Making Ivory Studio mandatory for researchers who prefer another IDE.",
+        "Silent model-autonomous shell, package, or network access.",
+        "Unreviewed arbitrary MCP servers or extensions in the trusted/default Studio profile; an enabled or unrestricted plugin host.",
+        "Automatic statistical interpretation, causal claims, unrestricted model selection, or treating an installed package as method validation.",
+        "Broad connectors, live credentialed acquisition, a model marketplace, and automatic provider routing.",
+        "Vector / visual retrieval (evidence-gated), a specialized survey wizard UI (deferred), and hosted collaboration (deferred).",
+        "Full feature parity with every RStudio, Positron, VS Code, Jupyter, Cursor, or Codex capability.",
+        "Universal support claims across languages, formats, methods, or disciplines without release evidence.",
+        "Representing any post-V1 capability as V1 completion."
+      ]
+    },
+    "evidenceRule": "No Ivory Tower V1 issue, session, or release gate advances on a Notion status, a planning page, or a document that asserts completion. Only committed, reproducible repository evidence advances work: source code, tests, and the artifacts under release-evidence/ and docs/sessions/, reproducible by another engineer from a clean checkout. Source, static-analysis, local-runtime, hosted-CI, and release evidence are reported separately and never substituted for one another. The legacy Notion issue tracker and every IV-# issue are frozen historical input; Session 00 modifies none of them.",
+    "ledgers": {
+      "activeIssues": {
+        "name": "Ivory Tower V1 Issues",
+        "notionId": "adde6f38aea34caab3117f50c7ec67ff",
+        "url": "https://app.notion.com/p/adde6f38aea34caab3117f50c7ec67ff",
+        "idPrefix": "IV1-",
+        "declaredCount": 95,
+        "role": "authoritative"
+      },
+      "activeSessions": {
+        "name": "Ivory Tower V1 Sessions",
+        "notionId": "676cc270f3154536be0ee00a5ba93129",
+        "url": "https://app.notion.com/p/676cc270f3154536be0ee00a5ba93129",
+        "idPrefix": "IVS-",
+        "declaredCount": 48,
+        "role": "authoritative"
+      },
+      "historicalTracker": {
+        "name": "Ivory Tower Issue Tracker (IV-8 root)",
+        "notionId": "3af9cb079ddb8001b65ed40b0b1ed594",
+        "url": "https://app.notion.com/p/3af9cb079ddb8001b65ed40b0b1ed594",
+        "idPrefix": "IV-",
+        "declaredCount": 130,
+        "role": "historical-backlog-metadata",
+        "mutationPolicy": "read-only",
+        "reconciliation": {
+          "ownedBySession": "IVS-2",
+          "issues": ["IV1-3", "IV1-4"],
+          "status": "pending"
+        }
+      },
+      "legacyRepoSnapshot": {
+        "path": "docs/generated/v1-cutline.json",
+        "schemaVersion": 1,
+        "role": "historical",
+        "policy": "retained; not regenerated; not authoritative. Superseded by this file for V1 reset authority."
+      }
+    },
+    "supersedes": {
+      "notion": ["3af9cb079ddb8001b65ed40b0b1ed594"],
+      "repoDocs": [
+        "CLAUDE.md",
+        "AGENTS.md",
+        "docs/v1-build-vs-open-source.md",
+        "docs/adr-001-application-platform.md",
+        "docs/adr-002-runtime-topology.md",
+        "docs/sessions/README.md"
+      ],
+      "note": "Superseded as V1 planning authority. Retained as history. Session 00 rewrote no content in any of these files; each received a dated non-destructive pointer banner only. CLAUDE.md and AGENTS.md also carry current non-planning content (build/test/tooling guidance) that remains in force."
+    },
+    "repositoryBaseline": {
+      "branch": "cc/freeze-reset-authority-repository-e4d51a",
+      "baseHeadAtSessionStart": "1e45afd5182a58f12205472e4f05f02c5086d44d",
+      "frozenCommit": "63bb20a564b61cea7ee49250de726f452506942e",
+      "upstreamBase": {
+        "project": "Eclipse Theia",
+        "version": "1.74.0",
+        "commit": "172494ea2564ca07690e230805861146007fae79"
+      },
+      "report": "release-evidence/session-00/repository-baseline.md"
+    },
+    "knownBaselineDefects": [
+      {
+        "id": "verify-ivory-tower-missing-scripts",
+        "severity": "red",
+        "summary": "At 1e45afd51 the verify:ivory-tower chain referenced verify:ivory-cutline, generate:ivory-cutline, verify:ivory-phase-gates, and test:ivory-cutline with no script definitions (dropped by merge ecda63ed1; originally added in 7309a7f83; on-disk targets under scripts/ivory/ still present). The CI gate was RED.",
+        "state": "repaired-in-IVS-1",
+        "repair": "re-added the four definitions verbatim from 7309a7f83 and extended the chain with verify:ivory-reset-authority and test:ivory-reset-authority (IV1-2 baseline repair commit)."
+      },
+      {
+        "id": "toolchain-drift-npm",
+        "severity": "yellow",
+        "summary": "Developer environment ran npm 11.17.0 against the pinned 11.13.0 (configs/ivory-toolchain.json); check:ivory-toolchain fails locally until aligned. Not a repository change.",
+        "state": "environment-only"
+      }
+    ],
+    "nextSession": {
+      "id": "IVS-2",
+      "name": "Session 01",
+      "title": "Reconcile the historical tracker into a read-only cutline",
+      "firstIssue": "IV1-3",
+      "issues": ["IV1-3", "IV1-4"],
+      "status": "Ready"
+    }
+  }
+}

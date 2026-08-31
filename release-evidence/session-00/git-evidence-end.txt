@@ -1,0 +1,80 @@
+# Session 00 (IVS-1) — SESSION END capture
+# generated 2026-08-29T21:57:03Z UTC
+# this branch HEAD: 3a4ad1ab8b6d022cb9c9ca1a7477d12d9a27dfa3
+
+=== primary worktree status (must match session start) ===
+$ git -C 'C:/.dev/repos/ivory-tower' status --porcelain --untracked-files=all
+ M .gitignore
+ M packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts
+ M packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts
+ M packages/ivory-tower-infrastructure/src/postgres-execution-store.ts
+ M packages/ivory-tower-worker/src/package.spec.ts
+?? .claude/policy-brief.md
+?? .claude/settings.json
+?? .codex/environments/environment.toml
+?? .pre-commit-config.yaml
+?? scripts/hooks/cc-guard-bash.sh
+?? scripts/hooks/cc-guard-write.sh
+?? scripts/hooks/cc-stop-self-review.sh
+?? scripts/hooks/cmake-discipline.sh
+?? scripts/hooks/commit-msg-conventional.sh
+?? scripts/hooks/forbid-secret-files.sh
+?? scripts/hooks/pre-push.sh
+?? scripts/hooks/prod-data-guard.sh
+?? scripts/hooks/run-bash.py
+
+$ git -C 'C:/.dev/repos/ivory-tower' stash list; echo '(empty expected)'
+(empty expected)
+
+$ git -C 'C:/.dev/repos/ivory-tower' diff --stat
+ .gitignore                                         |  4 +-
+ .../src/in-memory-execution-store.spec.ts          | 22 ++++++++++
+ .../src/in-memory-execution-store.ts               | 17 ++++++--
+ .../src/postgres-execution-store.ts                |  6 ++-
+ packages/ivory-tower-worker/src/package.spec.ts    | 49 ++++++++++++++++++++++
+ 5 files changed, 93 insertions(+), 5 deletions(-)
+
+=== primary worktree reflog (dev) — no reset/checkout-discard by Session 00 ===
+$ git -C 'C:/.dev/repos/ivory-tower' reflog -n 6
+1e45afd51 HEAD@{0}: commit: feat(ivory-tower): verify reproducible local runtime
+ecda63ed1 HEAD@{1}: commit (merge): Merge remote-tracking branch 'origin/dev' into dev
+2eb9f656e HEAD@{2}: commit: fix(ivory): pin Sentry dependency for IV-19 policy
+91fff2e5a HEAD@{3}: cherry-pick: docs(sessions): record the CI evidence for Session 03
+78d1fbcd1 HEAD@{4}: cherry-pick: fix(ivory-tower): build SBOMs from the lockfile and correct alias classification
+706c4198f HEAD@{5}: commit (cherry-pick): fix(ivory-tower): repair Windows formatting gate and SBOM tree-defect handling
+
+=== blob hashes — modified tracked (session end) ===
+.gitignore  583f7805cba977897d6c19b670365a30c028906f
+packages/ivory-tower-infrastructure/src/in-memory-execution-store.ts  856d4381923b0bd2b2739cdd300bccc156581de5
+packages/ivory-tower-infrastructure/src/in-memory-execution-store.spec.ts  18008fde46c4b097c18ccd0f10f981bce8238086
+packages/ivory-tower-infrastructure/src/postgres-execution-store.ts  f2fcc0aa6bf957875c50a2bafdbcc24aa43f5912
+packages/ivory-tower-worker/src/package.spec.ts  2230ac0c31c97984f163d44ae61620d642d0b9ed
+
+=== blob hashes — untracked (session end) ===
+.claude/policy-brief.md  6035780def29fc574869d30a0b7a3054fe69b220
+.claude/settings.json  7beeebbeafa504ea0ce55a79eff1493d4dc39c32
+.codex/environments/environment.toml  7e2a69e183fc29a871bb158059453d58788808c7
+.pre-commit-config.yaml  fdd04e2edb6d06fc7165f4e114bd19b2157e89f5
+scripts/hooks/cc-guard-bash.sh  0fe3837a84050133c370fe4717c12edb58f391ec
+scripts/hooks/cc-guard-write.sh  71ee1ee17f25ce07d82c20e319f664d5403f0a8a
+scripts/hooks/cc-stop-self-review.sh  ac4c034f9bc22f445cbdf0ccc45ceffddece3343
+scripts/hooks/cmake-discipline.sh  50f0b11099e53204746ef0cd3b3c6fa8ab639374
+scripts/hooks/commit-msg-conventional.sh  b5ef04fecf4bec6d09126ee301747aa6ceef6475
+scripts/hooks/forbid-secret-files.sh  98001b5e1b0efb581165d0692fb19f5e7237b122
+scripts/hooks/pre-push.sh  9df9d1575b170de569ead45b1617dad7621f06db
+scripts/hooks/prod-data-guard.sh  4acd25d7d1338078c5d75a36e9adae468f69d4df
+scripts/hooks/run-bash.py  8134ee5f10b8179a1d588e5d1489fa5f1a207c5b
+
+=== sibling worktrees still clean ===
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/next-steps-74f966' status --porcelain=v2 --branch
+# branch.oid f312f02a02e9b080b4b05b640f3b3f39b39112cd
+# branch.head (detached)
+
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/pr-30' status --porcelain=v2 --branch
+# branch.oid fe9b619cdf32e6cea45effd78099287b245e66a6
+# branch.head (detached)
+
+=== this session's worktree ===
+$ git -C 'C:/.dev/repos/ivory-tower/.claude/worktrees/new-session-1dda69' status --porcelain --untracked-files=all; echo '(clean expected)'
+(clean expected)
+
