@@ -371,6 +371,20 @@ export class HostedPluginSupport extends AbstractHostedPluginSupport<PluginManag
         return manager;
     }
 
+    protected override shouldStartPluginsForHost(host: PluginHost): boolean {
+        // do not start frontend plugins for electron browser
+        if (host === 'frontend') {
+            return !environment.electron.is();
+        }
+
+        // do not start backend plugins for browser-only
+        if (environment.browserOnly.is()) {
+            return false;
+        }
+
+        return true;
+    }
+
     protected initRpc(host: PluginHost, pluginId: string): RPCProtocol {
         const rpc = host === 'frontend' ? new PluginWorker().rpc : this.createServerRpc(host);
         setUpPluginApi(rpc, this.container);

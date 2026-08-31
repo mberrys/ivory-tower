@@ -34,7 +34,6 @@ import { MainPluginApiProvider } from '../../common/plugin-ext-api-contribution'
 import { PluginPathsService } from '../../main/common/plugin-paths-protocol';
 import { Deferred } from '@theia/core/lib/common/promise-util';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
-import { environment } from '@theia/core/shared/@theia/application-package/lib/environment';
 import { Measurement, Stopwatch } from '@theia/core/lib/common';
 
 export type PluginHost = 'frontend' | string;
@@ -380,8 +379,7 @@ export abstract class AbstractHostedPluginSupport<PM extends AbstractPluginManag
         };
 
         for (const [host, hostContributions] of contributionsByHost) {
-            // do not start plugins for electron browser
-            if (host === 'frontend' && environment.electron.is()) {
+            if (!this.shouldStartPluginsForHost(host)) {
                 continue;
             }
 
@@ -429,6 +427,11 @@ export abstract class AbstractHostedPluginSupport<PM extends AbstractPluginManag
         } else {
             startPluginsMeasurement.stop();
         }
+    }
+
+    /** Override to skip starting plugins for a specific host. */
+    protected shouldStartPluginsForHost(_host: PluginHost): boolean {
+        return true;
     }
 
     protected abstract obtainManager(host: string, hostContributions: PluginContributions[],

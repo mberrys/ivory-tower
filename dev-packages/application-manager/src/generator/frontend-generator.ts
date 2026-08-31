@@ -80,7 +80,9 @@ ${this.emitStartupLogger('Frontend', 'frontend page start')}
 ${this.emitStartupLog('loading modules...')}
 const { Container } = require('@theia/core/shared/inversify');
 const { FrontendApplicationConfigProvider } = require('@theia/core/lib/browser/frontend-application-config-provider');
+const { AppTargetProvider } = require('@theia/core/shared/@theia/application-package/lib/environment');
 
+AppTargetProvider.set('${this.pck.target}');
 FrontendApplicationConfigProvider.set(${this.prettyStringify(this.pck.props.frontend.config)});
 
 ${this.ifMonaco(() => `
@@ -133,7 +135,7 @@ module.exports = (async () => {
     const { loggerFrontendModule } = require('@theia/core/lib/browser/logger-frontend-module');
 
     container.load(frontendApplicationModule);
-    ${this.pck.ifBrowserOnly(`const { frontendOnlyApplicationModule } = require('@theia/core/lib/browser-only/frontend-only-application-module');
+    ${this.ifBrowserOnly(`const { frontendOnlyApplicationModule } = require('@theia/core/lib/browser-only/frontend-only-application-module');
     container.load(frontendOnlyApplicationModule);`)}
 
     container.load(loggerFrontendModule);

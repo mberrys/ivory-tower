@@ -246,9 +246,7 @@ export class WalkthroughService implements Disposable {
      */
     protected establishPluginBaseline(): void {
         this.knownPluginIds = new Set(this.pluginSupport.plugins.map(p => p.model.id));
-        if (this.knownPluginIds.size > 0) {
-            this.pluginBaselineEstablished = true;
-        }
+        this.pluginBaselineEstablished = true;
     }
 
     protected async loadProgress(): Promise<void> {
